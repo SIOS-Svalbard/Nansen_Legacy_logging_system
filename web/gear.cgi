@@ -17,7 +17,7 @@ import cgi
 import cgitb
 import uuid
 import datetime as dt
-import AeN.scripts.uuid_labels as uu
+import uuid_labels as uu
 import tempfile
 import shutil
 
