@@ -38,6 +38,7 @@ from kivy.uix.popup import Popup
 from kivy.properties import BooleanProperty
 from kivy.uix.label import Label
 from kivy.properties import NumericProperty
+from kivy.resources import resource_add_path
 
 from kivy.config import Config
 
@@ -327,7 +328,13 @@ class LabelApp(App):
         # Stop socket after each run
         self.on_stop()
 
+def resourcePath():
+    '''Returns path containing content - either locally or in pyinstaller tmp file'''
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS)
 
+    return os.path.join(os.path.abspath("."))
+    
 def main(argv=None):  # IGNORE:C0111
     '''Command line options.'''
 
@@ -382,6 +389,8 @@ def parse_options():
 
 
 if __name__ == "__main__":
+    resource_add_path(resourcePath()) # add this line
     if DEBUG:
         sys.argv.append("-v")
+    
     sys.exit(main())
