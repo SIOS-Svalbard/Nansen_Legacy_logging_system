@@ -220,6 +220,9 @@ class Alert(Popup):
 
 class LabelWidget(FloatLayout):
 
+    # def __init__(self):
+        #self.label_size = 'Medium'
+
     def activate_checkbox(self, checkbox, id):
         if id == 'date':
 
@@ -231,6 +234,27 @@ class LabelWidget(FloatLayout):
 
             self.ids.text4.inc_num = True
 
+    def on_size_select(self, label_size):
+        self.label_size = label_size
+
+        def change_size(ids, size):
+            ids.max_characters = size
+            ids.text = ids.text[:size]
+
+        print("Setting size")
+        if label_size == 'Medium':
+            change_size(self.ids.text1, 18)
+            change_size(self.ids.text2, 18)
+            change_size(self.ids.text3, 18)
+            change_size(self.ids.text4, 18)
+            change_size(self.ids.text5, 0)
+        elif label_size == 'Large':
+            change_size(self.ids.text1, 20)
+            change_size(self.ids.text2, 20)
+            change_size(self.ids.text3, 20)
+            change_size(self.ids.text4, 20)
+            change_size(self.ids.text5, 36)
+
 
 class LabelApp(App):
 
@@ -239,8 +263,7 @@ class LabelApp(App):
         self.widget = widget
         self.socket = None
         self.first_print = True
-        self.size = 'Medium'
-        self.on_size_select(self.size)
+        self.widget.label_size = 'Medium'
         return widget
 
     def on_stop(self, *args):
@@ -255,22 +278,6 @@ class LabelApp(App):
         self.BUFFER_SIZE = 1024
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.IP, self.PORT))
-
-    def on_size_select(self, size):
-        self.size = size
-        print("Setting size")
-        if size == 'Medium':
-            text1 = self.widget.ids.text1.max_characters = 18
-            text2 = self.widget.ids.text2.max_characters = 18
-            text3 = self.widget.ids.text3.max_characters = 18
-            text4 = self.widget.ids.text4.max_characters = 18
-            text5 = self.widget.ids.text5.max_characters = 0
-        elif size == 'Large':
-            text1 = self.widget.ids.text1.max_characters = 20
-            text2 = self.widget.ids.text2.max_characters = 20
-            text3 = self.widget.ids.text3.max_characters = 20
-            text4 = self.widget.ids.text4.max_characters = 20
-            text5 = self.widget.ids.text5.max_characters = 36
 
     def send_to_printer(self, zpl):
 
