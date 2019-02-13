@@ -45,7 +45,7 @@ from kivy.config import Config
 __all__ = []
 __version__ = 0.2
 __date__ = '2018-05-25'
-__updated__ = '2018-11-15'
+__updated__ = '2019-02-13'
 
 DEBUG = 1
 TESTRUN = 0
@@ -242,7 +242,7 @@ class LabelWidget(FloatLayout):
             ids.max_characters = size
             ids.text = ids.text[:size]
 
-        print("Setting size")
+        # print("Setting size")
         if label_size == 'Medium':
             change_size(self.ids.text1, 18)
             change_size(self.ids.text2, 18)
@@ -258,7 +258,9 @@ class LabelWidget(FloatLayout):
 
 
 class LabelApp(App):
-
+    title = 'Nansen Legacy printing'
+    icon = 'Images/data_matrix.ico'
+	
     def build(self):
         widget = LabelWidget()
         self.widget = widget
