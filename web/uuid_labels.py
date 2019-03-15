@@ -86,7 +86,7 @@ class QR(object):
 
 def dm_image(uuid, scale, dpi):
     """
-    Creates a Pillow Datamatrix image of a given uuid
+    Creates a Pillow Data matrix image of a given uuid
 
     Parameters
     ----------
@@ -204,15 +204,16 @@ def make_page(pdf, dpi, gearText, sampleText, M):
 
             if not(r == 0 and c == 1):
                 if r == 0 and c == 0:
-                    text = gearText+" ______________ "
                     pdf.text(
-                        txt="Date _____________", x=int(side + xshift + pad), y=int(top + yshift + pad))
+                        txt=gearText+" _____________", x=int(side + xshift + pad), y=int(top + yshift + pad))
+                    pdf.text(
+                        txt="Date _____________", x=int(side + xshift + pad), y=int(top + yshift + 3*pad))
                     pdf.text(txt=new_hex_uuid()[:8], x=int(
                         side + xshift + 100 + pad), y=int(top + yshift + pad))
                 else:
                     text = sampleText+" #" + format(jj, "02d")
+                    add_label(c, r, text, xshift, yshift)
 
-                add_label(c, r, text, xshift, yshift)
             xshift = xshift + hpitch
         yshift = yshift + vpitch
         ii = ii+1
