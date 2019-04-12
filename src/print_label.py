@@ -5,9 +5,21 @@
 
  This program enables the creation and printing of labels 
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-@author:     Pål Ell8ingsen
+@author:     Pål Ellingsen
 
 @copyright:  2018 UNIS. 
 
@@ -260,7 +272,7 @@ class LabelWidget(FloatLayout):
 class LabelApp(App):
     title = 'Nansen Legacy printing'
     icon = 'Images/data_matrix.ico'
-	
+
     def build(self):
         widget = LabelWidget()
         self.widget = widget
@@ -330,13 +342,15 @@ class LabelApp(App):
         # Stop socket after each run
         self.on_stop()
 
+
 def resourcePath():
     '''Returns path containing content - either locally or in pyinstaller tmp file'''
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS)
 
     return os.path.join(os.path.abspath("."))
-    
+
+
 def main(argv=None):  # IGNORE:C0111
     '''Command line options.'''
 
@@ -366,8 +380,18 @@ def parse_options():
 
   Created by Pål Ellingsen on %s.
 
-  Distributed on an "AS IS" basis without warranties
-  or conditions of any kind, either express or implied.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     USAGE
     ''' % (program_shortdesc, str(__date__))
@@ -391,8 +415,8 @@ def parse_options():
 
 
 if __name__ == "__main__":
-    resource_add_path(resourcePath()) # add this line
+    resource_add_path(resourcePath())  # add this line
     if DEBUG:
         sys.argv.append("-v")
-    
+
     sys.exit(main())
