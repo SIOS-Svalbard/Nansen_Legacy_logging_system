@@ -9,7 +9,7 @@ and a standalone program in src folder.
 
 Build instructions:
 
-pyinstaller --onefile .\src\print_label.py
+pyinstaller print_label.spec
 
 
 ### License
