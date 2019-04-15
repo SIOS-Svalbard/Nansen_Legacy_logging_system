@@ -27,6 +27,13 @@ cgitb.enable()
 
 SETUP_DEFAULT = "L"
 
+IPS = {
+        'M': '158.39.88.208',
+        'L': '158.39.89.81'
+        }
+IPS['G']=IPS['L'] #Set IP the same for the geology and Large
+
+
 method = os.environ.get("REQUEST_METHOD", "GET")
 
 from mako.template import Template
@@ -222,10 +229,10 @@ sys.stdout.flush()
 sys.stdout.buffer.write(b"Content-Type: text/html\n\n")
 
 
-def write_page(texts,incr3,incr4):
+def write_page(texts,IPS,incr3,incr4):
     # Write the page
     sys.stdout.buffer.write(
-        template.render(today=str(dt.date.today()),texts=texts,incr3=incr3,incr4=incr4))
+        template.render(today=str(dt.date.today()),texts=texts,IPS=IPS,incr3=incr3,incr4=incr4))
 
 
 def warn(message):
@@ -237,20 +244,22 @@ if method == "POST":
     # Check if the label is generated now and not a refresh
     # sys.stdout.buffer.write(bytes(str(dt.datetime.now().timestamp()-5)+"<br>","utf-8"))
     if 'print' in form and float(form['print'].value)<dt.datetime.now().timestamp()-15:
-        warn("Not printing. Was this a refresh? If not your computer might be out of sync with the time server (limit 75s)<br> Difference to server in seconds:" +str(float(form['print'].value)-dt.datetime.now().timestamp()))
-        write_page(texts,incr3,incr4)
+        warn("Not printing. Was this a refresh? If not your computer might be out of sync with the time server (limit 15s)<br> Difference to server in seconds:" +str(float(form['print'].value)-dt.datetime.now().timestamp()))
+        write_page(texts,IPS,incr3,incr4)
         sys.exit()
     # sys.stdout.buffer.write(bytes(form["print"].value+"<br>",'utf-8')) 
+    IPS[setup] = form['ip'].value
     PORT = 9100
     BUFFER_SIZE = 1024
     for i in range(3):
         try: 
             pSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            pSocket.connect((form['ip'].value, PORT))
+            pSocket.connect((IPS[setup], PORT))
+            
             break
         except (ConnectionRefusedError,OSError):
             warn("Error, wrong IP")
-            write_page(texts,incr3,incr4)
+            write_page(texts,IPS,incr3,incr4)
             sys.exit() 
     if "cancel" in form:
         # Canceling all the jobs on the printer
@@ -259,7 +268,7 @@ if method == "POST":
         # warn("Down for maintainance")
         # sys.stdout.buffer.write(bytes(zpl,"utf-8")) 
         pSocket.close()
-        write_page(texts,incr3,incr4)
+        write_page(texts,IPS,incr3,incr4)
         sys.exit() 
 
     def get_value(field):
@@ -334,4 +343,4 @@ if method == "POST":
             "text5":text5}
     pSocket.close()
 
-write_page(texts,incr3,incr4)
+write_page(texts,IPS,incr3,incr4)
