@@ -331,14 +331,14 @@ class LabelApp(App):
             if self.widget.ids.text4.inc_num:
                 text4 = inc_nums(text4)
                 self.widget.ids.text4.text = text4
-            if setup == 'L':
+            if self.widget.ids.setup.text == 'Large':
                 zpl = create_large(str(uuid.uuid1()),
                                    text1, text2, text3, text4, text5)
-            elif setup == 'M':
+            elif self.widget.ids.setup.text == 'Medium':
                 zpl = create_label(str(uuid.uuid1()),
                                    text1, text2, text3, text4)
             self.send_to_printer(zpl)
-            time.sleep(seconds / 1e6)  # Wait 1 us
+            time.sleep(2 / 1e6)  # Wait 2 us
         # Stop socket after each run
         self.on_stop()
 

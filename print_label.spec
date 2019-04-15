@@ -36,4 +36,4 @@ exe = EXE(pyz, Tree('src/Images', 'Images'),
           upx=True,
           runtime_tmpdir=None,
           console=False,
-          icon='src/Images/data_matrix.ico')
+icon='src/Images/data_matrix.ico')
