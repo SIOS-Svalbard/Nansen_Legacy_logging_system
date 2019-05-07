@@ -27,10 +27,35 @@ cgitb.enable()
 
 SETUP_DEFAULT = "L"
 
-IPS = {
-        'M': '158.39.88.208',
-        'L': '158.39.89.81'
-        }
+def get_ip():
+    # Based on answer from stackowerflow, Jamieson Becker 
+    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib 
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+
+my_ip = get_ip().split('.')
+if my_ip[0]=='158' and my_ip[1] == '39': # We are at UNIS
+    IPS = { 'M': '158.39.88.208',
+            'L': '158.39.89.81'
+            }
+elif my_ip[0] == '10' and my_ip[1] == '3': # We are on KPH
+    IPS = { 'M': '10.3.64.127',
+            'L': '10.3.64.126'
+            }
+else: # Fallback is KPH
+    IPS = { 'M': '10.3.64.127',
+            'L': '10.3.64.126'
+            }
+
 IPS['G']=IPS['L'] #Set IP the same for the geology and Large
 
 
