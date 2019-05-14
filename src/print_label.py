@@ -21,7 +21,7 @@
 
 @author:     Pål Ellingsen
 
-@copyright:  2018 UNIS. 
+@copyright:  2018-2019 UNIS. 
 
 
 @contact:    pale@unis.no
@@ -34,6 +34,7 @@ import time
 import uuid
 import warnings
 import socket
+import yaml
 import datetime as dt
 
 from argparse import ArgumentParser
@@ -55,13 +56,17 @@ from kivy.resources import resource_add_path
 from kivy.config import Config
 
 __all__ = []
-__version__ = 0.2
+__version__ = 0.3
 __date__ = '2018-05-25'
-__updated__ = '2019-02-13'
+__updated__ = '2019-05-14'
 
 DEBUG = 1
 TESTRUN = 0
 PROFILE = 0
+
+IPS = {'M': '158.39.88.208',
+       'L': '158.39.89.81'
+       }
 
 
 def new_hex_uuid():
@@ -261,12 +266,14 @@ class LabelWidget(FloatLayout):
             change_size(self.ids.text3, 18)
             change_size(self.ids.text4, 18)
             change_size(self.ids.text5, 0)
+            self.ids.ip.text = IPS['M']
         elif label_size == 'Large':
             change_size(self.ids.text1, 20)
             change_size(self.ids.text2, 20)
             change_size(self.ids.text3, 20)
             change_size(self.ids.text4, 20)
             change_size(self.ids.text5, 36)
+            self.ids.ip.text = IPS['L']
 
 
 class LabelApp(App):
@@ -279,6 +286,7 @@ class LabelApp(App):
         self.socket = None
         self.first_print = True
         self.widget.label_size = 'Medium'
+        self.widget.ids.ip.text = IPS['M']
         return widget
 
     def on_stop(self, *args):
@@ -343,6 +351,16 @@ class LabelApp(App):
         self.on_stop()
 
 
+def read_config():
+    if os.path.isfile("config.yaml"):
+        with open("config.yaml", 'r') as ymlfile:
+            cfg = yaml.load(ymlfile)
+            if cfg['ips']['medium']:
+                IPS['M'] = cfg['ips']['medium']
+            if cfg['ips']['large']:
+                IPS['L'] = cfg['ips']['large']
+
+
 def resourcePath():
     '''Returns path containing content - either locally or in pyinstaller tmp file'''
     if hasattr(sys, '_MEIPASS'):
@@ -356,6 +374,7 @@ def main(argv=None):  # IGNORE:C0111
 
     try:
         args = parse_options()
+        read_config()
         Config.set('graphics', 'width', '400')
         Config.set('graphics', 'height', '400')
         Config.write()
