@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 '''
- -- Creates and prints circular 10 mm labels for AeN
+ -- Creates and prints circular 12.7 mm labels for AeN
 
  This program enables the creation and printing of labels of the 10 mm 
  circular type
@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 @author:     Pål Ellingsen
 
-@copyright:  2018 UNIS. 
+@copyright:  2018-2019 UNIS. 
 
 
 @contact:    pale@unis.no
@@ -43,7 +43,7 @@ from argparse import RawDescriptionHelpFormatter
 __all__ = []
 __version__ = 0.1
 __date__ = '2018-07-03'
-__updated__ = '2019-05-06'
+__updated__ = '2019-05-15'
 
 DEBUG = 1
 
@@ -105,6 +105,18 @@ CT~~CD,~CC^~CT~
 
 
 def print_labels(args):
+    '''
+    Prints N number of labels. N will be rounded up to the nearest multiple of 3
+
+
+    Parameters
+    ----------
+    args : ArgumentParser args
+           This should contain:
+             the ip (args.ip) 
+             the number of labels (args.N) 
+
+    '''
 
     PORT = 9100
     BUFFER_SIZE = 1024

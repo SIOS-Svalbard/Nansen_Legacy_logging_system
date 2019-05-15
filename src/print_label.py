@@ -3,7 +3,7 @@
 '''
  -- Creates and prints labels for AeN
 
- This program enables the creation and printing of labels 
+ This program enables the creation and printing of labels
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 @author:     Pål Ellingsen
 
-@copyright:  2018-2019 UNIS. 
+@copyright:  2018-2019 UNIS.
 
 
 @contact:    pale@unis.no
@@ -58,12 +58,13 @@ from kivy.config import Config
 __all__ = []
 __version__ = 0.3
 __date__ = '2018-05-25'
-__updated__ = '2019-05-14'
+__updated__ = '2019-05-15'
 
 DEBUG = 1
 TESTRUN = 0
 PROFILE = 0
 
+# Default IPS if there is no config.yaml file
 IPS = {'M': '158.39.88.208',
        'L': '158.39.89.81'
        }
@@ -101,12 +102,12 @@ def create_label(uuid, text1, text2, text3, text4):
         Third line of text, limited to 18 characters
 
     text4 : str
-        Fourth line of text, limited to 18 characters    
+        Fourth line of text, limited to 18 characters
 
     Returns
     ----------
     zpl : str
-        The formatted ZPL code string that should be sent to the Zebra printer 
+        The formatted ZPL code string that should be sent to the Zebra printer
     """
 
     # This uses a template made with ZebraDesigner, replacing the variables
@@ -157,15 +158,15 @@ def create_large(uuid, text1, text2, text3, text4, text5):
         Third line of text, limited to 20 characters
 
     text4 : str
-        Fourth line of text, limited to 26 characters    
+        Fourth line of text, limited to 26 characters
 
     text5 : str
-        Fifth line of text, limited to 26 characters    
+        Fifth line of text, limited to 26 characters
 
     Returns
     ----------
     zpl : str
-        The formatted ZPL code string that should be sent to the Zebra printer 
+        The formatted ZPL code string that should be sent to the Zebra printer
     """
 
     zpl = '''
@@ -214,8 +215,24 @@ class LimitText(TextInput):
 
 
 class Alert(Popup):
+    '''
+    Popup dialogue.
+
+    '''
 
     def __init__(self, title, text):
+        '''
+        Initialisation of the Popup
+
+        Parameters
+        ----------
+        title: str
+            The title of the Popup.
+
+        text: str
+            The text (information) visible in the Popup.
+
+        '''
         super(Alert, self).__init__()
         content = AnchorLayout(anchor_x='center', anchor_y='bottom')
         content.add_widget(
@@ -237,27 +254,58 @@ class Alert(Popup):
 
 
 class LabelWidget(FloatLayout):
+    '''
+    The main window
+    '''
 
     # def __init__(self):
-        #self.label_size = 'Medium'
+    # self.label_size = 'Medium'
 
     def activate_checkbox(self, checkbox, id):
-        if id == 'date':
+        '''
+        Method for activiating checkboxes and setting what happens
 
+        Parameters
+        ----------
+        checkbox : Checkbox
+            The checkbox
+
+        id : str
+            The id of the checkbox distinguishing it from the other
+        '''
+
+        if id == 'date':
             self.ids.text1.text = checkbox.active * dt.date.today().isoformat()
         elif id == 'test':
-
             self.ids.text2.text = checkbox.active * 'This is a test'
         elif id == 'inc_num':
-
             self.ids.text4.inc_num = True
 
     def on_size_select(self, label_size):
+        '''
+        Changing the size of the label
+
+        Parameters
+        ----------
+        label_size: str
+            The new size of the label
+        '''
         self.label_size = label_size
 
-        def change_size(ids, size):
-            ids.max_characters = size
-            ids.text = ids.text[:size]
+        def change_size(ida, size):
+            '''
+            Change the size of the input characther field with the given id
+
+            Parameters
+            ----------
+            ida: str
+                The id which is to be changed
+
+            size: int
+                The new size of the field
+            '''
+            ida.max_characters = size
+            ida.text = ida.text[:size]
 
         # print("Setting size")
         if label_size == 'Medium':
@@ -277,25 +325,41 @@ class LabelWidget(FloatLayout):
 
 
 class LabelApp(App):
+    '''
+    The main app which initialises everything
+    '''
     title = 'Nansen Legacy printing'
     icon = 'Images/data_matrix.ico'
 
     def build(self):
+        '''
+        Build the app, initialising the widget and parameters.
+        '''
         widget = LabelWidget()
         self.widget = widget
         self.socket = None
-        self.first_print = True
         self.widget.label_size = 'Medium'
         self.widget.ids.ip.text = IPS['M']
         return widget
 
     def on_stop(self, *args):
+        '''
+        Closing the app
+        '''
         print('Exiting')
         if self.socket:
             self.socket.close()
         return True
 
     def start_printer(self, ip):
+        '''
+        Initialise the printer with the give IP
+
+        Parameters
+        ----------
+        ip: str
+           The ip of the printer.
+        '''
         self.IP = ip
         self.PORT = 9100
         self.BUFFER_SIZE = 1024
@@ -303,11 +367,46 @@ class LabelApp(App):
         self.socket.connect((self.IP, self.PORT))
 
     def send_to_printer(self, zpl):
+        '''
+        Send the ZPL code (label) for printing
+
+        Parameters
+        ----------
+        zpl: str
+            The label to be printed in ZPL code.
+
+        '''
 
         self.socket.send(bytes(zpl, "utf-8"))
 
     def inc_nums(text):
+        '''
+        Increment the numbers in the given text
+
+        Parameters
+        ----------
+        text: str
+           The text to increment the numbers in
+        '''
         def increment(text, inc):
+            '''
+            Increment numbers in the text with a given amount.
+            Handles both float and int as the text
+
+
+            Parameters
+            ----------
+            text: str
+               A string representation of a number to be incremented 
+
+            inc: int
+                Amount to increment
+
+            Returns
+            ----------
+            inc_text: str
+                The incremented text
+            '''
             if text.isdigit():
                 return str(int(text)+inc)
             else:
@@ -315,19 +414,22 @@ class LabelApp(App):
 
         return re.sub('(\d+(?:\.\d+)?)', lambda m: increment(m.group(0), 1), text)
 
-    def print_label(self, *args):
+    def print_label(self):
+        '''
+        Prints a label by reading the input fields, creating the ZPL code
+        and starting the printer.
+
+        '''
         print("Printing label")
-        if self.first_print:
-            if self.widget.ids.ip.text != '':
-                try:
-                    self.start_printer(self.widget.ids.ip.text)
-                except (ConnectionRefusedError, OSError):
-                    Alert('Wrong IP', 'Please input a valid/correct IP')
-                    return
-            else:
-                Alert('Need IP', 'Please input an IP')
+        if self.widget.ids.ip.text != '':
+            try:
+                self.start_printer(self.widget.ids.ip.text)
+            except (ConnectionRefusedError, OSError):
+                Alert('Wrong IP', 'Please input a valid/correct IP')
                 return
-            # self.first_print = False
+        else:
+            Alert('Need IP', 'Please input an IP')
+            return
 
         text1 = self.widget.ids.text1.text
         text2 = self.widget.ids.text2.text
@@ -352,6 +454,10 @@ class LabelApp(App):
 
 
 def read_config():
+    '''
+    Read the config.yaml file if it exists. 
+    The file is usefull for setting the IPs 
+    '''
     if os.path.isfile("config.yaml"):
         with open("config.yaml", 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
