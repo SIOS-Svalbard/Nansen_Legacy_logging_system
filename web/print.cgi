@@ -20,7 +20,7 @@ import datetime as dt
 import socket 
 import re
 
-__updated__ = '2018-07-25'
+__updated__ = '2019-05-22'
 
 
 cgitb.enable()
@@ -44,8 +44,8 @@ def get_ip():
 
 my_ip = get_ip().split('.')
 if my_ip[0]=='158' and my_ip[1] == '39': # We are at UNIS
-    IPS = { 'M': '158.39.88.208',
-            'L': '158.39.89.81'
+    IPS = { 'M': '158.39.89.112',
+            'L': '158.39.89.106'
             }
 elif my_ip[0] == '10' and my_ip[1] == '3': # We are on KPH
     IPS = { 'M': '10.3.64.127',
