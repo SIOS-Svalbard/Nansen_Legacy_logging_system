@@ -58,7 +58,7 @@ from kivy.config import Config
 __all__ = []
 __version__ = 0.3
 __date__ = '2018-05-25'
-__updated__ = '2019-05-15'
+__updated__ = '2019-06-07'
 
 DEBUG = 1
 TESTRUN = 0
@@ -171,7 +171,7 @@ def create_large(uuid, text1, text2, text3, text4, text5):
 
     zpl = '''
 CT~~CD,~CC^~CT~
-^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR4,4~SD25^JUS^LRN^CI28^XZ
+^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR4,4~SD28^JUS^LRN^CI28^XZ
 ^XA
 ^MMT
 ^PW602
@@ -180,11 +180,11 @@ CT~~CD,~CC^~CT~
 ^BY110,110^FT465,143^BXN,5,200,22,22,1,~
 ^FH\^FD{0}^FS
 ^FT491,171^A0N,21,21^FH\^FD{6}^FS
-^FT20,67^A0N,42,40^FH\^FD{1}^FS
-^FT20,119^A0N,42,40^FH\^FD{2}^FS
-^FT20,171^A0N,42,40^FH\^FD{3}^FS
-^FT20,226^A0N,42,40^FH\^FD{4}^FS
-^FT20,278^A0N,42,40^FH\^FD{5}^FS
+^FT35,67^A0N,42,40^FH\^FD{1}^FS
+^FT35,119^A0N,42,40^FH\^FD{2}^FS
+^FT35,171^A0N,42,40^FH\^FD{3}^FS
+^FT35,226^A0N,42,40^FH\^FD{4}^FS
+^FT35,278^A0N,42,40^FH\^FD{5}^FS
 ^PQ1,0,1,Y^XZ'''.format(uuid,
                         text1,
                         text2,
