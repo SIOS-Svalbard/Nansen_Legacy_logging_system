@@ -16,6 +16,7 @@ It defines classes_and_methods
 '''
 
 import sys
+import math
 import os
 import qrcode
 import uuid
@@ -28,7 +29,7 @@ from argparse import RawDescriptionHelpFormatter
 __all__ = []
 __version__ = 0.1
 __date__ = '2018-05-02'
-__updated__ = '2018-08-08'
+__updated__ = '2019-08-03'
 
 DEBUG = 0
 
@@ -139,13 +140,13 @@ def make_page(pdf, dpi, gearText, sampleText, M):
         cols = 2
     else:
         cols = 1
-
-    rows = round(M/cols)+1
-    # print(rows,cols)
-    if cols == 2:
-        skiplast = M % 2
+    full = math.floor(M/24)  # Number of full pages needed
+    rows = full * 12
+    if M-(rows*2) > 12:
+        rows = rows+12
     else:
-        skiplast = False
+        rows = rows+(M-(rows*2))
+    # print(rows,cols)
 
     # Padding for the QR
     pad = 5
@@ -184,35 +185,41 @@ def make_page(pdf, dpi, gearText, sampleText, M):
 
     xshift = 0
     yshift = 0
+    # Add top
+    pdf.text(
+        txt=gearText+" _____________", x=int(side + xshift + pad), y=int(top + yshift + pad))
+    pdf.text(
+        txt="Date _____________", x=int(side + xshift + pad), y=int(top + yshift + 3*pad))
+    pdf.text(txt=new_hex_uuid()[:8], x=int(
+        side + xshift + 100 + pad), y=int(top + yshift + pad))
+
+    yshift = yshift + vpitch
     ii = 0
+    kk = 0
     for r in range(rows):  # Loop over the rows
         # print(xshift,yshift)
-        if r != 0 and r % 13 == 0:
+        if r != 0 and r % 12 == 0:
             pdf.add_page()
             xshift = 0
             yshift = 0
             ii = ii+12
+            if M-kk < 12:  # Check how many columns we need
+                cols = 1
+
         xshift = 0
         for c in range(cols):  # Loop over the columns
-            if skiplast and (c == cols-1 and r == rows-1):
-                print(c, r, "Breaking")
-                break
+            # if (c == cols-1 and r == rows-1):
+                #print(c, r, "Breaking")
+                # break
 
-            jj = ii+(c*12)
+            jj = ii + (c*12)
+            print(ii, c, jj, r, rows)
             if jj > M:
                 continue
 
-            if not(r == 0 and c == 1):
-                if r == 0 and c == 0:
-                    pdf.text(
-                        txt=gearText+" _____________", x=int(side + xshift + pad), y=int(top + yshift + pad))
-                    pdf.text(
-                        txt="Date _____________", x=int(side + xshift + pad), y=int(top + yshift + 3*pad))
-                    pdf.text(txt=new_hex_uuid()[:8], x=int(
-                        side + xshift + 100 + pad), y=int(top + yshift + pad))
-                else:
-                    text = sampleText+" #" + format(jj, "02d")
-                    add_label(c, r, text, xshift, yshift)
+            text = sampleText+" #" + format(jj+1, "02d")
+            add_label(c, r, text, xshift, yshift)
+            kk = kk+1
 
             xshift = xshift + hpitch
         yshift = yshift + vpitch
