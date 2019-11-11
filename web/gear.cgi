@@ -25,7 +25,7 @@ __updated__ = '2019-08-03'
 
 
 
-# cgitb.enable()
+cgitb.enable()
 
 
 method = os.environ.get("REQUEST_METHOD", "GET")
