@@ -20,7 +20,7 @@ import datetime as dt
 import socket 
 import re
 
-__updated__ = '2019-05-22'
+__updated__ = '2019-11-11'
 
 
 cgitb.enable()
@@ -268,10 +268,10 @@ if method == "POST":
     
     # Check if the label is generated now and not a refresh
     # sys.stdout.buffer.write(bytes(str(dt.datetime.now().timestamp()-5)+"<br>","utf-8"))
-    if 'print' in form and float(form['print'].value)<dt.datetime.now().timestamp()-15:
-        warn("Not printing. Was this a refresh? If not your computer might be out of sync with the time server (limit 15s)<br> Difference to server in seconds:" +str(float(form['print'].value)-dt.datetime.now().timestamp()))
-        write_page(texts,IPS,incr3,incr4)
-        sys.exit()
+    #if 'print' in form and float(form['print'].value)<dt.datetime.now().timestamp()-15:
+        #warn("Not printing. Was this a refresh? If not your computer might be out of sync with the time server (limit 15s)<br> Difference to server in seconds:" +str(float(form['print'].value)-dt.datetime.now().timestamp()))
+        #write_page(texts,IPS,incr3,incr4)
+        #sys.exit()
     # sys.stdout.buffer.write(bytes(form["print"].value+"<br>",'utf-8')) 
     IPS[setup] = form['ip'].value
     PORT = 9100
