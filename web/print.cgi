@@ -44,7 +44,7 @@ def get_ip():
 
 my_ip = get_ip().split('.')
 if my_ip[0]=='158' and my_ip[1] == '39': # We are at UNIS
-    IPS = { 'M': '158.39.89.112',
+    IPS = { 'M': '158.39.89.40',
             'L': '158.39.89.106'
             }
 elif my_ip[0] == '10' and my_ip[1] == '3': # We are on KPH
