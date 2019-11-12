@@ -213,7 +213,7 @@ def make_page(pdf, dpi, gearText, sampleText, M):
                 # break
 
             jj = ii + (c*12)
-            print(ii, c, jj, r, rows)
+            # print(ii, c, jj, r, rows)
             if jj > M:
                 continue
 
