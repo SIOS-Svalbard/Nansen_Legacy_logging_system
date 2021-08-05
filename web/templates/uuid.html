@@ -41,8 +41,12 @@ main{
 <p> ${str(uuid.uuid1())}</p>
 <p> ${str(uuid.uuid1())}</p>
 <p> ${str(uuid.uuid1())}</p>
-<form method=post>
-<p><input type=submit value='Get new UUID'>
+<form method=post enctype="multipart/form-data"><br>
+<p><input type=submit value='Get new UUIDs' name='regenerate'></p>
+<br><br>OR<br><br>
+<p>Create a .txt file with any number of UUIDs</p>
+Enter number of UUIDs to generate: <input type = "text" name = "number"><br><br>
+<p><input type=submit value='Generate file' name='file'>
 <div class="wrapper">
 </div>
 </form>
