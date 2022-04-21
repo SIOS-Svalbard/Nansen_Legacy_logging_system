@@ -1,9 +1,70 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
 %}
-<br>
 <div class="container">
-  <div align="right">
-    <a class="btn btn-success" href="/register/cruiseDetails" role="button">Register cruise details</a>
+  <div class="row">
+    <div class="col-4">
+      <div class="row">
+        <strong>Cruise name: </strong><span class="text-primary">###</span><br>
+        <strong>Cruise number: </strong><span class="text-primary">###</span><br>
+        <strong>Cruise leader: </strong><span class="text-primary">###</span><br>
+        <strong>Co-cruise leader: </strong><span class="text-primary">###</span><br>
+        <p class="text-danger"><strong>Cruise details not registered</strong></p>
+        <a class="btn btn-success" href="/register/cruiseDetails" role="button">Update cruise details</a>
+      </div>
+      <br>
+      <div class="row">
+        <img src="..." class="img-fluid border border-dark" alt="Map of cruise path and stations">
+      </div>
+    </div>
+
+    <div class="col-7 offset-1">
+      <div class="row">
+        <h3>Most recent activities:</h3><br>
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Timestamp (UTC)</th>
+              <th scope="col">Station</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
+              <th scope="col">Gear Type</th>
+              <th scope="col">...</th>
+              <th scope="col"><a class="btn btn-danger" href="#" role="button">Add missing activity</a></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2022-04-21T10:01:31Z</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
+            </tr>
+            <tr>
+              <td>2022-04-21T09:41:10Z</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
+            </tr>
+            <tr>
+              <td>2022-04-21T09:26:56Z</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <a class="btn btn-secondary btn-lg btn-block" href="#" role="button">View all activities</a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
