@@ -1,0 +1,51 @@
+{% extends "base.html" %} {% block title %}Registered Gear Types{% endblock %} {% block content
+%}
+<h2>Registered gear types:</h2>
+<br>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Gear type</th>
+      <th scope="col">Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in range(0, len) %}
+    <tr>
+      <td>{{registered_gear_types[i]}}</td>
+      <td>{{comments[i]}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Can't find a gear type that describes what you are working with? Add one here!</h3>
+
+<form method="POST">
+  <div class="form-group">
+    <label for="gear_type">Gear types</label>
+    <input
+      type="text"
+      class="form-control"
+      id="gear_type"
+      name="gear_type"
+      placeholder="Optional comments about the institution">
+      <small class="form-text text-muted" id="gear_type_help">The gear or instrumentation used to collect your sample (not analyse your sample)</small>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="comment">Comments</label>
+    <input
+      type="text"
+      class="form-control"
+      id="comment"
+      name="comment"
+      placeholder="Optional comments about the gear type to aid other users">
+  </div>
+  <br>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

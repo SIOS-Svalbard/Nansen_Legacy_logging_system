@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block title %}Cruise Details{% endblock %} {% block content
+%}
+
+<h2>Cruise details</h2>
+<form>
+  <div class="form-group">
+    <label for="cruiseName">Cruise full name</label>
+    <input
+      type="text"
+      class="form-control"
+      id="cruiseName"
+      name="cruiseName"
+      placeholder="Full name of cruise"
+    />
+  </div>
+  <div class="form-group">
+    <label for="cruise_name">Project</label>
+    <select class="form-select" id="project" name="project" aria-label="Default select example">
+      <option selected>Choose...</option>
+      {% for project in projects %}
+        <option>{{project}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="cruise_name">Cruise leader</label>
+    <select class="form-select" id="cruiseLeader" name="cruiseLeader" aria-label="Default select example">
+      <option selected>Choose...</option>
+      {% for person in personnel %}
+        <option>{{person}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="cruise_name">Co-cruise leader</label>
+    <select class="form-select" id="coCruiseLeader" name="coCruiseLeader" aria-label="Default select example">
+      <option selected>Choose...</option>
+      {% for person in personnel %}
+        <option>{{person}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <p>Cruise number (from cruise logger): <span class="text-primary">###</span></p>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+<br>
+
+<br><br>
+<span>To register a person, click &nbsp; </span><a class="btn btn-success" href="/register/personnel" role="button">here</a>
+<br><br>
+<span>To register a project, click &nbsp; </span><a class="btn btn-warning" href="/register/projects" role="button">here</a>
+
+{% endblock %}

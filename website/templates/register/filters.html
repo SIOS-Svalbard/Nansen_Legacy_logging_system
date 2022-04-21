@@ -1,0 +1,50 @@
+{% extends "base.html" %} {% block title %}Registered Filters{% endblock %} {% block content
+%}
+<h2>Registered filters:</h2>
+<br>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Filter</th>
+      <th scope="col">Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in range(0, len) %}
+    <tr>
+      <td>{{filters[i]}}</td>
+      <td>{{comments[i]}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Can't find the gender you need? Add one here!</h3>
+
+<form method="POST">
+  <div class="form-group">
+    <label for="filter">Filter</label>
+    <input
+      type="text"
+      class="form-control"
+      id="filter"
+      name="filter"
+      placeholder="Filter that fluid has passed through in creating the logged sample">
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="comment">Comments</label>
+    <input
+      type="text"
+      class="form-control"
+      id="comment"
+      name="comment"
+      placeholder="Optional comments to aid other users">
+  </div>
+  <br />
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{{ url_for('static', filename='images/cropped-Logo-Nansen-Legacy_favicon.webp')}}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}"/>
+    <title>Learnings from Nansen Legacy logging system</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+      <a class="navbar-brand" style="padding-left:15px" href="/"><img src="{{ url_for('static', filename='images/cropped-Logo-Nansen-Legacy_favicon.webp')}}" alt="..." height="72"> Learnings from Nansen Legacy logging system</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/register">Register Details</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %} {% if category ==
+    'error' %}
+    <div class="alert alert-danger alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% else %}
+    <div class="alert alert-success alter-dismissable fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %} {% endfor %} {% endif %} {% endwith %}
+    <br>
+    <div class="container">{% block content %} {% endblock %}</div>
+
+    <!-- Footer -->
+    <footer class="text-center text-lg-start bg-dark text-muted">
+      <div class="mt-5 pt-5 pb-5 footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-5 col-xs-12 about-company">
+            <h2>About</h2>
+            <p class="pr-5 text-white-50">Software developed to log data and metadata in a hierarchical, standardised way.</p>
+            <p class="pr-5 text-white-50">Developed based on learnings from the Nansen Legacy project as a version 2 of the labelling system.</p>
+            <p><a href="#"><i class="fa fa-facebook-square mr-1"></i></a><a href="#"><i class="fa fa-linkedin-square"></i></a></p>
+          </div>
+          <div class="col-lg-3 col-xs-12 links">
+            <h4 class="mt-lg-0 mt-sm-3">Links</h4>
+              <ul class="m-0 p-0">
+                <li> <a href="#">Nansen Legacy sampling protocols</a></li>
+                <li> <a href="#">User manual</a></li>
+                <li> <a href="#">CF conventions</a></li>
+                <li> <a href="#">CF standard name table</a></li>
+                <li> <a href="#">ACDD conventions</a></li>
+                <li> <a href="#">Darwin Core terms</a></li>
+              </ul>
+          </div>
+          <div class="col-lg-4 col-xs-12 location">
+            <h4 class="mt-lg-0 mt-sm-4">Contact</h4>
+            <p>Luke Marsden: Data Manager</p>
+            <p>The University Centre in Svalbard (UNIS)</p>
+            <p><a href="#">data.nleg@unis.no</a></p>
+          </div>
+        </div>
+        <div class="row mt-5">
+          <div class="text-center col copyright">
+            <p class=""><small class="text-white-50">© 2022. All Rights Reserved.</small></p>
+          </div>
+        </div>
+      </div>
+      </div>
+    </footer>
+    <!-- Footer -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
+
+    </script>
+
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js')}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='js/popper.min.js')}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='js/bootstrap.min.js')}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='js/index.js') }}"
+    ></script>
+  </body>
+</html>

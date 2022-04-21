@@ -1,0 +1,10 @@
+PostgreSQL https://www.postgresql.org/
+
+Python modules:
+flask
+uuid
+psycopg2
+psycopg2.extras
+getpass
+pandas
+datetime

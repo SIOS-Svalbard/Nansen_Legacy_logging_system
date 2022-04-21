@@ -1,0 +1,50 @@
+{% extends "base.html" %} {% block title %}Registered Projects{% endblock %} {% block content
+%}
+<h2>Registered projects:</h2>
+<br>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Full name of project</th>
+      <th scope="col">Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in range(0, len) %}
+    <tr>
+      <td>{{projects[i]}}</td>
+      <td>{{comments[i]}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<br>
+
+<h3>Can't find the gender you need? Add one here!</h3>
+
+<form method="POST">
+  <div class="form-group">
+    <label for="project">Project</label>
+    <input
+      type="text"
+      class="form-control"
+      id="project"
+      name="project"
+      placeholder="Full name of the project">
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="comment">Comments</label>
+    <input
+      type="text"
+      class="form-control"
+      id="comment"
+      name="comment"
+      placeholder="Optional comments to aid other users">
+  </div>
+  <br>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}
