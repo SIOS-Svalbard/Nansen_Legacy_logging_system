@@ -3,12 +3,41 @@
 <div class="container">
   <div class="row">
     <div class="col-4">
+
+      {% if cruise_name != False %}
       <div class="row">
-        <strong>Cruise name: </strong><span class="text-primary">###</span><br>
-        <strong>Cruise number: </strong><span class="text-primary">###</span><br>
-        <strong>Cruise leader: </strong><span class="text-primary">###</span><br>
-        <strong>Co-cruise leader: </strong><span class="text-primary">###</span><br>
-        <p class="text-danger"><strong>Cruise details not registered</strong></p>
+        <strong>Cruise name:&nbsp; </strong><span class="text-primary">{{ cruise_name }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise number:&nbsp; </strong><span class="text-primary">{{ CRUISE_NUMBER }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise leader:&nbsp; </strong><span class="text-primary">{{ cruise_leader_name }}</span>
+      </div>
+      <div class="row">
+        <strong>Co-cruise leader:&nbsp; </strong><span class="text-primary">{{ co_cruise_leader_name }}</span>
+      </div>
+      <div class="row">
+        <span>&nbsp;</span>
+      </div>
+      {% else %}
+      <div class="row">
+        <strong>Cruise name: </strong>
+      </div>
+      <div class="row">
+        <strong>Cruise number:&nbsp; </strong><span class="text-primary">{{ CRUISE_NUMBER }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise leader: </strong>
+      </div>
+      <div class="row">
+        <strong>Co-cruise leader: </strong>
+      </div>
+      <div class="row">
+        <span class="text-danger">Cruise details not registered</span>
+      </div>
+      {% endif %}
+      <div class="row">
         <a class="btn btn-success" href="/register/cruiseDetails" role="button">Update cruise details</a>
       </div>
       <br>
