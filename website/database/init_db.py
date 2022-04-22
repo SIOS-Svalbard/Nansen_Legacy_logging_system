@@ -66,17 +66,17 @@ def create_database(DBNAME):
         print(f'Database created with name {DBNAME}')
 
 def init_institutions(DBNAME, cur):
-    cur.execute("CREATE TABLE institutions (id uuid PRIMARY KEY, short_name text, full_name text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE institutions (id uuid PRIMARY KEY, short_name text, full_name text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/institutions.csv')
     for idx, row in df.iterrows():
         id = row['id']
         short_name = row['short_name']
         full_name = row['full_name']
         comment = row['comment']
-        cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, date_added) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_stations(DBNAME, cur):
-    cur.execute("CREATE TABLE stations (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE stations (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/stations.csv')
     for idx, row in df.iterrows():
         id = row['id']
@@ -84,46 +84,46 @@ def init_stations(DBNAME, cur):
         decimalLongitude = row['decimalLongitude']
         decimalLatitude = row['decimalLatitude']
         comment = row['comment']
-        cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, date_added) VALUES ('{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
 def init_sample_types(DBNAME, cur):
-    cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/sample_types.csv')
     for idx, row in df.iterrows():
         id = row['id']
         sampleType = row['sampleType']
         comment = row['comment']
-        cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, date_added) VALUES ('{id}','{sampleType}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{id}','{sampleType}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(DBNAME, cur):
-    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/gear_types.csv')
     for idx, row in df.iterrows():
         id = row['id']
         gearType = row['gearType']
         comment = row['comment']
-        cur.execute(f"INSERT INTO gear_types (id, gearType, comment, date_added) VALUES ('{id}','{gearType}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{id}','{gearType}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(DBNAME, cur):
-    cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/intended_methods.csv')
     for idx, row in df.iterrows():
         id = row['id']
         intendedMethod = row['intendedMethod']
         comment = row['comment']
-        cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, date_added) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_projects(DBNAME, cur):
-    cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/projects.csv')
     for idx, row in df.iterrows():
         id = row['id']
         project = row['project']
         comment = row['comment']
-        cur.execute(f"INSERT INTO projects (id, project, comment, date_added) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_personnel(DBNAME, cur):
-    cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/personnel.csv')
     for idx, row in df.iterrows():
         id = row['id']
@@ -132,54 +132,58 @@ def init_personnel(DBNAME, cur):
         institution = row['institution']
         email = row['email']
         comment = row['comment']
-        cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, date_added) VALUES ('{id}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, created) VALUES ('{id}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_storage_temperatures(DBNAME, cur):
-    cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/storage_temperatures.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storageTemp']
         comment = row['comment']
-        cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, date_added) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_filters(DBNAME, cur):
-    cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/filters.csv')
     for idx, row in df.iterrows():
         id = row['id']
         filter = row['filter']
         comment = row['comment']
-        cur.execute(f"INSERT INTO filters (id, filter, comment, date_added) VALUES ('{id}','{filter}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{id}','{filter}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_sex(DBNAME, cur):
-    cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, date_added timestamp with time zone)")
+    cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/sex.csv')
     for idx, row in df.iterrows():
         id = row['id']
         sex = row['sex']
         comment = row['comment']
-        cur.execute(f"INSERT INTO sex (id, sex, comment, date_added) VALUES ('{id}', '{sex}' ,'{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{id}', '{sex}' ,'{comment}', CURRENT_TIMESTAMP);")
 
 def init_kingdoms(DBNAME, cur):
-    cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, date_added timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
+    cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
     df = pd.read_csv('website/database/kingdoms.csv')
     for idx, row in df.iterrows():
         id = row['id']
         kingdom = row['kingdom']
         comment = row['comment']
-        cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, date_added) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
-def create_metadata_catalogue(DBNAME, METADATA_CATALOGUE):
+def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
     '''
     Creating the metadata catalogue table within the database to be used for the cruise.
 
-    A new table/metadata catalogue will be created for each cruise, but within the same database.
+    Creating a table to log the cruise details used for the cruise.
+
+    New tables will be created for each cruise, but within the same database.
 
     DBNAME: string
-        Name of the database within which the table will be created
+        Name of the database within which the tables will be created
     METADATA_CATALOGUE: string
-        Name of the table to be created
+        Name of the table to be created for the metadata catalogue
+    CRUISE_DETAILS_TABLE: string
+        Name of the table to be created for the cruise details
     '''
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
@@ -196,10 +200,26 @@ def create_metadata_catalogue(DBNAME, METADATA_CATALOGUE):
     exe_str = exe_str + "other hstore, metadata hstore, created timestamp with time zone, modified timestamp with time zone, history text, source text)"
 
     cur.execute(exe_str)
+
+    cur.execute(f'''CREATE TABLE IF NOT EXISTS {CRUISE_DETAILS_TABLE} (id uuid PRIMARY KEY,
+    cruise_name text,
+    cruise_number integer,
+    project text,
+    cruise_leader_id uuid,
+    cruise_leader_name text,
+    cruise_leader_institution text,
+    cruise_leader_email text,
+    co_cruise_leader_id uuid,
+    co_cruise_leader_name text,
+    co_cruise_leader_institution text,
+    co_cruise_leader_email text,
+    comment text,
+    created timestamp with time zone)''')
+
     conn.commit()
     cur.close()
     conn.close()
 
-def run(DBNAME, METADATA_CATALOGUE):
+def run(DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
     create_database(DBNAME)
-    create_metadata_catalogue(DBNAME, METADATA_CATALOGUE)
+    create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)

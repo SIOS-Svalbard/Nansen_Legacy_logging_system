@@ -4,13 +4,25 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_data import get_data
-from . import DBNAME
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE
 
 views = Blueprint('views', __name__)
 
 @views.route('/', methods=['GET'])
 def home():
-    return render_template("home.html")
+
+    df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    print(df.tail(1))
+    if len(df) > 0:
+        cruise_leader_name = df['cruise_leader_name'].values[-1]
+        co_cruise_leader_name = df['co_cruise_leader_name'].values[-1]
+        cruise_name = df['cruise_name'].values[-1]
+    else:
+        cruise_leader_name = co_cruise_leader_name = cruise_name = False
+
+    print(cruise_name)
+
+    return render_template("home.html", CRUISE_NUMBER=CRUISE_NUMBER, cruise_leader_name=cruise_leader_name, co_cruise_leader_name=co_cruise_leader_name, cruise_name=cruise_name)
 
 @views.route('/register', methods=['GET'])
 def register():
@@ -22,20 +34,74 @@ def cruiseDetails():
 
     df = get_data(DBNAME, 'personnel')
     df.sort_values(by='last_name', inplace=True)
-    personnel = list(df['first_name'] + ' ' + df['last_name'] + ' (' + df['institution'] + ')')
+    df['personnel'] = df['first_name'] + ' ' + df['last_name'] + ' (' + df['email'] + ')'
+    personnel = list(df['personnel'])
     last_names = list(df['last_name'])
 
-    df = get_data(DBNAME, 'projects')
-    df.sort_values(by='project', inplace=True)
-    projects = list(df['project'])
+    proj_df = get_data(DBNAME, 'projects')
+    proj_df.sort_values(by='project', inplace=True)
+    projects = list(proj_df['project'])
 
     if request.method == 'POST':
-        cruiseLeader = request.form.get('cruiseLeader')
-        coCruiseLeader = request.form.get('coCruiseLeader')
+        cruise_leader = request.form.get('cruiseLeader')
+        co_cruise_leader = request.form.get('coCruiseLeader')
         project = request.form.get('project')
-        cruiseName = request.form.get('cruiseName')
+        cruise_name = request.form.get('cruiseName')
+        comment = request.form.get('comment')
 
-    return render_template("register/cruiseDetails.html", personnel=personnel, projects=projects)
+        cruise_leader_name = cruise_leader.split(' (')[0]
+        cruise_leader_id = df.loc[df['personnel'] == cruise_leader, 'id'].iloc[0]
+        cruise_leader_email = df.loc[df['personnel'] == cruise_leader, 'email'].iloc[0]
+        cruise_leader_institution = df.loc[df['personnel'] == cruise_leader, 'institution'].iloc[0]
+
+        co_cruise_leader_name = co_cruise_leader.split(' (')[0]
+        co_cruise_leader_id = df.loc[df['personnel'] == co_cruise_leader, 'id'].iloc[0]
+        co_cruise_leader_email = df.loc[df['personnel'] == co_cruise_leader, 'email'].iloc[0]
+        co_cruise_leader_institution = df.loc[df['personnel'] == co_cruise_leader, 'institution'].iloc[0]
+
+        conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+        cur = conn.cursor()
+
+        cur.execute(f'''INSERT INTO {CRUISE_DETAILS_TABLE}
+        (id,
+        cruise_name,
+        cruise_number,
+        project,
+        cruise_leader_id,
+        cruise_leader_name,
+        cruise_leader_institution,
+        cruise_leader_email,
+        co_cruise_leader_id,
+        co_cruise_leader_name,
+        co_cruise_leader_institution,
+        co_cruise_leader_email,
+        comment,
+        created)
+        VALUES
+        ('{uuid.uuid1()}',
+        '{cruise_name}',
+        '{CRUISE_NUMBER}',
+        '{project}',
+        '{cruise_leader_id}',
+        '{cruise_leader_name}',
+        '{cruise_leader_institution}',
+        '{cruise_leader_email}',
+        '{co_cruise_leader_id}',
+        '{co_cruise_leader_name}',
+        '{co_cruise_leader_institution}',
+        '{co_cruise_leader_email}',
+        '{comment}',
+        CURRENT_TIMESTAMP);''')
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash('Cruise details registered!', category='success')
+
+        return redirect(url_for('views.home'))
+
+    return render_template("register/cruiseDetails.html", personnel=personnel, projects=projects, CRUISE_NUMBER=CRUISE_NUMBER)
 
 @views.route('/register/institutions', methods=['GET', 'POST'])
 def institutions():
