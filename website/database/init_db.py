@@ -96,13 +96,14 @@ def init_sample_types(DBNAME, cur):
         cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{id}','{sampleType}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(DBNAME, cur):
-    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, comment text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/gear_types.csv')
     for idx, row in df.iterrows():
         id = row['id']
         gearType = row['gearType']
+        IMR_name = row['IMR_name']
         comment = row['comment']
-        cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{id}','{gearType}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, created) VALUES ('{id}','{gearType}','{IMR_name}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(DBNAME, cur):
     cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
@@ -204,6 +205,7 @@ def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
     cur.execute(f'''CREATE TABLE IF NOT EXISTS {CRUISE_DETAILS_TABLE} (id uuid PRIMARY KEY,
     cruise_name text,
     cruise_number integer,
+    vessel_name text,
     project text,
     cruise_leader_id uuid,
     cruise_leader_name text,
