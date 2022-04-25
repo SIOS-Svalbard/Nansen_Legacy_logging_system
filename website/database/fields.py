@@ -13,7 +13,7 @@ Each field is defined as a dictionary which should contain:
     disp_name : The displayed name of the field
     format:     uuid, int, text, timestamp, double precision, boolean
     hstore:     Whether the field should be contained in an hstore column or serve as a standalone column.
-                The hstore columns are: 
+                The hstore columns are:
                     metadata (metadata describing the entire dataset, e.g. title, abstract, PI details)
                     other (any other column that is not provided for all or most events, therefore doesn't warrant it's own column)
                 Therefore, the following values are acceptable:
@@ -62,7 +62,7 @@ fields = [
     # ==============================================================================
     # ID fields
     # ==============================================================================
-    
+
     {'name': 'id',
            'disp_name': 'ID',
            'width': 38,
@@ -96,6 +96,21 @@ Could be read in with a code reader.''',
                      'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
                  }
                  },
+    {'name': 'catalogNumber',
+                 'disp_name': 'Catalogue Number',
+                 'width': 38,
+                 'format': 'text',
+                 'hstore': False,
+                 'valid': {
+                     'validate': 'length',
+                     'criteria': '==',
+                     'value': 36,
+                     'input_title': 'Parent ID',
+                     'input_message': '''Your own ID for each record, preferably unique. Note that each sample is also assign its own UUID in the "ID" field by the system.''',
+                     'error_title': 'Error',
+                     'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
+                 }
+                 },
     {'name': 'bottleNumber',
                 'disp_name': 'Bottle Number',
                 'inherit': True,
@@ -125,7 +140,7 @@ Positive integer''',
 This is in addition to the event ID'''
                 }
                 },
-    
+
     # ==============================================================================
     # Cruise details
     # ==============================================================================
@@ -160,7 +175,7 @@ This is in addition to the event ID'''
                 'format': 'text',
                 'hstore': False
                 },
-    
+
     # ==============================================================================
     # Station details
     # ==============================================================================
@@ -216,26 +231,6 @@ This is in addition to the event ID'''
                  'num_format': 'yyyy-mm-dd'
              }
              },
-    {'name': 'startDate',
-             'disp_name': 'Start Date',
-             'inherit': True,
-             'format': 'timestamp',
-             'hstore': 'other',
-             'width': 12,
-             'valid': {
-                 'validate': 'date',
-                 'criteria': 'between',
-                 'minimum': dt.datetime(2000, 1, 1),
-                 'maximum': '=TODAY()+2',
-                 'input_title': 'Start Date',
-                 'input_message': '''Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
-                 'error_title': 'Error',
-                 'error_message': 'Not a valid date [2000-01-01, today + 2]'
-             },
-             'cell_format': {
-                 'num_format': 'yyyy-mm-dd'
-             }
-             },
     {'name': 'middleDate',
              'disp_name': 'Middle Date',
              'inherit': True,
@@ -261,7 +256,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
              'disp_name': 'End Date',
              'inherit': True,
              'format': 'timestamp',
-             'hstore': 'other',
+             'hstore': False,
              'width': 12,
              'valid': {
                  'validate': 'date',
@@ -277,7 +272,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
                  'num_format': 'yyyy-mm-dd'
              }
              },
-    
+
     # ==============================================================================
     # Coordinates
     # ==============================================================================
@@ -333,7 +328,7 @@ Example: 15.0012''',
                       'disp_name': 'End Latitude',
                       'inherit': True,
                       'format': 'double precision',
-                      'hstore': 'other',
+                      'hstore': False,
                       'units': 'degrees_north',
                       'valid': {
                           'validate': 'decimal',
@@ -356,7 +351,7 @@ Example: 78.1500''',
                        'disp_name': 'End Longitude',
                        'inherit': True,
                        'format': 'double precision',
-                       'hstore': 'other',
+                       'hstore': False,
                        'units': 'degree_east',
                        'valid': {
                            'validate': 'decimal',
@@ -421,7 +416,7 @@ Example: 15.0012''',
                               'num_format': '0.0000'
                           }
                           },
-    
+
     # ==============================================================================
     # Ship
     # ==============================================================================
@@ -442,7 +437,7 @@ Decimal number >=0.''',
                                   'error_message': 'Float >= 0'
                               }
                               },
-    
+
     # ==============================================================================
     # Depths & Altitudes
     # ==============================================================================
@@ -460,23 +455,6 @@ Decimal number >=0.''',
                            'input_title': 'Bottom Depth (m)',
                            'input_message': '''Sea floor depth below sea surface.
 Bathymetric depth at measurement site.
-0 is the surface.''',
-                           'error_title': 'Error',
-                           'error_message': 'Float >= 0'
-                       }
-                       },
-    {'name': 'sampleDepthInMeters',
-                       'disp_name': 'Sample Depth (m)',
-                       'inherit': True,
-                       'format': 'double precision',
-                       'hstore': False,
-                       'units': 'm',
-                       'valid': {
-                           'validate': 'decimal',
-                           'criteria': '>=',
-                           'value': 0,
-                           'input_title': 'Sample Depth (m)',
-                           'input_message': '''The sample depth in meters.
 0 is the surface.''',
                            'error_title': 'Error',
                            'error_message': 'Float >= 0'
@@ -583,7 +561,7 @@ Needs to be smaller than the maximum depth''',
                                 'error_message': 'Float >=0'
                             }
                             },
-    
+
     # ==============================================================================
     # Paleo
     # ==============================================================================
@@ -638,7 +616,7 @@ This is measured from the top of the core.''',
                                              'error_message': 'Float[0, 3 000]'
                                          }
                                          },
-    
+
     # ==============================================================================
     # Comments
     # ==============================================================================
@@ -697,7 +675,7 @@ This is measured from the top of the core.''',
                          'input_message': 'Additional comments about the sample or event.'
                 }
                 },
-    
+
     # ==============================================================================
     # Strings
     # ==============================================================================
@@ -721,7 +699,7 @@ This is measured from the top of the core.''',
                 'input_message': 'Smell'
             }
             },
-    
+
     # ==============================================================================
     # Personnel
     # ==============================================================================
@@ -777,7 +755,7 @@ Please include for every PI listed, even if the same.
 Example: University Centre in Svalbard; University Centre in Svalbard'''
               }
               },
-    
+
     # ==============================================================================
     # Storage
     # ==============================================================================
@@ -848,7 +826,7 @@ This could for instance be an institution or something more specific.'''
                   'input_message': '''Person who owns the sample'''
               }
               },
-    
+
     # ==============================================================================
     # Filtering
     # ==============================================================================
@@ -926,7 +904,7 @@ If no filtering is being done choose None''',
                      'error_message': 'Decimal > 0'
                  }
                  },
-    
+
     # ==============================================================================
     # Darwin Core Terms
     # ==============================================================================
@@ -1047,7 +1025,7 @@ When forming part of an Identification, this should be the name in lowest level 
     {'name': 'samplingProtocol',
                     'disp_name': 'Sampling protocol',
                     'format': 'text',
-                    'hstore': 'other',
+                    'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
                         'validate': 'any',
@@ -1056,7 +1034,7 @@ When forming part of an Identification, this should be the name in lowest level 
 For example: Nansen Legacy sampling protocols version XX section YY.'''
                     }
                     },
-    
+
     # ==============================================================================
     # Probable MeasurementOrFact types from Darwin Core
     # ==============================================================================
@@ -1189,7 +1167,7 @@ Integer >= 0''',
                      'error_message': 'Int range [0, 7]'
                  }
                  },
-    
+
     # ==============================================================================
     # CF standard names and other physical properties and physical oceanography things
     # ==============================================================================
@@ -1315,10 +1293,10 @@ Float number larger than -10 degrees C''',
                                  'criteria': '>=',
                                  'value': 0,
                                  'input_title': 'Sea Water Practical Salinity',
-                                 'input_message': '''Practical Salinity, S_P, is a determination of 
-the salinity of sea water, based on its electrical conductance. 
+                                 'input_message': '''Practical Salinity, S_P, is a determination of
+the salinity of sea water, based on its electrical conductance.
 The measured conductance, corrected for temperature and pressure,
-is compared to the conductance of a standard potassium chloride 
+is compared to the conductance of a standard potassium chloride
 solution, producing a value on the Practical Salinity Scale of 1978 (PSS-78).
 Float number larger than or equal to 0
 Example: 29.003''',
@@ -1338,9 +1316,9 @@ Example: 29.003''',
                                 'criteria': '>=',
                                 'value': 0,
                                 'input_title': 'Sea Water Absolute Salinity',
-                                'input_message': '''Absolute Salinity, S_A, is defined as part of 
+                                'input_message': '''Absolute Salinity, S_A, is defined as part of
 the Thermodynamic Equation of Seawater 2010 (TEOS-10) which was
-adopted in 2010 by the Intergovernmental Oceanographic 
+adopted in 2010 by the Intergovernmental Oceanographic
 Commission (IOC). It is the mass fraction of dissolved material
 in sea water.
 Float number larger than or equal to 0
@@ -1722,7 +1700,7 @@ Positive float number''',
                    'error_message': 'Float >= 0'
                }
                },
-    
+
     # ==============================================================================
     # Sample details
     # ==============================================================================
@@ -1796,7 +1774,7 @@ Examples: 'heart', 'liver; brain', 'liver section' '''
                     'input_message': 'The serial number of the instrument used'
                 }
                 },
-    
+
     # ==============================================================================
     # Other
     # ==============================================================================
@@ -1810,8 +1788,8 @@ Examples: 'heart', 'liver; brain', 'liver section' '''
                     'input_message': 'The name of the datafile'
                 }
                 },
-    
-    
+
+
     ]
 
 

@@ -4,25 +4,47 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_data import get_data
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE
+from website.database.harvest_activities import harvest_activities
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+import requests
+import numpy as np
 
 views = Blueprint('views', __name__)
 
 @views.route('/', methods=['GET'])
 def home():
 
-    df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
-    print(df.tail(1))
-    if len(df) > 0:
-        cruise_leader_name = df['cruise_leader_name'].values[-1]
-        co_cruise_leader_name = df['co_cruise_leader_name'].values[-1]
-        cruise_name = df['cruise_name'].values[-1]
+    cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    if len(cruise_details_df) > 0:
+        cruise_leader_name = cruise_details_df['cruise_leader_name'].values[-1]
+        co_cruise_leader_name = cruise_details_df['co_cruise_leader_name'].values[-1]
+        cruise_name = cruise_details_df['cruise_name'].values[-1]
     else:
         cruise_leader_name = co_cruise_leader_name = cruise_name = False
 
-    print(cruise_name)
+    activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VESSEL_NAME).reset_index()
 
-    return render_template("home.html", CRUISE_NUMBER=CRUISE_NUMBER, cruise_leader_name=cruise_leader_name, co_cruise_leader_name=co_cruise_leader_name, cruise_name=cruise_name)
+    activities_df['message'] = 'Okay'
+
+    required_cols = [
+    'pi_name',
+    'pi_email',
+    'pi_institution',
+    'stationname',
+    'maximumdepthinmeters',
+    'minimumdepthinmeters',
+    'geartype'
+    ]
+
+    for col in required_cols:
+        activities_df.loc[activities_df[col].isnull(), 'message'] = 'Missing metadata'
+
+    activities_df_home = activities_df[['stationname','eventdate', 'enddate','decimallatitude','decimallongitude','geartype','pi_name','message','id']]
+    activities_df_home.sort_values(by=['eventdate'], ascending=False, inplace=True)
+
+    num_activities = len(activities_df_home)
+
+    return render_template("home.html", CRUISE_NUMBER=CRUISE_NUMBER, cruise_leader_name=cruise_leader_name, co_cruise_leader_name=co_cruise_leader_name, cruise_name=cruise_name, row_data=list(activities_df_home.values.tolist()), link_column='id', column_names=activities_df_home.columns.values, zip=zip, num_activities=num_activities, TOKTLOGGER=TOKTLOGGER)
 
 @views.route('/register', methods=['GET'])
 def register():
@@ -66,6 +88,7 @@ def cruiseDetails():
         (id,
         cruise_name,
         cruise_number,
+        vessel_name,
         project,
         cruise_leader_id,
         cruise_leader_name,
@@ -81,6 +104,7 @@ def cruiseDetails():
         ('{uuid.uuid1()}',
         '{cruise_name}',
         '{CRUISE_NUMBER}',
+        '{VESSEL_NAME}',
         '{project}',
         '{cruise_leader_id}',
         '{cruise_leader_name}',

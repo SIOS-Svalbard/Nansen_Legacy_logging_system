@@ -40,60 +40,75 @@
       <div class="row">
         <a class="btn btn-success" href="/register/cruiseDetails" role="button">Update cruise details</a>
       </div>
-      <br>
+    </div>
+    <div class=col-7 offset-1">
       <div class="row">
         <img src="..." class="img-fluid border border-dark" alt="Map of cruise path and stations">
       </div>
     </div>
-
-    <div class="col-7 offset-1">
-      <div class="row">
-        <h3>Most recent activities:</h3><br>
-        <table class="table">
-          <thead class="thead-dark">
-            <tr>
-              <th scope="col">Timestamp (UTC)</th>
-              <th scope="col">Station</th>
-              <th scope="col">Latitude</th>
-              <th scope="col">Longitude</th>
-              <th scope="col">Gear Type</th>
-              <th scope="col">...</th>
-              <th scope="col"><a class="btn btn-danger" href="#" role="button">Add missing activity</a></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>2022-04-21T10:01:31Z</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
-            </tr>
-            <tr>
-              <td>2022-04-21T09:41:10Z</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
-            </tr>
-            <tr>
-              <td>2022-04-21T09:26:56Z</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td><a class="btn btn-primary" href="#" role="button">log samples</a></td>
-            </tr>
-          </tbody>
-        </table>
-        <a class="btn btn-secondary btn-lg btn-block" href="#" role="button">View all activities</a>
-      </div>
-    </div>
   </div>
+
+  <br>
+  <!--Table of most recent activities-->
+  <div class="float-left">
+    <h3>Most recent activities: </h3>
+    <br>
+  </div>
+  <div class="float-right">
+    <a class="btn btn-secondary btn-lg" href="#" role="button">Add missing activity</a>
+  </div>
+
+  {% if num_activities == 0 %}
+    <br><br><br>
+    <p><strong>No activities have been registered yet.</strong></p>
+    <p>If you believe this is a mistake, check that the activities are logged in the Toktlogger
+    by visiting <a href="http://{{TOKTLOGGER}}">http://{{TOKTLOGGER}}</a></p>
+    <p>If activities are listed in the Toktlogger but not here, please contact the instrument crew.</p>
+  {% else %}
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Station</th>
+          <th scope="col">Start time (UTC)</th>
+          <th scope="col">End time (UTC)</th>
+          <th scope="col">Latitude (start)</th>
+          <th scope="col">Longitude (start)</th>
+          <th scope="col">Gear Type</th>
+          <th scope="col">PI</th>
+          <th scope="col">Message</th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in row_data %}
+        <tr>
+          {% for col, row_ in zip(column_names, row) %}
+          {% if col == link_column %}
+            <td>
+              <a class="btn btn-primary" href="#" role="button">View/Edit</a>
+            </td>
+            <td>
+              <a class="btn btn-warning" href="#" role="button">Log samples</a>
+            </td>
+          {% elif col == 'message' %}
+            <td>
+            {% if row_ == 'Okay' %}
+              <strong class="text-success">{{ row_ }}</strong>
+            {% else %}
+              <strong class="text-danger">{{ row_ }}</strong>
+            {% endif %}
+            </td>
+          {% else %}
+            <td>{{ row_ }}</td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-secondary btn-lg btn-block" href="#" role="button">Add missing activity</a>
+  {% endif %}
+
 </div>
 {% endblock %}
