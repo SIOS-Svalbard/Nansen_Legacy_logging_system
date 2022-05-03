@@ -4,10 +4,12 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_data import get_data
-from website.database.harvest_activities import harvest_activities
+from website.database.harvest_activities import harvest_activities, get_bottom_depth
+from website.other_functions.calculations import distanceCoordinates
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
+from datetime import datetime as dt
 
 views = Blueprint('views', __name__)
 
@@ -31,8 +33,6 @@ def home():
     'pi_email',
     'pi_institution',
     'stationname',
-    'maximumdepthinmeters',
-    'minimumdepthinmeters',
     'geartype'
     ]
 
@@ -45,6 +45,247 @@ def home():
     num_activities = len(activities_df_home)
 
     return render_template("home.html", CRUISE_NUMBER=CRUISE_NUMBER, cruise_leader_name=cruise_leader_name, co_cruise_leader_name=co_cruise_leader_name, cruise_name=cruise_name, row_data=list(activities_df_home.values.tolist()), link_column='id', column_names=activities_df_home.columns.values, zip=zip, num_activities=num_activities, TOKTLOGGER=TOKTLOGGER)
+
+@views.route('/editActivity', methods=['GET', 'POST'])
+def editActivity():
+
+    df_personnel = get_data(DBNAME, 'personnel')
+    df_personnel.sort_values(by='last_name', inplace=True)
+    df_personnel['personnel'] = df_personnel['first_name'] + ' ' + df_personnel['last_name'] + ' (' + df_personnel['email'] + ')'
+    personnel = list(df_personnel['personnel'])
+
+    df_gears = get_data(DBNAME, 'gear_types')
+    df_gears.sort_values(by='geartype', inplace=True)
+    df_gears['gear_types_comments'] = df_gears['geartype'] + ':- ' + df_gears['comment']
+    gearTypes = list(df_gears['gear_types_comments'])
+
+    df_stations = get_data(DBNAME, 'stations')
+    df_stations.sort_values(by='stationname', inplace=True)
+    df_stations['station_coords'] = df_stations['stationname'] + ' - (' + df_stations['decimallatitude'].astype(str) + ', ' + df_stations['decimallongitude'].astype(str) + ')'
+    station_coords = list(df_stations['station_coords'])
+
+    df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+
+    if request.method == 'POST':
+        my_uuid = request.form.get('uuid')
+        catalogNumber = request.form.get('catalogNumber')
+        station = request.form.get('station')
+        gearTypeComment = request.form.get('gearType')
+        startLatitude = request.form.get('startLatitude')
+        startLongitude = request.form.get('startLongitude')
+        endLatitude = request.form.get('endLatitude')
+        endLongitude = request.form.get('endLongitude')
+        startDate = request.form.get('startDate')
+        startTime = request.form.get('startTime')
+        endDate = request.form.get('endDate')
+        endTime = request.form.get('endTime')
+        minDepth = request.form.get('minDepth')
+        maxDepth = request.form.get('maxDepth')
+        minElevation = request.form.get('minElevation')
+        maxElevation = request.form.get('maxElevation')
+        pis = request.form.getlist('pis')
+        recordedBys = request.form.getlist('recordedBys')
+        samplingProtocolsDoc = request.form.get('samplingProtocols')
+        samplingProtocolsSection = request.form.get('samplingProtocolsSection')
+        samplingProtocolsVersion = request.form.get('samplingProtocolsVersion')
+        comment = request.form.get('comment')
+
+        startDateTime = dt.strptime(startDate + startTime, '%Y-%m-%d%H:%M')
+
+        if my_uuid != '':
+            my_uuid = my_uuid.replace('+','-').replace('/','-')
+            try:
+                uuid.UUID(my_uuid)
+            except:
+                my_uuid = False
+        else:
+            my_uuid = str(uuid.uuid1())
+
+        if endDate != '' and endTime != '':
+            endDateTime = dt.strptime(endDate + endTime, '%Y-%m-%d%H:%M')
+        else:
+            # Assigning a dummy datetime in the future for the below validations to work.
+            endDateTime = dt(3000,1,1)
+
+        # Calculating distance between station coordinates and coordinates being registered
+        stationLatitude = df_stations.loc[df_stations['station_coords'] == station, 'decimallatitude'].item()
+        stationLongitude = df_stations.loc[df_stations['station_coords'] == station, 'decimallongitude'].item()
+        dist = distanceCoordinates(startLatitude,startLongitude,stationLatitude,stationLongitude)
+        print(dist)
+
+        if my_uuid == False:
+            flash('Invalid UUID. Enter a valid UUID or remove and one will be assigned automatically', category='error')
+        elif my_uuid in df_metadata_catalogue['id'].astype(str).values:
+            flash('Univerisally unique ID already registered. Please use a different one.', category='error')
+        elif station == 'Choose...':
+            flash('Please select a station name from the drop-down list', category='error')
+        elif gearTypeComment == 'Choose...':
+            flash('Please select a gear type from the drop-down list', category='error')
+        elif 'Choose...' in pis and len(pis) == 1:
+            flash('Please select at least one person as PI from the drop-down list', category='error')
+        elif 'Choose...' in recordedBys and len(recordedBys) == 1:
+            flash('Please select at least one person who was involved in recording this activity from the drop-down list', category='error')
+        elif endDate == '' and endTime != '':
+            flash('Please select an end time or remove the end date. Both or none are required.', category='error')
+        elif endDate != '' and endTime == '':
+            flash('Please select an end date or remove the end time. Both or none are required.', category='error')
+        elif endDateTime <= startDateTime:
+            flash('End date and time must be after the start date and time', category='error')
+        elif startDateTime >= dt.utcnow():
+            flash('Start date and time must be in the past', category='error')
+        elif endDateTime >= dt.utcnow() and endDateTime != dt(3000,1,1):
+            flash('End date and time must be in the past', category='error')
+        elif minDepth > maxDepth:
+            flash('Maximum depth must be greater than minimum depth', category='error')
+        elif minElevation > maxElevation:
+            flash('Maximum elevation must be greater than minimum elevation', category='error')
+        elif 'Choose...' in pis and len(pis) == 1:
+            flash('Please select at least one person as PI from the drop-down list', category='error')
+        elif 'Choose...' in recordedBys and len(recordedBys) == 1:
+            flash('Please select at least one person who was involved in recording this activity from the drop-down list', category='error')
+        elif dist > 50:
+            flash(f'The start coordinates that you have entered are {dist} km away from the coordinates of the station. They should be within 50 km.', category='warning')
+        else:
+            if endDateTime == dt(3000,1,1):
+                endDateTime = 'NULL'
+            else:
+                endDateTime = f"'{endDateTime}'"
+
+            stationName = df_stations.loc[df_stations['station_coords'] == station, 'stationname'].item()
+            gearType = gearTypeComment.split(':-')[0]
+
+            pi_names_list = []
+            pi_emails_list = []
+            pi_institutions_list = []
+
+            for pi in pis:
+                if pi != 'Choose...':
+                    pi_first_name = df_personnel.loc[df_personnel['personnel'] == pi, 'first_name'].item()
+                    pi_last_name = df_personnel.loc[df_personnel['personnel'] == pi, 'last_name'].item()
+                    pi_name = pi_first_name + ' ' + pi_last_name
+                    pi_email = df_personnel.loc[df_personnel['personnel'] == pi, 'email'].item()
+                    pi_institution = df_personnel.loc[df_personnel['personnel'] == pi, 'institution'].item()
+
+                    pi_names_list.append(pi_name)
+                    pi_emails_list.append(pi_email)
+                    pi_institutions_list.append(pi_institution)
+
+            pi_names = "; ".join(pi_names_list)
+            pi_emails = "; ".join(pi_emails_list)
+            pi_institutions = "; ".join(pi_institutions_list)
+
+            rb_names_list = []
+
+            for recordedBy in recordedBys:
+                if pi != 'Choose...':
+                    rb_first_name = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'first_name'].item()
+                    rb_last_name = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'last_name'].item()
+                    rb_name = rb_first_name + ' ' + rb_last_name
+
+                    rb_names_list.append(rb_name)
+
+            rb_names = "; ".join(rb_names_list)
+
+            if samplingProtocolsDoc == '':
+                samplingProtocols = None
+            elif samplingProtocolsVersion != '' and samplingProtocolsSection == '':
+                samplingProtocols = f'{samplingProtocolsDoc} version {samplingProtocolsVersion}'
+            elif samplingProtocolsVersion == '' and samplingProtocolsSection != '':
+                samplingProtocols = f'{samplingProtocolsDoc} section {samplingProtocolsSection}'
+            elif samplingProtocolsVersion == '' and samplingProtocolsSection == '':
+                samplingProtocols = samplingProtocolsDoc
+            elif samplingProtocolsVersion != '' and samplingProtocolsSection != '':
+                samplingProtocols = f'{samplingProtocolsDoc} section {samplingProtocolsSection} version {samplingProtocolsVersion}'
+            else:
+                flash('Sampling protocols not registered', category='error')
+                samplingProtocols = None
+
+            # bottomdepthinmeters = get_bottom_depth(startDateTime, TOKTLOGGER) # Can't trust manually assigned time or coordinates so can't reliably harvest bottom depth
+
+            if endLatitude == '':
+                endLatitude = 'NULL'
+            if endLongitude == '':
+                endLongitude = 'NULL'
+            if minElevation == '':
+                minElevation = 'NULL'
+            if maxElevation == '':
+                maxElevation = 'NULL'
+            if minDepth == '':
+                minDepth = 'NULL'
+            if maxDepth == '':
+                maxDepth = 'NULL'
+            #if comment == None:
+            #    comment = ''
+
+            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            cur = conn.cursor()
+
+            exe_str = f'''INSERT INTO {METADATA_CATALOGUE}
+            (id,
+            catalognumber,
+            cruisenumber,
+            vesselname,
+            stationname,
+            eventdate,
+            enddate,
+            decimallatitude,
+            decimallongitude,
+            enddecimallatitude,
+            enddecimallongitude,
+            minimumdepthinmeters,
+            maximumdepthinmeters,
+            pi_name,
+            pi_email,
+            pi_institution,
+            recordedby,
+            comments1,
+            geartype,
+            created,
+            modified,
+            history,
+            source,
+            other)
+            VALUES
+            ('{my_uuid}',
+            '{catalogNumber}',
+            {CRUISE_NUMBER},
+            '{VESSEL_NAME}',
+            '{stationName}',
+            '{startDateTime}',
+            {endDateTime},
+            {startLatitude},
+            {startLongitude},
+            {endLatitude},
+            {endLongitude},
+            {minDepth},
+            {maxDepth},
+            '{pi_name}',
+            '{pi_email}',
+            '{pi_institution}',
+            '{rb_names}',
+            '{comment}',
+            '{gearType}',
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP,
+            'Initial logging of activity logged manually',
+            'Activity added manually using web interface',
+            '"minimumElevationInMeters" => "{minElevation}",
+            "maximumElevationInMeters" => "{maxElevation}",'
+            );'''
+
+            # BOTTOM DEPTH NOT WORKING?
+
+            cur.execute(exe_str)
+
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            flash('Activity registered!', category='success')
+
+            return redirect(url_for('views.home'))
+
+    return render_template("editActivity.html", personnel=personnel, gearTypes=gearTypes, stations=station_coords)
 
 @views.route('/register', methods=['GET'])
 def register():
@@ -67,10 +308,11 @@ def cruiseDetails():
     if request.method == 'POST':
         cruise_leader = request.form.get('cruiseLeader')
         co_cruise_leader = request.form.get('coCruiseLeader')
-        project = request.form.get('project')
-        cruise_name = request.form.get('cruiseName')
+        project = request.form.get('project').capitalize()
+        cruise_name = request.form.get('cruiseName').capitalize()
         comment = request.form.get('comment')
-
+        print('start')
+        print(df['personnel'], cruise_leader)
         cruise_leader_name = cruise_leader.split(' (')[0]
         cruise_leader_id = df.loc[df['personnel'] == cruise_leader, 'id'].iloc[0]
         cruise_leader_email = df.loc[df['personnel'] == cruise_leader, 'email'].iloc[0]
@@ -138,8 +380,8 @@ def institutions():
 
     if request.method == 'POST':
 
-        institutionFull = request.form.get('institutionFull')
-        institutionShort = request.form.get('institutionShort')
+        institutionFull = request.form.get('institutionFull').capitalize()
+        institutionShort = request.form.get('institutionShort').capitalize()
         comment = request.form.get('comment')
 
         if institutionFull in full_names:
@@ -154,7 +396,7 @@ def institutions():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, date_added) VALUES ('{uuid.uuid1()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{uuid.uuid1()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -176,7 +418,7 @@ def sampleTypes():
 
     if request.method == 'POST':
 
-        sample_type = request.form.get('sample_type')
+        sample_type = request.form.get('sample_type').capitalize()
         comment = request.form.get('comment')
 
         if sample_type in sample_types:
@@ -187,7 +429,7 @@ def sampleTypes():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, date_added) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -209,7 +451,7 @@ def gearTypes():
 
     if request.method == 'POST':
 
-        gear_type = request.form.get('gear_type')
+        gear_type = request.form.get('gear_type').capitalize()
         comment = request.form.get('comment')
 
         if gear_type in gear_types:
@@ -220,7 +462,7 @@ def gearTypes():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO gear_types (id, gearType, comment, date_added) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -253,7 +495,7 @@ def intendedMethods():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, date_added) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -277,7 +519,7 @@ def stations():
 
     if request.method == 'POST':
 
-        stationName = request.form.get('stationName')
+        stationName = request.form.get('stationName').capitalize()
         decimalLatitude = float(request.form.get('decimalLatitude'))
         decimalLongitude = float(request.form.get('decimalLongitude'))
         comment = request.form.get('comment')
@@ -300,7 +542,7 @@ def stations():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, date_added) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -328,8 +570,8 @@ def personnel():
 
     if request.method == 'POST':
         print('\n\nhere01\n\n')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
+        first_name = request.form.get('first_name').capitalize()
+        last_name = request.form.get('last_name').capitalize()
         email = request.form.get('email')
         institution = request.form.get('institution')
         comment = request.form.get('comment')
@@ -354,7 +596,7 @@ def personnel():
         else:
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
-            cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, date_added) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -387,7 +629,7 @@ def sex():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sex (id, sex, comment, date_added) VALUES ('{uuid.uuid1()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{uuid.uuid1()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -409,7 +651,7 @@ def kingdoms():
 
     if request.method == 'POST':
 
-        kingdom = request.form.get('kingdom')
+        kingdom = request.form.get('kingdom').capitalize()
         comment = request.form.get('comment')
 
         if kingdom in kingdoms:
@@ -420,7 +662,7 @@ def kingdoms():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, date_added) VALUES ('{uuid.uuid1()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid1()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -453,7 +695,7 @@ def filters():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO filters (id, filter, comment, date_added) VALUES ('{uuid.uuid1()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid1()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -475,7 +717,7 @@ def registeredprojects():
 
     if request.method == 'POST':
 
-        project = request.form.get('project')
+        project = request.form.get('project').capitalize()
         comment = request.form.get('comment')
 
         if project in projects:
@@ -486,7 +728,7 @@ def registeredprojects():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO projects (id, project, comment, date_added) VALUES ('{uuid.uuid1()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{uuid.uuid1()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -519,7 +761,7 @@ def storageTemps():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, date_added) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()

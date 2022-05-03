@@ -63,6 +63,38 @@ def flattenjson( b, delim ):
 
     return val
 
+def get_bottom_depth(start_datetime, TOKTLOGGER):
+    '''
+    Get seabed depth below vessel at a certain time
+
+    start_datetime: type datetime object
+                    time for which you want to retrieve the bottom depth
+    TOKTLOGGER: type string
+                IP or DNS of the Toktlogger
+    '''
+    start_date = start_datetime.strftime('%Y-%m-%d')
+    start_hh = "{:02d}".format(start_datetime.hour)
+    start_mm = "{:02d}".format(start_datetime.minute)
+    start_ss = start_datetime.strftime('%S.%f')[:-3]
+    start_datetime_p2 = start_datetime + datetime.timedelta(seconds=2)
+    end_date = start_datetime_p2.strftime('%Y-%m-%d')
+    ethh = "{:02d}".format(start_datetime_p2.hour)
+    etmm = "{:02d}".format(start_datetime_p2.minute)
+    etss = start_datetime_p2.strftime('%S.%f')[:-3]
+    url = "http://"+TOKTLOGGER+"/api/instrumentData/inPeriod?after="+start_date+"T"+start_hh+"%3A"+start_mm+"%3A"+start_ss+"Z&before="+end_date+"T"+ethh+"%3A"+etmm+"%3A"+etss+"Z&mappingIds=depth&format=json"
+    response = requests.get(url)
+    json_bd = response.json()
+
+    if len(json_bd) >= 1:
+        bd = []
+        for i, t in enumerate(json_bd):
+            bd.append(t['numericValue'])
+        bottomdepthinmeters = np.median([bd])
+    else:
+        bottomdepthinmeters = 'NULL'
+
+    return bottomdepthinmeters
+
 def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VESSEL_NAME):
     '''
     Provide IP or DNS of toktlogger to access IMR API
@@ -101,29 +133,11 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         # WHAT ABOUT NONE VALUES FOR EXAMPLE IN LATITUDE AND LONGITUDE
         # Do I need to add modified field here too? What about recordedBy? Cruise name + project name if exists, otherwise NULL. Need to update all samples once cruise details are logged
         start_datetime = dt.strptime(activity['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        start_date = start_datetime.strftime('%Y-%m-%d')
-        start_hh = "{:02d}".format(start_datetime.hour)
-        start_mm = "{:02d}".format(start_datetime.minute)
-        start_ss = start_datetime.strftime('%S.%f')[:-3]
-        start_datetime_p2 = start_datetime + datetime.timedelta(seconds=2)
-        end_date = start_datetime_p2.strftime('%Y-%m-%d')
-        ethh = "{:02d}".format(start_datetime_p2.hour)
-        etmm = "{:02d}".format(start_datetime_p2.minute)
-        etss = start_datetime_p2.strftime('%S.%f')[:-3]
-        url = "http://"+TOKTLOGGER+"/api/instrumentData/inPeriod?after="+start_date+"T"+start_hh+"%3A"+start_mm+"%3A"+start_ss+"Z&before="+end_date+"T"+ethh+"%3A"+etmm+"%3A"+etss+"Z&mappingIds=depth&format=json"
-        response = requests.get(url)
-        json_bd = response.json()
+
+        bottomdepthinmeters = get_bottom_depth(start_datetime,TOKTLOGGER)
 
         start_datetime_seconds_precision = activity['startTime'].split('.')[0]
         end_datetime_seconds_precision = activity['endTime'].split('.')[0]
-
-        if len(json_bd) >= 1:
-            bd = []
-            for i, t in enumerate(json_bd):
-                bd.append(t['numericValue'])
-            bottomdepthinmeters = np.median([bd])
-        else:
-            bottomdepthinmeters = 'NULL'
 
         if activity['activityTypeName'] in gear_df['imr_name'].values:
             geartype = gear_df.loc[gear_df['imr_name'] == activity['activityTypeName'], 'geartype'].item()
