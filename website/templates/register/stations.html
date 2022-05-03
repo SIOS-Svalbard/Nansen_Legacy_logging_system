@@ -45,10 +45,12 @@
       <label for="decimalLatitude">Decimal Latitude</label>
       <input
         type="number"
-        step="any"
+        step=0.0001
         class="form-control"
         id="decimalLatitude"
         name="decimalLatitude"
+        min=-90
+        max=90
         placeholder="Decimal Latitude (-90 to 90)"
       />
     </div>
@@ -56,10 +58,12 @@
       <label for="decimalLongitude">Decimal Longitude</label>
       <input
         type="number"
-        step="any"
+        step=0.0001
         class="form-control"
         id="decimalLongitude"
         name="decimalLongitude"
+        min=-180
+        max=180
         placeholder="Decimal Longitude (-180 to 180)"
       />
     </div>

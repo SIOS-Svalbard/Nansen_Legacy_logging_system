@@ -505,24 +505,6 @@ Needs to be smaller than the maximum depth''',
                             'error_message': 'Decimal [0, 9999]'
                         }
                         },
-    {'name': 'altitudeInMeters',
-                    'disp_name': 'Altitude (m)',
-                    'inherit': True,
-                    'format': 'double precision',
-                    'hstore': 'other',
-                    'units': 'm',
-                    'cf_name': 'altitude',
-                    'valid': {
-                        'validate': 'decimal',
-                        'criteria': '>=',
-                        'value': 0,
-                        'input_title': 'Altitude (m)',
-                        'input_message': '''The sample altitude in meters.
-0 m is the surface. Positive upwards''',
-                        'error_title': 'Error',
-                        'error_message': 'Float >= 0'
-                    }
-                    },
     {'name': 'maximumElevationInMeters',
                             'disp_name': 'Maximum elevation(m)',
                             'inherit': True,
