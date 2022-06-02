@@ -2,7 +2,7 @@
 %}
 
 <h2>Activity Metadata:</h2>
-<p class="form-text" id="starttime_help">Required fields<span style="color:#ff0000">*</span></p>
+<p class="form-text" id="eventtime_help">Required fields<span style="color:#ff0000">*</span></p>
 
 <form method="POST">
   <div class="form-row align-items-center">
@@ -13,7 +13,8 @@
         class="form-control"
         name="uuid"
         id="uuid"
-        placeholder="e.g. 10621b76-94c0-4cf5-8aa9-64697205da7d">
+        placeholder="e.g. 10621b76-94c0-4cf5-8aa9-64697205da7d"
+        value="{{eventID}}">
         <small class="form-text text-muted" id="uuid_help">From the Toktlogger if possible. If not provided, one will be assigned automatically</small>
     </div>
     <div class="col">
@@ -23,17 +24,18 @@
         class="form-control"
         name="catalogNumber"
         id="catalogNumber"
-        placeholder="Your own ID">
+        placeholder="Your own ID"
+        value="{{catalogNumber}}">
       <small class="form-text text-muted" id="id_help">A more human-readable ID for your own records. Should be unique within the cruise and project.</small>
     </div>
   </div>
   <br>
   <div class="form-row align-items-end">
     <div class="col">
-      <label for="station">Station Name<span style="color:#ff0000">*</span></label>
-      <select class="custom-select" id="station" name="station" aria-label="Default select example" required>
-        <option selected>Choose...</option>
-        {% for station in stations %}
+      <label for="stationName">Station Name<span style="color:#ff0000">*</span></label>
+      <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example" required>
+        <option selected>{{stationName}}</option>
+        {% for station in stationNames %}
           <option>{{station}}</option>
         {% endfor %}
       </select>
@@ -44,7 +46,7 @@
     <div class="col">
       <label for="gearType">Gear Type<span style="color:#ff0000">*</span></label>
       <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example" required>
-        <option selected>Choose...</option>
+        <option selected>{{gearType}}</option>
         {% for gearType in gearTypes %}
           <option>{{gearType}}</option>
         {% endfor %}
@@ -57,66 +59,66 @@
   <br>
   <div class="form-row align-items-center">
     <div class="col">
-      <label for="startLatitude">Start Latitude<span style="color:#ff0000">*</span></label>
-      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="startLatitude" id="startLatitude" required>
+      <label for="decimalLatitude">Start Latitude<span style="color:#ff0000">*</span></label>
+      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="decimalLatitude" id="decimalLatitude" value={{decimalLatitude}} required>
       <small class="form-text text-muted" id="uuid_help">Decimal latitude</small>
     </div>
     <div class="col">
-      <label for="startLongitude">Start Longitude<span style="color:#ff0000">*</span></label>
-      <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="startLongitude" id="startLongitude" required>
+      <label for="decimalLongitude">Start Longitude<span style="color:#ff0000">*</span></label>
+      <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="decimalLongitude" id="decimalLongitude" value={{decimalLongitude}} required>
       <small class="form-text text-muted" id="uuid_help">Decimal longitude</small>
     </div>
     <div class="col">
-      <label for="endLatitude">End Latitude</label>
-      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="endLatitude" id="endLatitude">
+      <label for="endDecimalLatitude">End Latitude</label>
+      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="endDecimalLatitude" id="endDecimalLatitude" value={{endDecimalLatitude}}>
       <small class="form-text text-muted" id="uuid_help">Decimal latitude</small>
     </div>
     <div class="col">
-      <label for="endLongitude">End Longitude</label>
-      <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="endLongitude" id="endLongitude">
+      <label for="endDecimalLongitude">End Longitude</label>
+      <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="endDecimalLongitude" id="endDecimalLongitude" value={{endDecimalLongitude}}>
       <small class="form-text text-muted" id="uuid_help">Decimal longitude</small>
     </div>
   </div>
   <br>
   <div class="form-row align-items-top">
     <div class="col">
-      <label for="startDate">Start Date<span style="color:#ff0000">*</span></label>
-      <input type="date" class="form-control" id="startDate" name="startDate" required>
+      <label for="eventDate">Event Date<span style="color:#ff0000">*</span></label>
+      <input type="date" class="form-control" id="eventDate" name="eventDate" value={{eventDate}} required>
     </div>
     <div class="col">
-      <label for="startTime">Start Time (UTC +00)<span style="color:#ff0000">*</span></label>
-      <input type="time" class="form-control" id="startTime" name="startTime" required>
-      <small class="form-text text-muted" id="starttime_help">HH:MM AM/PM</small>
+      <label for="eventTime">Event Time (UTC +00)<span style="color:#ff0000">*</span></label>
+      <input type="time" class="form-control" id="eventTime" name="eventTime" step=1 value={{eventTime}} required>
+      <small class="form-text text-muted" id="eventtime_help">HH:MM:SS AM/PM</small>
     </div>
     <div class="col">
       <label for="endDate">End Date</label>
-      <input type="date" class="form-control" id="endDate" name="endDate">
+      <input type="date" class="form-control" id="endDate" name="endDate" value={{endDate}}>
     </div>
     <div class="col">
       <label for="endTime">End Time (UTC +00)</label>
-      <input type="time" class="form-control" id="endTime" name="endTime">
-      <small class="form-text text-muted" id="endtime_help">HH:MM AM/PM</small>
+      <input type="time" class="form-control" id="endTime" name="endTime" step=1 value={{endTime}}>
+      <small class="form-text text-muted" id="endtime_help">HH:MM:SS AM/PM</small>
     </div>
   </div>
   <br>
   <div class="form-row align-items-top">
     <div class="col">
-      <label for="minDepth">Minimum depth sampled (m)</label>
-      <input type="number" step=0.01 min=0 class="form-control" name="minDepth" id="minDepth">
+      <label for="minDepthInMeters">Minimum depth sampled (m)</label>
+      <input type="number" step=0.01 min=0 class="form-control" name="minDepthInMeters" id="minDepthInMeters" value={{minimumDepthInMeters}}>
       <small class="form-text text-muted">Relative to sea level</small>
     </div>
     <div class="col">
-      <label for="maxDepth">Maximum depth sampled (m)</label>
-      <input type="number" step=0.01 min=0 class="form-control" name="maxDepth" id="maxDepth">
+      <label for="maxDepthInMeters">Maximum depth sampled (m)</label>
+      <input type="number" step=0.01 min=0 class="form-control" name="maxDepthInMeters" id="maxDepthInMeters" value={{maximumDepthInMeters}}>
       <small class="form-text text-muted">Relative to sea level</small>
     </div>
     <div class="col">
-      <label for="minElevation">Minimum elevation sampled (m)</label>
-      <input type="number" step=0.01 min=0 class="form-control" name="minElevation" id="minElevation">
+      <label for="minElevationInMeters">Minimum elevation sampled (m)</label>
+      <input type="number" step=0.01 min=0 class="form-control" name="minElevationInMeters" id="minElevationInMeters" value={{minimumElevationInMeters}}>
     </div>
     <div class="col">
-      <label for="maxElevation">Maximum elevation sampled (m)</label>
-      <input type="number" step=0.01 min=0 class="form-control" name="maxElevation" id="maxElevation">
+      <label for="maxElevationInMeters">Maximum elevation sampled (m)</label>
+      <input type="number" step=0.01 min=0 class="form-control" name="maxElevationInMeters" id="maxElevationInMeters" value={{maximumElevationInMeters}}>
     </div>
   </div>
   <br>
@@ -124,9 +126,12 @@
     <div class="col">
       <label for="pis">PI<span style="color:#ff0000">*</span></label>
       <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example" required>
-        <option selected>Choose...</option>
         {% for person in personnel %}
-          <option>{{person}}</option>
+          {% if person in pis %}
+            <option selected="selected">{{person}}</option>
+          {% else %}
+            <option>{{person}}</option>
+          {% endif %}
         {% endfor %}
       </select>
       <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
@@ -134,9 +139,12 @@
     <div class="col">
       <label for="recordedBys">Recorded by<span style="color:#ff0000">*</span></label>
       <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example" required>
-        <option selected>Choose...</option>
         {% for person in personnel %}
-          <option>{{person}}</option>
+          {% if person in recordedBys %}
+            <option selected="selected">{{person}}</option>
+          {% else %}
+            <option>{{person}}</option>
+          {% endif %}
         {% endfor %}
       </select>
       <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
@@ -148,26 +156,32 @@
   <br>
   <div class="form-row align-items-end">
     <div class="col">
-      <label for="samplingProtocols">Sampling Protocols</label>
+      <label for="samplingProtocolDoc">Sampling Protocols</label>
       <input
         type="text"
         class="form-control"
-        id="samplingProtocols"
-        placeholder="Sampling protocols document">
+        name="samplingProtocolDoc"
+        id="samplingProtocolDoc"
+        placeholder="Sampling protocol document"
+        value="{{samplingProtocolDoc}}">
     </div>
     <div class="col">
       <input
         type="text"
         class="form-control"
-        id="samplingProtocolsSection"
-        placeholder="Section">
+        name="samplingProtocolSection"
+        id="samplingProtocolSection"
+        placeholder="Section"
+        value="{{samplingProtocolSection}}">
     </div>
     <div class="col">
       <input
         type="text"
         class="form-control"
-        id="samplingProtocolsSection"
-        placeholder="Version">
+        name="samplingProtocolVersion"
+        id="samplingProtocolVersion"
+        placeholder="Version"
+        value="{{samplingProtocolVersion}}">
     </div>
   </div>
   <br>
@@ -176,8 +190,10 @@
     <input
       type="text"
       class="form-control"
+      name="comment"
       id="comment"
-      placeholder="Optional comment">
+      placeholder="Optional comment"
+      value="{{comments1}}">
   </div>
   <br>
   <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>

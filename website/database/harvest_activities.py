@@ -137,7 +137,10 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         bottomdepthinmeters = get_bottom_depth(start_datetime,TOKTLOGGER)
 
         start_datetime_seconds_precision = activity['startTime'].split('.')[0]
-        end_datetime_seconds_precision = activity['endTime'].split('.')[0]
+        eventDate = activity['startTime'].split('T')[0]
+        eventTime = activity['startTime'].split('T')[1].split('.')[0]
+        endDate = activity['endTime'].split('T')[0]
+        endTime = activity['endTime'].split('T')[1].split('.')[0]
 
         if activity['activityTypeName'] in gear_df['imr_name'].values:
             geartype = gear_df.loc[gear_df['imr_name'] == activity['activityTypeName'], 'geartype'].item()
@@ -147,10 +150,15 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         count = activity['activityNumber']
         readable_id = 'Activity_'+str(count)
 
-        lat_start = round_4dp(activity['startPosition__coordinates'][0])
-        lat_end = round_4dp(activity['endPosition__coordinates'][0])
-        lon_start = round_4dp(activity['startPosition__coordinates'][1])
-        lon_end = round_4dp(activity['endPosition__coordinates'][1])
+        decimalLatitude = round_4dp(activity['startPosition__coordinates'][0])
+        endDecimalLatitude = round_4dp(activity['endPosition__coordinates'][0])
+        decimalLongitude = round_4dp(activity['startPosition__coordinates'][1])
+        endDecimalLongitude = round_4dp(activity['endPosition__coordinates'][1])
+
+        created = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        history = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created by pulling from Toktlogger")
+        source = "Toktlogger"
 
         exe_str = f'''INSERT INTO {METADATA_CATALOGUE}
         (id,
@@ -159,7 +167,9 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         vesselname,
         statid,
         eventdate,
+        eventtime,
         enddate,
+        endtime,
         decimallatitude,
         decimallongitude,
         enddecimallatitude,
@@ -177,19 +187,21 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         {CRUISE_NUMBER},
         '{VESSEL_NAME}',
         {activity["localstationNumber"]},
-        '{start_datetime_seconds_precision}',
-        '{end_datetime_seconds_precision}',
-        {lat_start},
-        {lon_start},
-        {lat_end},
-        {lon_end},
+        '{eventDate}',
+        '{eventTime}',
+        '{endDate}',
+        '{endTime}',
+        {decimalLatitude},
+        {decimalLongitude},
+        {endDecimalLatitude},
+        {endDecimalLongitude},
         {bottomdepthinmeters},
         '{activity["comment"]}',
         '{geartype}',
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP,
-        'Initial logging of activity harvested from Toktlogger',
-        'Toktlogger');'''
+        '{created}',
+        '{modified}',
+        '{history}',
+        '{source}');'''
 
         cur.execute(exe_str)
 
