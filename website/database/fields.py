@@ -213,7 +213,7 @@ This is in addition to the event ID'''
     {'name': 'eventDate',
              'disp_name': 'Event Date',
              'inherit': True,
-             'format': 'timestamp',
+             'format': 'date',
              'hstore': False,
              'width': 12,
              'dwcid': 'http://rs.tdwg.org/dwc/terms/eventDate',
@@ -231,10 +231,34 @@ This is in addition to the event ID'''
                  'num_format': 'yyyy-mm-dd'
              }
              },
+    {'name': 'eventTime',
+             'disp_name': 'Time (UTC)',
+             'inherit': True,
+             'format': 'time',
+             'hstore': False,
+             'width': 13,
+             'dwcid': 'http://rs.tdwg.org/dwc/terms/eventTime',
+             'valid': {
+                 'validate': 'time',
+                 'criteria': 'between',
+                 'minimum': 0,  # Time in decimal days
+                 'maximum': 0.9999999,  # Time in decimal days
+                 'input_title': 'Event Time (UTC)',
+                 'input_message': '''
+The time in UTC
+Format is HH:MM
+If MM > 59, HH will be HH + 1 ''',
+                 'error_title': 'Error',
+                 'error_message': 'Not a valid time'
+             },
+             'cell_format': {
+                 'num_format': 'hh:mm'
+             }
+             },
     {'name': 'middleDate',
              'disp_name': 'Middle Date',
              'inherit': True,
-             'format': 'timestamp',
+             'format': 'date',
              'hstore': 'other',
              'width': 12,
              'valid': {
@@ -244,7 +268,28 @@ This is in addition to the event ID'''
                  'maximum': '=TODAY()+2',
                  'input_title': 'Start Date',
                  'input_message': '''Middle date for event, for instance for noting the deepest point of a trawl or net haul.
-Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
+In UTC time''',
+                 'error_title': 'Error',
+                 'error_message': 'Not a valid date [2000-01-01, today + 2]'
+             },
+             'cell_format': {
+                 'num_format': 'yyyy-mm-dd'
+             }
+             },
+    {'name': 'middleTime',
+             'disp_name': 'Middle Time',
+             'inherit': True,
+             'format': 'time',
+             'hstore': 'other',
+             'width': 12,
+             'valid': {
+                 'validate': 'date',
+                 'criteria': 'between',
+                 'minimum': 0,  # Time in decimal days
+                 'maximum': 0.9999999,  # Time in decimal days
+                 'input_title': 'Start Date',
+                 'input_message': '''Middle time for event, for instance for noting the deepest point of a trawl or net haul.
+In UTC time''',
                  'error_title': 'Error',
                  'error_message': 'Not a valid date [2000-01-01, today + 2]'
              },
@@ -255,7 +300,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
     {'name': 'endDate',
              'disp_name': 'End Date',
              'inherit': True,
-             'format': 'timestamp',
+             'format': 'date',
              'hstore': False,
              'width': 12,
              'valid': {
@@ -264,7 +309,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
                  'minimum': dt.datetime(2000, 1, 1),
                  'maximum': '=TODAY()+2',
                  'input_title': 'End Date',
-                 'input_message': '''Timestamp of the end of the collection event period. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
+                 'input_message': '''Date of the end of the collection event period, in UTC time, e.g. 2022-04-10''',
                  'error_title': 'Error',
                  'error_message': 'Not a valid date [2000-01-01, today + 2]'
              },
@@ -272,6 +317,30 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
                  'num_format': 'yyyy-mm-dd'
              }
              },
+        {'name': 'endTime',
+                 'disp_name': 'Time (UTC)',
+                 'inherit': True,
+                 'format': 'time',
+                 'hstore': False,
+                 'width': 13,
+                 'dwcid': 'http://rs.tdwg.org/dwc/terms/eventTime',
+                 'valid': {
+                     'validate': 'time',
+                     'criteria': 'between',
+                     'minimum': 0,  # Time in decimal days
+                     'maximum': 0.9999999,  # Time in decimal days
+                     'input_title': 'End Time (UTC)',
+                     'input_message': '''
+    The time in UTC
+    Format is HH:MM
+    If MM > 59, HH will be HH + 1 ''',
+                     'error_title': 'Error',
+                     'error_message': 'Not a valid time'
+                 },
+                 'cell_format': {
+                     'num_format': 'hh:mm'
+                 }
+                 },
 
     # ==============================================================================
     # Coordinates
@@ -686,8 +755,8 @@ This is measured from the top of the core.''',
     # Personnel
     # ==============================================================================
     # FROM TABLE
-    {'name': 'recordedBy',
-              'disp_name': 'Recorded By',
+    {'name': 'recordedBy_name',
+              'disp_name': 'Recorded By (Name)',
               'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
               'format': 'text',
               'hstore': False,
@@ -695,8 +764,34 @@ This is measured from the top of the core.''',
                   'validate': 'any',
                   'input_title': 'Recorded By',
                   'input_message': '''Full name of who has recorded/analysed the data.
-Can be a concatenated list, separated by: ';'
-Example: John Doe; Ola Nordmann'''
+Can be a concatenated list, separated by: '|'
+Example: John Doe | Ola Nordmann'''
+              }
+              },
+    {'name': 'recordedBy_email',
+              'disp_name': 'Recorded By (Email)',
+              'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
+              'format': 'text',
+              'hstore': False,
+              'valid': {
+                  'validate': 'any',
+                  'input_title': 'Recorded By',
+                  'input_message': '''Email of who has recorded/analysed the data.
+Can be a concatenated list, separated by: '|'
+Example: johnd@unis.no | olan@unis.no'''
+              }
+              },
+    {'name': 'recordedBy_institution',
+              'disp_name': 'Recorded By (Institution)',
+              'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
+              'format': 'text',
+              'hstore': False,
+              'valid': {
+                  'validate': 'any',
+                  'input_title': 'Recorded By',
+                  'input_message': '''Institution of who has recorded/analysed the data.
+Can be a concatenated list, separated by: '|'. Please include for everyone listed, even if some are from the same institution.
+Example: University Centre in Svalbard | University Centre in Svalbard'''
               }
               },
     # FROM TABLE, LINK TO EMAIL AND INSTITUTION AUTOMATICALLY. WHAT ABOUT WHEN PI CHANGES INSTITUTION?
@@ -708,8 +803,8 @@ Example: John Doe; Ola Nordmann'''
                   'validate': 'any',
                   'input_title': 'PI name',
                   'input_message': '''Full name of the principal investigator of the data.
-Can be a concatenated list, separated by: ';'
-Example: John Doe; Ola Nordmann'''
+Can be a concatenated list, separated by: '|'
+Example: John Doe | Ola Nordmann'''
               }
               },
     {'name': 'pi_email',
@@ -720,9 +815,9 @@ Example: John Doe; Ola Nordmann'''
                   'validate': 'any',
                   'input_title': 'PI email',
                   'input_message': '''Email of the principal investigator of the data.
-Can be a concatenated list, separated by: ';'
+Can be a concatenated list, separated by: '|'
 Please include for every PI listed.
-Example: john.doe@unis.no; ola.nordmann@unis.no'''
+Example: john.doe@unis.no | ola.nordmann@unis.no'''
               }
               },
     {'name': 'pi_institution',
@@ -734,7 +829,7 @@ Example: john.doe@unis.no; ola.nordmann@unis.no'''
                   'input_title': 'PI institution',
                   'input_message': '''Main institution of the principal investigator of the data.
 Please include for every PI listed, even if the same.
-Example: University Centre in Svalbard; University Centre in Svalbard'''
+Example: University Centre in Svalbard | University Centre in Svalbard'''
               }
               },
 
@@ -1004,16 +1099,39 @@ When forming part of an Identification, this should be the name in lowest level 
                       'left': True
                   }
                   },
-    {'name': 'samplingProtocol',
-                    'disp_name': 'Sampling protocol',
+    {'name': 'samplingProtocolDoc',
+                    'disp_name': 'Sampling protocol document',
                     'format': 'text',
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
                         'validate': 'any',
                         'input_title': 'Sampling protocol',
-                        'input_message': '''This should be a reference to the sampling protocol used.
-For example: Nansen Legacy sampling protocols version XX section YY.'''
+                        'input_message': '''This should be a reference to the document that contains the sampling protocol used.
+Where possible, include the DOI of the document.'''
+                    }
+                    },
+    {'name': 'samplingProtocolSection',
+                    'disp_name': 'Sampling protocol section',
+                    'format': 'text',
+                    'hstore': False,
+                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
+                    'valid': {
+                        'validate': 'any',
+                        'input_title': 'Sampling protocol',
+                        'input_message': '''This should be a reference to the section within sampling protocol document.'''
+                    }
+                    },
+    {'name': 'samplingProtocolVersion',
+                    'disp_name': 'Sampling protocol version',
+                    'format': 'text',
+                    'hstore': False,
+                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
+                    'valid': {
+                        'validate': 'any',
+                        'input_title': 'Sampling protocol',
+                        'input_message': '''This should be a reference to the version of the sampling protocol document.
+                        This is not neccessary if you have included the DOI in the sampling protocol document.'''
                     }
                     },
 
