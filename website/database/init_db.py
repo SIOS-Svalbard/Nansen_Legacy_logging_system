@@ -198,7 +198,7 @@ def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
         if field['hstore'] == False and field['name'] != 'id':
             exe_str = exe_str + field['name'] + " " + field['format'] + ", "
 
-    exe_str = exe_str + "other hstore, metadata hstore, created timestamp with time zone, modified timestamp with time zone, history text, source text)"
+    exe_str = exe_str + "other hstore, metadata hstore)"
 
     cur.execute(exe_str)
 

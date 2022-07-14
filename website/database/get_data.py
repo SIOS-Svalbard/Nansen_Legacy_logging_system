@@ -10,8 +10,12 @@ def get_data(DBNAME, table):
         df["comment"].loc[df["comment"] == "nan"] = ""
     return df
 
+def get_all_ids(DBNAME, METADATA_CATALOGUE):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f'SELECT id FROM {METADATA_CATALOGUE};', con=conn)
+    return df
+
 def get_registered_activities(DBNAME, METADATA_CATALOGUE):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid is NULL;', con=conn)
     return df
-    

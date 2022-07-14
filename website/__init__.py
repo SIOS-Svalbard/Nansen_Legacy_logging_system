@@ -45,7 +45,11 @@ def create_app():
     app.config['SECRET_KEY'] = str(uuid.uuid1())
 
     from .views import views
+    from .registrations import registrations
+    from .logsamples import logsamples
 
     app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(registrations, url_prefix='/')
+    app.register_blueprint(logsamples, url_prefix='/')
 
     return app
