@@ -4,18 +4,47 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_data import get_data
+from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from website.other_functions.calculations import distanceCoordinates
+from website.database.checker import checker
+import website.database.fields as fields
+from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
-#from string import Template
 
 logsamples = Blueprint('logsamples', __name__)
 
 @logsamples.route('/editActivity/<eventID>', methods=['GET', 'POST'])
 def edit_activity_page(eventID):
+
+    activity_fields = {
+    'id': 'optional',
+    'catalogNumber': 'optional',
+    'stationName': 'required',
+    'gearType': 'required',
+    'eventDate': 'required',
+    'eventTime': 'required',
+    'endDate': 'optional',
+    'endTime': 'optional',
+    'decimalLatitude': 'required',
+    'decimalLongitude': 'required',
+    'endDecimalLatitude': 'optional',
+    'endDecimalLongitude': 'optional',
+    'minimumDepthInMeters': 'optional',
+    'maximumDepthInMeters': 'optional',
+    'minimumElevationInMeters': 'optional',
+    'maximumElevationInMeters': 'optional',
+    'pi_name': 'required',
+    'pi_email': 'required',
+    'recordedBy_name': 'required',
+    'recordedBy_email': 'required',
+    'samplingProtocolDoc': 'optional',
+    'samplingProtocolSection': 'optional',
+    'samplingProtocolVersion': 'optional',
+    'comments1': 'optional',
+    }
 
     df_personnel = get_data(DBNAME, 'personnel')
     df_personnel.sort_values(by='last_name', inplace=True)
@@ -32,338 +61,111 @@ def edit_activity_page(eventID):
 
     df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
 
-    if eventID == 'addNew':
-        decimalLatitude = None
-        decimalLongitude = None
-        stationName = ''
-        gearType = ''
-        catalogNumber = ''
-        endDecimalLatitude = None
-        endDecimalLongitude = None
-        eventDate = None
-        eventTime = None
-        endDate = None
-        endTime = None
-        minimumDepthInMeters = None
-        maximumDepthInMeters = None
-        comments1 = ''
-        pi_name = None
-        pi_email = None
-        samplingProtocolDoc = ''
-        samplingProtocolSection = ''
-        samplingProtocolVersion = ''
-        recordedBy_name = None
-        recordedBy_email = None
-    else:
-        decimalLatitude = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'decimallatitude'].iloc[0]
-        decimalLongitude = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'decimallongitude'].iloc[0]
-        stationName = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'stationname'].iloc[0]
-        gearType = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'geartype'].iloc[0]
-        catalogNumber = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'catalognumber'].iloc[0]
-        endDecimalLatitude = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'enddecimallatitude'].iloc[0]
-        endDecimalLongitude = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'enddecimallongitude'].iloc[0]
-        eventDate = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'eventdate'].iloc[0]
-        eventTime = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'eventtime'].iloc[0]
-        endDate = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'enddate'].iloc[0]
-        endTime = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'endtime'].iloc[0]
-        minimumDepthInMeters = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'minimumdepthinmeters'].iloc[0]
-        maximumDepthInMeters = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'maximumdepthinmeters'].iloc[0]
-        comments1 = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'comments1'].iloc[0]
-        pi_name = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'pi_name'].iloc[0]
-        pi_email = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'pi_email'].iloc[0]
-        samplingProtocolDoc = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'samplingprotocoldoc'].iloc[0]
-        samplingProtocolSection = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'samplingprotocolsection'].iloc[0]
-        samplingProtocolVersion = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'samplingprotocolversion'].iloc[0]
-        recordedBy_name = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'recordedby_name'].iloc[0]
-        recordedBy_email = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'recordedby_email'].iloc[0]
-        #minimumElevationInMeters =
-        #maximumElevationInMeters =
+    activity_metadata = {}
 
-    if pi_name is not None:
-        pi_names = pi_name.split(' | ')
-        pi_emails = pi_email.split(' | ')
+
+    for field in fields.fields:
+        if field['name'] in activity_fields.keys():
+            activity_metadata[field['name']] = {}
+            activity_metadata[field['name']]['disp_name'] = field['disp_name']
+            activity_metadata[field['name']]['description'] = field['description']
+            activity_metadata[field['name']]['format'] = field['format']
+            if activity_fields[field['name']] == 'required':
+                activity_metadata[field['name']]['required'] = True
+            else:
+                activity_metadata[field['name']]['required'] = False
+            if eventID == 'addNew':
+                if field['format'] in ['double precision', 'date', 'time']:
+                    activity_metadata[field['name']]['value'] = None
+                else:
+                    activity_metadata[field['name']]['value'] = ''
+            else:
+                print('HERE', field['name'], ': ', df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, field['name'].lower()].iloc[0])
+                activity_metadata[field['name']]['value'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, field['name'].lower()].iloc[0]
+
+    if activity_metadata['pi_name']['value'] != '':
+        pi_names = activity_metadata['pi_name']['value'].split(' | ')
+        pi_emails = activity_metadata['pi_email']['value'].split(' | ')
         pis = [f"{name} ({email})" for (name, email) in zip(pi_names, pi_emails)]
     else:
         pis = []
 
-    if recordedBy_name is not None:
-        recordedBy_names = recordedBy_name.split(' | ')
-        recordedBy_emails = recordedBy_email.split(' | ')
+    if activity_metadata['recordedBy_name']['value'] != '':
+        recordedBy_names = activity_metadata['recordedBy_name']['value'].split(' | ')
+        recordedBy_emails = activity_metadata['recordedBy_email']['value'].split(' | ')
         recordedBys = [f"{name} ({email})" for (name, email) in zip(recordedBy_names, recordedBy_emails)]
     else:
         recordedBys = []
 
+    activity_metadata['pi'] = {
+        'disp_name': 'PI(s)',
+        'description': 'Principal investigator for the sample or event',
+        'format': 'text',
+        'required': True,
+        'value': pis
+        }
+
+    activity_metadata['recordedBy'] = {
+        'disp_name': 'Recorded By',
+        'description': 'The person(s) responsible for recording the original event or sample.',
+        'format': 'text',
+        'required': True,
+        'value': recordedBys
+        }
+
+    fields_to_remove = ['pi_name', 'pi_email', 'recordedBy_name', 'recordedBy_email']
+    for f in fields_to_remove:
+        activity_metadata.pop(f)
+
     if request.method == 'POST':
-        new_uuid = request.form.get('uuid')
-        catalogNumber = request.form.get('catalogNumber')
-        stationName = request.form.get('stationName')
-        gearType = request.form.get('gearType')
-        decimalLatitude = request.form.get('decimalLatitude')
-        decimalLongitude = request.form.get('decimalLongitude')
-        endDecimalLatitude = request.form.get('endDecimalLatitude')
-        endDecimalLongitude = request.form.get('endDecimalLongitude')
-        eventDate = request.form.get('eventDate')
-        eventTime = request.form.get('eventTime')
-        endDate = request.form.get('endDate')
-        endTime = request.form.get('endTime')
-        minDepthInMeters = request.form.get('minDepthInMeters')
-        maxDepthInMeters = request.form.get('maxDepthInMeters')
-        minElevationInMeters = request.form.get('minElevationInMeters')
-        maxElevationInMeters = request.form.get('maxElevationInMeters')
-        pis = request.form.getlist('pis')
-        recordedBys = request.form.getlist('recordedBys')
-        samplingProtocolDoc = request.form.get('samplingProtocolDoc')
-        samplingProtocolSection = request.form.get('samplingProtocolSection')
-        samplingProtocolVersion = request.form.get('samplingProtocolVersion')
-        comment = request.form.get('comment')
+        form_input = request.form.to_dict(flat=False)
 
-        print(samplingProtocolDoc)
+        for key, value in form_input.items():
+            if len(value) == 1 and key not in ['pis', 'recordedBys']:
+                form_input[key] = value[0]
+            elif len(value) == 0:
+                form_input[key] = ''
 
-        startDateTime = dt.strptime(eventDate + eventTime, '%Y-%m-%d%H:%M:%S')
+        errors = checker(form_input, DBNAME, METADATA_CATALOGUE)
 
-        print(startDateTime)
-        if new_uuid != '':
-            new_uuid = new_uuid.replace('+','-').replace('/','-')
-            try:
-                uuid.UUID(new_uuid)
-            except:
-                new_uuid = False
+        print('ERRORS RETURNED:', errors, len(errors))
+        if len(errors) > 0:
+            for error in errors:
+                flash(error, category='error')
         else:
-            new_uuid = str(uuid.uuid1())
+            form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pis'], df_personnel)
+            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBys'], df_personnel)
 
-        if endDate != '' and endTime != '':
-            endDateTime = dt.strptime(endDate + endTime, '%Y-%m-%d%H:%M:%S')
-        else:
-            # Assigning a dummy datetime in the future for the below validations to work.
-            endDateTime = dt(3000,1,1)
-
-        if new_uuid == False:
-            flash('Invalid UUID. Enter a valid UUID or remove and one will be assigned automatically', category='error')
-        elif new_uuid in df_metadata_catalogue['id'].astype(str).values and new_uuid != eventID:
-            flash('Univerisally unique ID already registered. Please use a different one.', category='error')
-        elif stationName == '':
-            flash('Please select a station name from the drop-down list', category='error')
-        elif gearType == '':
-            flash('Please select a gear type from the drop-down list', category='error')
-        elif 'Choose...' in pis and len(pis) == 1:
-            flash('Please select at least one person as PI from the drop-down list', category='error')
-        elif 'Choose...' in recordedBys and len(recordedBys) == 1:
-            flash('Please select at least one person who was involved in recording this activity from the drop-down list', category='error')
-        elif endDate == '' and endTime != '':
-            flash('Please select an end time or remove the end date. Both or none are required.', category='error')
-        elif endDate != '' and endTime == '':
-            flash('Please select an end date or remove the end time. Both or none are required.', category='error')
-        elif endDateTime <= startDateTime:
-            flash('End date and time must be after the start date and time', category='error')
-        elif startDateTime >= dt.utcnow():
-            flash('Start date and time must be in the past', category='error')
-        elif endDateTime >= dt.utcnow() and endDateTime != dt(3000,1,1):
-            flash('End date and time must be in the past', category='error')
-        elif minDepthInMeters > maxDepthInMeters:
-            flash('Maximum depth must be greater than minimum depth', category='error')
-        elif minElevationInMeters > maxElevationInMeters:
-            flash('Maximum elevation must be greater than minimum elevation', category='error')
-        elif 'Choose...' in pis and len(pis) == 1:
-            flash('Please select at least one person as PI from the drop-down list', category='error')
-        elif 'Choose...' in recordedBys and len(recordedBys) == 1:
-            flash('Please select at least one person who was involved in recording this activity from the drop-down list', category='error')
-        else:
-
-            if endDateTime == dt(3000,1,1):
-                endDateTime = 'NULL'
-                endDate = 'NULL'
-                endTime = 'NULL'
-            else:
-                endDateTime = f"'{endDateTime}'"
-                endDate = f"'{endDate}'"
-                endTime = f"'{endTime}'"
-
-            pi_names_list = []
-            pi_emails_list = []
-            pi_institutions_list = []
-
-            for pi in pis:
-                if pi != 'Choose...':
-                    pi_first_name = df_personnel.loc[df_personnel['personnel'] == pi, 'first_name'].item()
-                    pi_last_name = df_personnel.loc[df_personnel['personnel'] == pi, 'last_name'].item()
-                    pi_name = pi_first_name + ' ' + pi_last_name
-                    pi_email = df_personnel.loc[df_personnel['personnel'] == pi, 'email'].item()
-                    pi_institution = df_personnel.loc[df_personnel['personnel'] == pi, 'institution'].item()
-
-                    pi_names_list.append(pi_name)
-                    pi_emails_list.append(pi_email)
-                    pi_institutions_list.append(pi_institution)
-
-            pi_names = " | ".join(pi_names_list)
-            pi_emails = " | ".join(pi_emails_list)
-            pi_institutions = " | ".join(pi_institutions_list)
-
-            recordedBy_names_list = []
-            recordedBy_emails_list = []
-            recordedBy_institutions_list = []
-
-            for recordedBy in recordedBys:
-                if recordedBy != 'Choose...':
-                    recordedBy_first_name = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'first_name'].item()
-                    recordedBy_last_name = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'last_name'].item()
-                    recordedBy_name = recordedBy_first_name + ' ' + recordedBy_last_name
-                    recordedBy_email = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'email'].item()
-                    recordedBy_institution = df_personnel.loc[df_personnel['personnel'] == recordedBy, 'institution'].item()
-
-                    recordedBy_names_list.append(recordedBy_name)
-                    recordedBy_emails_list.append(recordedBy_email)
-                    recordedBy_institutions_list.append(recordedBy_institution)
-
-            recordedBy_names = " | ".join(recordedBy_names_list)
-            recordedBy_emails = " | ".join(recordedBy_emails_list)
-            recordedBy_institutions = " | ".join(recordedBy_institutions_list)
-
-            # bottomdepthinmeters = get_bottom_depth(startDateTime, TOKTLOGGER) # Can't trust manually assigned time or coordinates so can't reliably harvest bottom depth
-
-            if endDecimalLatitude == '':
-                endDecimalLatitude = 'NULL'
-            if endDecimalLongitude == '':
-                endDecimalLongitude = 'NULL'
-            if minElevationInMeters == '':
-                minElevationInMeters = 'NULL'
-            if maxElevationInMeters == '':
-                maxElevationInMeters = 'NULL'
-            if minDepthInMeters == '':
-                minDepthInMeters = 'NULL'
-            if maxDepthInMeters == '':
-                maxDepthInMeters = 'NULL'
-            #if comment == None:
-            #    comment = ''
-
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
-            cur = conn.cursor()
+            for field in fields.fields:
+                if field['name'] in activity_fields.keys():
+                    if form_input[field['name']] == '':
+                        if field['format'] in ['int', 'double precision', 'time', 'date']:
+                            form_input[field['name']] = 'NULL'
+                        elif field['name'] == 'id':
+                            form_input[field['name']] = str(uuid.uuid1())
 
             if eventID == 'addNew':
 
-                created = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                history = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
-                source = "Add activity page"
+                form_input['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
+                form_input['source'] = "Record created manually from add activity page"
 
-                exe_str = f'''INSERT INTO {METADATA_CATALOGUE}
-                (id,
-                catalognumber,
-                cruisenumber,
-                vesselname,
-                stationname,
-                eventdate,
-                eventtime,
-                enddate,
-                endtime,
-                decimallatitude,
-                decimallongitude,
-                enddecimallatitude,
-                enddecimallongitude,
-                minimumdepthinmeters,
-                maximumdepthinmeters,
-                pi_name,
-                pi_email,
-                pi_institution,
-                recordedby_name,
-                recordedby_email,
-                recordedby_institution,
-                comments1,
-                geartype,
-                samplingprotocoldoc,
-                samplingprotocolsection,
-                samplingprotocolversion,
-                created,
-                modified,
-                history,
-                source,
-                other)
-                VALUES
-                ('{new_uuid}',
-                '{catalogNumber}',
-                {CRUISE_NUMBER},
-                '{VESSEL_NAME}',
-                '{stationName}',
-                '{eventDate}',
-                '{eventTime}',
-                {endDate},
-                {endTime},
-                {decimalLatitude},
-                {decimalLongitude},
-                {endDecimalLatitude},
-                {endDecimalLongitude},
-                {minDepthInMeters},
-                {maxDepthInMeters},
-                '{pi_name}',
-                '{pi_email}',
-                '{pi_institution}',
-                '{recordedBy_names}',
-                '{recordedBy_emails}',
-                '{recordedBy_institutions}',
-                '{comment}',
-                '{gearType}',
-                '{samplingProtocolDoc}',
-                '{samplingProtocolSection}',
-                '{samplingProtocolVersion}',
-                '{created}',
-                '{modified}',
-                '{history}',
-                '{source}',
-                '"minimumElevationInMeters" => "{minElevationInMeters}",
-                "maximumElevationInMeters" => "{maxElevationInMeters}",'
-                );'''
-
-                cur.execute(exe_str)
-
-                conn.commit()
-                cur.close()
-                conn.close()
+                insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
 
                 flash('Activity registered!', category='success')
 
             else:
 
-                history = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
-                history = history + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
-                modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
+                form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
+                form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-                exe_str = f'''UPDATE {METADATA_CATALOGUE} SET
-                id = '{new_uuid}',
-                catalognumber = '{catalogNumber}',
-                stationname = '{stationName}',
-                eventdate = '{eventDate}',
-                eventtime = '{eventTime}',
-                enddate = {endDate},
-                endtime = {endTime},
-                decimallatitude = {decimalLatitude},
-                decimallongitude = {decimalLongitude},
-                enddecimallatitude = {endDecimalLatitude},
-                enddecimallongitude = {endDecimalLongitude},
-                minimumdepthinmeters = {minDepthInMeters},
-                maximumdepthinmeters = {maxDepthInMeters},
-                pi_name = '{pi_name}',
-                pi_email = '{pi_email}',
-                pi_institution = '{pi_institution}',
-                recordedby_name = '{recordedBy_names}',
-                recordedby_email = '{recordedBy_emails}',
-                recordedby_institution = '{recordedBy_institutions}',
-                comments1 = '{comment}',
-                geartype = '{gearType}',
-                samplingprotocoldoc = '{samplingProtocolDoc}',
-                samplingprotocolsection = '{samplingProtocolSection}',
-                samplingprotocolversion = '{samplingProtocolVersion}',
-                modified = '{modified}',
-                history = '{history}'
-                WHERE id = '{eventID}';'''
-
-                cur.execute(exe_str)
-
-                conn.commit()
-                cur.close()
-                conn.close()
+                update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
 
                 flash('Activity edited!', category='success')
 
-            return redirect(url_for('logsamples.home'))
+            # return redirect(url_for('logsamples.home'))
 
     if eventID == 'addNew':
         eventID = ''
@@ -373,26 +175,8 @@ def edit_activity_page(eventID):
     personnel=personnel,
     gearTypes=gearTypes,
     stationNames=stationNames,
-    decimalLatitude=decimalLatitude,
-    decimalLongitude=decimalLongitude,
-    stationName=stationName,
-    gearType=gearType,
-    catalogNumber=catalogNumber,
     eventID=eventID,
-    endDecimalLatitude=endDecimalLatitude,
-    endDecimalLongitude=endDecimalLongitude,
-    eventDate=eventDate,
-    eventTime=eventTime,
-    endDate=endDate,
-    endTime=endTime,
-    minimumDepthInMeters=minimumDepthInMeters,
-    maximumDepthInMeters=maximumDepthInMeters,
-    #minimumElevationInMeters=minimumElevationInMeters,
-    #maximumElevationInMeters=maximumElevationInMeters,
+    activity_metadata=activity_metadata,
     pis=pis,
-    recordedBys=recordedBys,
-    samplingProtocolDoc=samplingProtocolDoc,
-    samplingProtocolVersion=samplingProtocolVersion,
-    samplingProtocolSection=samplingProtocolSection,
-    comments1=comments1
+    recordedBys=recordedBys
     )

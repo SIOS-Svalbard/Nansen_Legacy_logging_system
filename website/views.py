@@ -5,12 +5,10 @@ import getpass
 import uuid
 from website.database.get_data import get_data
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from website.other_functions.calculations import distanceCoordinates
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
-#from string import Template
 
 views = Blueprint('views', __name__)
 
