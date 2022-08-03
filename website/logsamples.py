@@ -63,6 +63,28 @@ def edit_activity_page(eventID):
 
     activity_metadata = {}
 
+    df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID]
+
+    # Creating new columns from the hstore key/value pairs in the 'other' column
+    df_activity = df_activity.join(df_activity['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
+         .reset_index()
+         .pivot(index=['level_0', 'match'], columns=0, values=1)
+         .groupby(level=0)
+         .agg(lambda x: ''.join(x.dropna()))
+         .replace('', np.nan)
+         )
+
+    other_columns = []
+    # Splitting hstore to get column names
+    if len(df_activity) == 1:
+        n = 0
+        for a in df_activity['other'].item().split(', '): # Split fields with values from other fields with values
+            for b in a.split('=>'): # Split fields from values
+                n = n + 1
+                if (n % 2) != 0: # Only append odd numbers, just the fields not the values
+                    c = b[1:-1] # Removing first an last character, the quotation marks (")
+                    other_columns.append(c)
+                    activity_fields[c] = 'optional'
 
     for field in fields.fields:
         if field['name'] in activity_fields.keys():
@@ -80,17 +102,19 @@ def edit_activity_page(eventID):
                 else:
                     activity_metadata[field['name']]['value'] = ''
             else:
-                print('HERE', field['name'], ': ', df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, field['name'].lower()].iloc[0])
-                activity_metadata[field['name']]['value'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, field['name'].lower()].iloc[0]
+                if field['name'] in other_columns:
+                    activity_metadata[field['name']]['value'] = df_activity[field['name']].item()
+                else:
+                    activity_metadata[field['name']]['value'] = df_activity[field['name'].lower()].item()
 
-    if activity_metadata['pi_name']['value'] != '':
+    if activity_metadata['pi_name']['value'] != None:
         pi_names = activity_metadata['pi_name']['value'].split(' | ')
         pi_emails = activity_metadata['pi_email']['value'].split(' | ')
         pis = [f"{name} ({email})" for (name, email) in zip(pi_names, pi_emails)]
     else:
         pis = []
 
-    if activity_metadata['recordedBy_name']['value'] != '':
+    if activity_metadata['recordedBy_name']['value'] != None:
         recordedBy_names = activity_metadata['recordedBy_name']['value'].split(' | ')
         recordedBy_emails = activity_metadata['recordedBy_email']['value'].split(' | ')
         recordedBys = [f"{name} ({email})" for (name, email) in zip(recordedBy_names, recordedBy_emails)]
@@ -118,57 +142,109 @@ def edit_activity_page(eventID):
         activity_metadata.pop(f)
 
     if request.method == 'POST':
+
         form_input = request.form.to_dict(flat=False)
 
         for key, value in form_input.items():
-            if len(value) == 1 and key not in ['pis', 'recordedBys']:
-                form_input[key] = value[0]
-            elif len(value) == 0:
-                form_input[key] = ''
+            # Required fields already included by default
+            if key in activity_metadata.keys():
+                if len(value) == 1 and key not in ['pis', 'recordedBys']:
+                    form_input[key] = value[0]
+                    activity_metadata[key]['value'] = value[0]
+                elif key == 'pis':
+                    pis = value
+                elif key == 'recordedBys':
+                    recordedBys = value
+                elif len(value) == 0:
+                    form_input[key] = ''
+                    activity_metadata[key]['value'] = ''
 
-        errors = checker(form_input, DBNAME, METADATA_CATALOGUE)
+            # Additional optional fields added by user
+            elif value not in [['submit'],['addfields']]:
+                activity_metadata[key] = {}
+                for field in fields.fields:
+                    if field['name'] == key:
+                        activity_metadata[key] = {}
+                        activity_metadata[key]['disp_name'] = field['disp_name']
+                        activity_metadata[key]['description'] = field['description']
+                        activity_metadata[key]['format'] = field['format']
+                        # First POST request is when user clicks 'add fields', and value of 'y' assigned as value for all fields with checked boxes
+                        if value == ['y']:
+                            if field['format'] in ['double precision', 'date', 'time']:
+                                activity_metadata[key]['value'] = None
+                            else:
+                                activity_metadata[key]['value'] = ''
+                        # Not first POST request, in cases where a field has been added and then need to redisplay, e.g. error on first load.
+                        else:
+                            if len(value) == 1:
+                                form_input[key] = value[0]
+                                activity_metadata[key]['value'] = value[0]
+                            elif len(value) == 0:
+                                form_input[key] = ''
+                                activity_metadata[key]['value'] = ''
 
-        print('ERRORS RETURNED:', errors, len(errors))
-        if len(errors) > 0:
-            for error in errors:
-                flash(error, category='error')
-        else:
-            form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pis'], df_personnel)
-            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBys'], df_personnel)
+        if request.form['submitbutton'] == 'submit':
+            print('FORM INPUT',form_input)
+            errors = checker(form_input, df_metadata_catalogue, DBNAME, eventID)
 
-            for field in fields.fields:
-                if field['name'] in activity_fields.keys():
-                    if form_input[field['name']] == '':
-                        if field['format'] in ['int', 'double precision', 'time', 'date']:
-                            form_input[field['name']] = 'NULL'
-                        elif field['name'] == 'id':
-                            form_input[field['name']] = str(uuid.uuid1())
-
-            if eventID == 'addNew':
-
-                form_input['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
-                form_input['source'] = "Record created manually from add activity page"
-
-                insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
-
-                flash('Activity registered!', category='success')
+            if len(errors) > 0:
+                for error in errors:
+                    flash(error, category='error')
 
             else:
+                form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pis'], df_personnel)
+                form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBys'], df_personnel)
 
-                form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
-                form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
-                form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                for field in fields.fields:
+                    if field['name'] in activity_fields.keys():
+                        if form_input[field['name']] == '':
+                            if field['format'] in ['int', 'double precision', 'time', 'date']:
+                                form_input[field['name']] = 'NULL'
+                            elif field['name'] == 'id':
+                                form_input[field['name']] = str(uuid.uuid1())
 
-                update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+                form_input['eventID'] = form_input['id']
 
-                flash('Activity edited!', category='success')
+                if eventID == 'addNew':
 
-            # return redirect(url_for('logsamples.home'))
+                    form_input['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
+                    form_input['source'] = "Record created manually from add activity page"
+
+                    insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+
+                    flash('Activity registered!', category='success')
+
+                else:
+
+                    form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
+                    form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
+                    form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                    update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+
+                    flash('Activity edited!', category='success')
+
+                return redirect(url_for('views.home'))
 
     if eventID == 'addNew':
         eventID = ''
+
+    # Setting up the 'modal' where the user can add more fields
+    # Removing fields already included on the form and creating a list of groups so they can be grouped on the UI.
+    groups = []
+    extrafields=[]
+    for field in fields.fields:
+        if field['grouping'] not in ['Record Details', 'ID', 'Cruise Details']:
+            if field['name'] not in activity_fields.keys() and field['name'] not in ['pi_name', 'pi_email', 'pi_institution', 'recordedBy_name', 'recordedBy_email', 'recordedBy_institution']:
+                extrafields.append(field)
+                groups.append(field['grouping'])
+
+    groups = sorted(list(set(groups)))
+
+    for key, val in activity_metadata.items():
+        print(key, val, '\n')
 
     return render_template(
     "addActivity.html",
@@ -178,5 +254,7 @@ def edit_activity_page(eventID):
     eventID=eventID,
     activity_metadata=activity_metadata,
     pis=pis,
-    recordedBys=recordedBys
+    recordedBys=recordedBys,
+    fields=extrafields,
+    groups=groups
     )

@@ -162,6 +162,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
 
         exe_str = f'''INSERT INTO {METADATA_CATALOGUE}
         (id,
+        eventid,
         catalognumber,
         cruisenumber,
         vesselname,
@@ -183,6 +184,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         source)
         VALUES
         ('{activity["id"]}',
+        '{activity["id"]}',
         '{readable_id}',
         {CRUISE_NUMBER},
         '{VESSEL_NAME}',
