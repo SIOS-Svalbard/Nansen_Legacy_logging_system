@@ -13,6 +13,28 @@ Each field is defined as a dictionary which should contain:
     disp_name :  The displayed name of the field
     format:      uuid, int, text, time, date, double precision, boolean
     description: Description of the field
+    grouping:    Categorising the fields so they can be grouped on the user interface, making it easier for the user to find what they are looking for.
+                groups: ['Water',
+                        'Species, Classifications and Counts',
+                        'Comments',
+                        'Sampling Protocol',
+                        'Filtering and Volumes',
+                        'File Details',
+                        'Sediment',
+                        'ID',
+                        'Numbering',
+                        'Coordinates',
+                        'Storage',
+                        'Timing',
+                        'Cruise Details',
+                        'Station',
+                        'Sample Type/Intended Method',
+                        'Required',
+                        'Record Details',
+                        'Depths/Elevations',
+                        'Measurements, Facts, Descriptions',
+                        'Ice',
+                        'Ship']
     hstore:      Whether the field should be contained in an hstore column or serve as a standalone column.
                  The hstore columns are:
                     metadata (metadata describing the entire dataset, e.g. title, abstract, PI details)
@@ -21,12 +43,11 @@ Each field is defined as a dictionary which should contain:
                     metadata
                     other
                     False
-                 DIFFERENT HSTORES FOR DIFFERENT GROUPS?
 Optional fields are:
-    sampleTypes: list
-            List of sample types that the term is a recommended column for. Can be 'ALL' or taken from sample types table.
-    intendedMethods: list
-            List of intended methods that the term is a recommended column for. Can be 'ALL' or taken from intended methods table.
+    # sampleTypes: list
+    #         List of sample types that the term is a recommended column for. Can be 'ALL' or taken from sample types table.
+    # intendedMethods: list
+    #         List of intended methods that the term is a recommended column for. Can be 'ALL' or taken from intended methods table.
     width : int
             the width of the cell
     long_list: Boolean
@@ -70,6 +91,7 @@ fields = [
 Could be read in with a code reader.''',
            'width': 38,
            'format': 'uuid',
+           'grouping': 'ID',
            'hstore': False,
            'valid': {
                'validate': 'length',
@@ -89,6 +111,7 @@ Should be a 36 characters long universally unique ID (UUID) including 4 '-'
 Could be read in with a code reader.''',
                  'width': 38,
                  'format': 'uuid',
+                 'grouping': 'ID',
                  'hstore': False,
                  'valid': {
                      'validate': 'length',
@@ -102,11 +125,69 @@ Could be read in with a code reader.''',
                      'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
                  }
                  },
+    {'name': 'eventID',
+           'disp_name': 'Event ID',
+           'description': '''An identifier for the set of information associated with an Event (something that occurs at a place and time)''',
+           'width': 38,
+           'format': 'uuid',
+           'grouping': 'ID',
+           'hstore': False,
+           'dwcid': 'http://rs.tdwg.org/dwc/terms/eventID',
+           'valid': {
+               'validate': 'length',
+               'criteria': '==',
+               'value': 36,
+               'input_title': 'ID',
+               'input_message': '''Should be a 36 character long universally unique ID (UUID) including 4 '-'.
+Could be read in with a code reader.''',
+               'error_title': 'Error',
+               'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
+           }
+           },
+    {'name': 'occurrenceID',
+           'disp_name': 'Occurrence ID',
+           'description': '''An identifier for the Occurrence (as opposed to a particular digital record of the occurrence)''',
+           'width': 38,
+           'format': 'uuid',
+           'grouping': 'ID',
+           'hstore': False,
+           'dwcid': 'http://rs.tdwg.org/dwc/terms/occurenceID',
+           'valid': {
+               'validate': 'length',
+               'criteria': '==',
+               'value': 36,
+               'input_title': 'ID',
+               'input_message': '''Should be a 36 character long universally unique ID (UUID) including 4 '-'.
+Could be read in with a code reader.''',
+               'error_title': 'Error',
+               'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
+           }
+           },
+    {'name': 'measurementID',
+           'disp_name': 'Measurement ID',
+           'description': '''An identifier for the MeasurementOrFact (information pertaining to measurements, facts, characteristics, or assertions)''',
+           'width': 38,
+           'format': 'uuid',
+           'grouping': 'ID',
+           'hstore': False,
+           'dwcid': 'http://rs.tdwg.org/dwc/terms/measurementID',
+           'valid': {
+               'validate': 'length',
+               'criteria': '==',
+               'value': 36,
+               'input_title': 'ID',
+               'input_message': '''Should be a 36 character long universally unique ID (UUID) including 4 '-'.
+Could be read in with a code reader.''',
+               'error_title': 'Error',
+               'error_message': "Needs to be a 36 characters long universally unique ID (UUID) including 4 '- '"
+           }
+           },
     {'name': 'catalogNumber',
                  'disp_name': 'Catalogue Number',
                  'description': '''Your own optional ID for each record, preferably unique. Note that each sample is also assigned its own UUID in the "ID" field by the system.''',
                  'width': 38,
                  'format': 'text',
+                 'grouping': 'ID',
                  'hstore': False,
                  'valid': {
                      'validate': 'length',
@@ -125,6 +206,7 @@ Could be for instance the niskin bottle number.
 Positive integer''',
                 'inherit': True,
                 'format': 'int',
+                'grouping': 'Numbering',
                 'hstore': False,
                 'valid': {
                     'validate': 'integer',
@@ -143,6 +225,7 @@ Positive integer''',
                 'description': '''This is an additional number used to identify the sample.
 This is in addition to the ID''',
                 'format': 'int',
+                'grouping': 'Numbering',
                 'hstore': 'other',
                 'dwcid': 'http://rs.tdwg.org/dwc/terms/recordNumber',
                 'valid': {
@@ -154,13 +237,14 @@ This is in addition to the ID'''
                 },
 
     # ==============================================================================
-    # Cruise details
+    # Cruise Details
     # ==============================================================================
     {'name': 'cruiseNumber',
                 'disp_name': 'Cruise number',
                 'description': 'A number that can be used to uniquely identify each cruise',
                 'inherit': True,
                 'format': 'int',
+                'grouping': 'Cruise Details',
                 'hstore': False,
                 'valid': {
                     'validate': 'any',
@@ -175,6 +259,7 @@ This is in addition to the ID'''
                 'description': 'Full name of the cruise',
                 'inherit': True,
                 'format': 'text',
+                'grouping': 'Cruise Details',
                 'hstore': False
                 },
     {'name': 'projectName',
@@ -182,6 +267,7 @@ This is in addition to the ID'''
                 'description': 'Full name of the project',
                 'inherit': True,
                 'format': 'text',
+                'grouping': 'Cruise Details',
                 'hstore': False
                 },
     {'name': 'vesselName',
@@ -189,6 +275,7 @@ This is in addition to the ID'''
                 'description': 'Full name of the vessel',
                 'inherit': True,
                 'format': 'text',
+                'grouping': 'Cruise Details',
                 'hstore': False
                 },
 
@@ -201,6 +288,7 @@ This is in addition to the ID'''
           'inherit': True,
           'width': 13,
           'format': 'int',
+          'grouping': 'Station',
           'hstore': False,
           'valid': {
               'validate': 'any',
@@ -217,6 +305,7 @@ This is in addition to the ID'''
                'inherit': True,
                'width': 13,
                'format': 'text',
+               'grouping': 'Required',
                'hstore': False,
                'valid': {
                    'validate': 'any',
@@ -229,10 +318,11 @@ This is in addition to the ID'''
     # Timestamps
     # ==============================================================================
     {'name': 'eventDate',
-             'disp_name': 'Event Date',
+             'disp_name': 'Event Date (UTC)',
              'description': 'Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z',
              'inherit': True,
              'format': 'date',
+             'grouping': 'Required',
              'hstore': False,
              'width': 12,
              'dwcid': 'http://rs.tdwg.org/dwc/terms/eventDate',
@@ -255,6 +345,7 @@ This is in addition to the ID'''
              'description': 'Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z',
              'inherit': True,
              'format': 'time',
+             'grouping': 'Required',
              'hstore': False,
              'width': 13,
              'dwcid': 'http://rs.tdwg.org/dwc/terms/eventTime',
@@ -276,11 +367,12 @@ If MM > 59, HH will be HH + 1 ''',
              }
              },
     {'name': 'middleDate',
-             'disp_name': 'Middle Date',
+             'disp_name': 'Middle Date (UTC)',
              'description': '''Middle date for event, for instance for noting the deepest point of a trawl or net haul.
 Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
              'inherit': True,
              'format': 'date',
+             'grouping': 'Timing',
              'hstore': 'other',
              'width': 12,
              'valid': {
@@ -299,11 +391,12 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z''',
              }
              },
     {'name': 'middleTime',
-             'disp_name': 'Middle Time',
+             'disp_name': 'Middle Time (UTC)',
              'description': '''Middle time for event, for instance for noting the deepest point of a trawl or net haul.
 Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z''',
              'inherit': True,
              'format': 'time',
+             'grouping': 'Timing',
              'hstore': 'other',
              'width': 12,
              'valid': {
@@ -322,11 +415,12 @@ Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z''',
              }
              },
     {'name': 'endDate',
-             'disp_name': 'End Date',
+             'disp_name': 'End Date (UTC)',
              'description': '''Date of the end of the collection event period,
 Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
              'inherit': True,
              'format': 'date',
+             'grouping': 'Timing',
              'hstore': False,
              'width': 12,
              'valid': {
@@ -343,32 +437,33 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
                  'num_format': 'yyyy-mm-dd'
              }
              },
-        {'name': 'endTime',
-                 'disp_name': 'End Time',
-                 'description': '''Time of the end of the collection event period,
-    Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z''',
-                 'inherit': True,
-                 'format': 'time',
-                 'hstore': False,
-                 'width': 13,
-                 'dwcid': 'http://rs.tdwg.org/dwc/terms/eventTime',
-                 'valid': {
-                     'validate': 'time',
-                     'criteria': 'between',
-                     'minimum': 0,  # Time in decimal days
-                     'maximum': 0.9999999,  # Time in decimal days
-                     'input_title': 'End Time (UTC)',
-                     'input_message': '''
-    The time in UTC
-    Format is HH:MM
-    If MM > 59, HH will be HH + 1 ''',
-                     'error_title': 'Error',
-                     'error_message': 'Not a valid time'
-                 },
-                 'cell_format': {
-                     'num_format': 'hh:mm'
-                 }
-                 },
+    {'name': 'endTime',
+             'disp_name': 'End Time (UTC)',
+             'description': '''Time of the end of the collection event period,
+Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z''',
+             'inherit': True,
+             'format': 'time',
+             'grouping': 'Timing',
+             'hstore': False,
+             'width': 13,
+             'dwcid': 'http://rs.tdwg.org/dwc/terms/eventTime',
+             'valid': {
+                 'validate': 'time',
+                 'criteria': 'between',
+                 'minimum': 0,  # Time in decimal days
+                 'maximum': 0.9999999,  # Time in decimal days
+                 'input_title': 'End Time (UTC)',
+                 'input_message': '''
+The time in UTC
+Format is HH:MM
+If MM > 59, HH will be HH + 1 ''',
+                 'error_title': 'Error',
+                 'error_message': 'Not a valid time'
+             },
+             'cell_format': {
+                 'num_format': 'hh:mm'
+             }
+             },
 
     # ==============================================================================
     # Coordinates
@@ -380,6 +475,7 @@ Northern hemisphere is positive.
 Example: 78.1500''',
                    'inherit': True,
                    'format': 'double precision',
+                   'grouping': 'Required',
                    'hstore': False,
                    'width': 10,
                    'units': 'degrees_north',
@@ -407,6 +503,7 @@ East of Greenwich (0) is positive.
 Example: 15.0012''',
                     'inherit': True,
                     'format': 'double precision',
+                    'grouping': 'Required',
                     'hstore': False,
                     'width': 11,
                     'units': 'degree_east',
@@ -434,6 +531,7 @@ Example: 15.0012''',
    Example: 78.1500''',
                       'inherit': True,
                       'format': 'double precision',
+                      'grouping': 'Coordinates',
                       'hstore': False,
                       'units': 'degrees_north',
                       'valid': {
@@ -460,6 +558,7 @@ Example: 78.1500''',
    Example: 15.0012''',
                        'inherit': True,
                        'format': 'double precision',
+                       'grouping': 'Coordinates',
                        'hstore': False,
                        'units': 'degree_east',
                        'valid': {
@@ -487,6 +586,7 @@ Northern hemisphere is positive.
 Example: 78.1500''',
                          'inherit': True,
                          'format': 'double precision',
+                         'grouping': 'Coordinates',
                          'hstore': 'other',
                          'units': 'degrees_north',
                          'valid': {
@@ -514,6 +614,7 @@ East of Greenwich (0) is positive.
 Example: 15.0012''',
                           'inherit': True,
                           'format': 'double precision',
+                          'grouping': 'Coordinates',
                           'hstore': 'other',
                           'units': 'degree_east',
                           'valid': {
@@ -543,6 +644,7 @@ Example: 15.0012''',
 Decimal number >=0.''',
                               'inherit': True,
                               'format': 'double precision',
+                              'grouping': 'Ship',
                               'hstore': 'other',
                               'units': 'm/s',
                               'valid': {
@@ -567,6 +669,7 @@ Bathymetric depth at measurement site.
 0 is the surface.''',
                        'inherit': True,
                        'format': 'double precision',
+                       'grouping': 'Depths/Elevations',
                        'hstore': False,
                        'units': 'm',
                        'cf_name': 'sea_floor_depth_below_sea_surface',
@@ -582,30 +685,6 @@ Bathymetric depth at measurement site.
                            'error_message': 'Float >= 0'
                        }
                        },
-    {'name': 'maximumDepthInMeters',
-                        'disp_name': 'Maximum depth(m)',
-                        'description': '''The maximum depth sampled in meters.
-0 m is the surface.
-Positive numbers for increasing depth.''',
-                        'inherit': True,
-                        'inherit_weak': True,
-                        'format': 'double precision',
-                        'hstore': False,
-                        'units': 'm',
-                        'dwcid': 'http://rs.tdwg.org/dwc/terms/maximumDepthInMeters',
-                        'valid': {
-                            'validate': 'decimal',
-                            'criteria': 'between',
-                            'minimum': 0,
-                            'maximum': 9999,
-                            'input_title': 'Maximum depth in (m)',
-                            'input_message': '''The maximum depth sampled in meters.
-0 m is the surface.
-Positive numbers for increasing depth.''',
-                            'error_title': 'Error',
-                            'error_message': 'Float[0, 9999]'
-                        }
-                        },
     {'name': 'minimumDepthInMeters',
                         'disp_name': 'Minimum depth (m)',
                         'description': '''The minimum depth sampled in meters.
@@ -614,6 +693,7 @@ Positive numbers for increasing depth.''',
                         'inherit': True,
                         'inherit_weak': True,
                         'format': 'double precision',
+                        'grouping': 'Depths/Elevations',
                         'hstore': False,
                         'width': 22,
                         'units': 'm',
@@ -633,29 +713,31 @@ Positive numbers for increasing depth.''',
                             'error_message': 'Decimal [0, 9999]'
                         }
                         },
-    {'name': 'maximumElevationInMeters',
-                            'disp_name': 'Maximum elevation(m)',
-                            'description': '''The maximum elevation sampled in meters.
+    {'name': 'maximumDepthInMeters',
+                        'disp_name': 'Maximum depth(m)',
+                        'description': '''The maximum depth sampled in meters.
 0 m is the surface.
-Positive numbers for increasing elevation.''',
-                            'inherit': True,
-                            'inherit_weak': True,
-                            'format': 'double precision',
-                            'hstore': False,
-                            'units': 'm',
-                            'dwcid': 'http://rs.tdwg.org/dwc/terms/maximumElevationInMeters',
-                            'valid': {
-                                'validate': 'decimal',
-                                'criteria': '>=',
-                                'value': 0,
-                                'input_title': 'Maximum elevation in (m)',
-                                'input_message': '''The maximum elevation sampled in meters.
+Positive numbers for increasing depth.''',
+                        'inherit': True,
+                        'inherit_weak': True,
+                        'format': 'double precision',
+                        'grouping': 'Depths/Elevations',
+                        'hstore': False,
+                        'units': 'm',
+                        'dwcid': 'http://rs.tdwg.org/dwc/terms/maximumDepthInMeters',
+                        'valid': {
+                            'validate': 'decimal',
+                            'criteria': 'between',
+                            'minimum': 0,
+                            'maximum': 9999,
+                            'input_title': 'Maximum depth in (m)',
+                            'input_message': '''The maximum depth sampled in meters.
 0 m is the surface.
-Positive numbers for increasing elevation.''',
-                                'error_title': 'Error',
-                                'error_message': 'Float >=0'
-                            }
-                            },
+Positive numbers for increasing depth.''',
+                            'error_title': 'Error',
+                            'error_message': 'Float[0, 9999]'
+                        }
+                        },
     {'name': 'minimumElevationInMeters',
                             'disp_name': 'Minimum elevation(m)',
                             'description': '''The minimum elevation sampled in meters.
@@ -664,6 +746,7 @@ Positive numbers for increasing elevation.''',
                             'inherit': True,
                             'inherit_weak': True,
                             'format': 'double precision',
+                            'grouping': 'Depths/Elevations',
                             'hstore': False,
                             'units': 'm',
                             'dwcid': 'http://rs.tdwg.org/dwc/terms/minimumElevationInMeters',
@@ -679,6 +762,30 @@ Positive numbers for increasing elevation.''',
                                 'error_message': 'Float >=0'
                             }
                             },
+    {'name': 'maximumElevationInMeters',
+                            'disp_name': 'Maximum elevation(m)',
+                            'description': '''The maximum elevation sampled in meters.
+0 m is the surface.
+Positive numbers for increasing elevation.''',
+                            'inherit': True,
+                            'inherit_weak': True,
+                            'format': 'double precision',
+                            'grouping': 'Depths/Elevations',
+                            'hstore': False,
+                            'units': 'm',
+                            'dwcid': 'http://rs.tdwg.org/dwc/terms/maximumElevationInMeters',
+                            'valid': {
+                                'validate': 'decimal',
+                                'criteria': '>=',
+                                'value': 0,
+                                'input_title': 'Maximum elevation in (m)',
+                                'input_message': '''The maximum elevation sampled in meters.
+0 m is the surface.
+Positive numbers for increasing elevation.''',
+                                'error_title': 'Error',
+                                'error_message': 'Float >=0'
+                            }
+                            },
 
     # ==============================================================================
     # Paleo
@@ -688,6 +795,7 @@ Positive numbers for increasing elevation.''',
                               'description': 'The total sediment core length decimal in meters.',
                               'units': 'm',
                               'format': 'double precision',
+                              'grouping': 'Sediment',
                               'hstore': 'other',
                               'valid': {
                                   'validate': 'decimal',
@@ -707,6 +815,7 @@ Maximum for multicores is 60 cm
 Maximum for gravity and piston cores is 3 000 cm.''',
                                          'units': 'cm',
                                          'format': 'double precision',
+                                         'grouping': 'Sediment',
                                          'hstore': 'other',
                                          'valid': {
                                              'validate': 'decimal',
@@ -728,6 +837,7 @@ Maximum for gravity and piston cores is 3 000 cm.''',
 This is measured from the top of the core.''',
                                          'units': 'cm',
                                          'format': 'double precision',
+                                         'grouping': 'Sediment',
                                          'hstore': 'other',
                                          'valid': {
                                              'validate': 'decimal',
@@ -749,6 +859,7 @@ This is measured from the top of the core.''',
             'disp_name': 'Colour',
             'description': 'Colour of the sample or specimen',
             'format': 'text',
+            'grouping': 'Measurements, Facts, Descriptions',
             'hstore': 'other',
             'valid': {
                 'validate': 'any',
@@ -760,6 +871,7 @@ This is measured from the top of the core.''',
             'disp_name': 'Smell',
             'description': 'A descriptive word or term for the smell of the sample or specimen',
             'format': 'text',
+            'grouping': 'Measurements, Facts, Descriptions',
             'hstore': 'other',
             'valid': {
                 'validate': 'any',
@@ -779,6 +891,7 @@ Can be a concatenated list, separated by: '|'
 Example: John Doe | Ola Nordmann''',
               'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -795,6 +908,7 @@ Can be a concatenated list, separated by: '|'
 Example: johnd@unis.no | olan@unis.no''',
               'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -811,6 +925,7 @@ Can be a concatenated list, separated by: '|'. Please include for everyone liste
 Example: University Centre in Svalbard | University Centre in Svalbard''',
               'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -827,6 +942,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
 Can be a concatenated list, separated by: '|'
 Example: John Doe | Ola Nordmann''',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -843,6 +959,7 @@ Can be a concatenated list, separated by: '|'
 Please include for every PI listed.
 Example: john.doe@unis.no | ola.nordmann@unis.no''',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -859,6 +976,7 @@ Example: john.doe@unis.no | ola.nordmann@unis.no'''
 Please include for every PI listed, even if the same.
 Example: University Centre in Svalbard | University Centre in Svalbard''',
               'format': 'text',
+              'grouping': 'Required',
               'hstore': False,
               'valid': {
                   'validate': 'any',
@@ -877,6 +995,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
                'disp_name': 'Storage temp',
                'description': 'Choose the storage temperature used',
                'format': 'text',
+               'grouping': 'Storage',
                'hstore': 'other',
                'width': 15,
                'valid': {
@@ -897,6 +1016,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
             'disp_name': 'Fixative',
             'description': 'Fixative used for sample',
             'format': 'text',
+            'grouping': 'Storage',
             'hstore': 'other',
             'valid': {
                 'validate': 'any',
@@ -910,6 +1030,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
                   'description': '''The long-term storage location onshore, immediately after the cruise.
 This could for instance be an institution or something more specific.''',
                   'format': 'text',
+                  'grouping': 'Storage',
                   'hstore': False,
                   'valid': {
                       'validate': 'any',
@@ -922,6 +1043,7 @@ This could for instance be an institution or something more specific.'''
                    'disp_name': 'Dilution factor',
                    'description': 'Factor by which the sample has been diluted by',
                    'format': 'int',
+                   'grouping': 'Filtering and Volumes',
                    'hstore': 'other',
                    'width': 20,
                    'valid': {
@@ -938,6 +1060,7 @@ This could for instance be an institution or something more specific.'''
               'disp_name': 'Sample Owner',
               'description': 'Person or institution who owns the sample',
               'format': 'text',
+              'grouping': 'Storage',
               'hstore': 'other',
               'valid': {
                   'validate': 'any',
@@ -954,6 +1077,7 @@ This could for instance be an institution or something more specific.'''
           'description': '''Choose the filter used.
 If no filtering is being done choose None''',
           'format': 'text',
+          'grouping': 'Filtering and Volumes',
           'hstore': 'other',
           'width': 15,
           'valid': {
@@ -970,6 +1094,7 @@ If no filtering is being done choose None''',
                                'disp_name': 'Filtered volume (mL)',
                                'description': 'Filtered volume in decimal millilitres',
                                'format': 'double precision',
+                               'grouping': 'Filtering and Volumes',
                                'hstore': 'other',
                                'valid': {
                                    'validate': 'decimal',
@@ -985,6 +1110,7 @@ If no filtering is being done choose None''',
                 'disp_name': 'Methanol volume (mL)',
                 'description': 'Volume of methanol used in millilitres',
                 'format': 'double precision',
+                'grouping': 'Filtering and Volumes',
                 'hstore': 'other',
                 'units': 'mL',
                 'valid': {
@@ -1001,6 +1127,7 @@ If no filtering is being done choose None''',
                              'disp_name': 'Sample volume (mL)',
                              'description': 'Sample volume in millilitres',
                              'format': 'double precision',
+                             'grouping': 'Filtering and Volumes',
                              'hstore': 'other',
                              'units': 'mL',
                              'valid': {
@@ -1018,6 +1145,7 @@ If no filtering is being done choose None''',
                  'description': 'Subsample volume in millilitres',
                  'units': 'mL',
                  'format': 'double precision',
+                 'grouping': 'Filtering and Volumes',
                  'hstore': 'other',
                  'valid': {
                      'validate': 'decimal',
@@ -1038,6 +1166,7 @@ If no filtering is being done choose None''',
                    'description': 'The number of individuals present at the time of the Occurrence.',
                    'format': 'int',
                    'hstore': 'other',
+                   'grouping': 'Species, Classifications and Counts',
                    'width': 20,
                    'units': '1',
                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:individualCount',
@@ -1055,6 +1184,7 @@ If no filtering is being done choose None''',
             'disp_name': 'Taxon',
             'description': 'A group of organisms considered by taxonomists to form a homogeneous unit.',
             'format': 'text',
+            'grouping': 'Species, Classifications and Counts',
             'hstore': 'other',
             'dwcid': 'http://rs.tdwg.org/dwc/terms/Taxon',
             'valid': {
@@ -1067,6 +1197,7 @@ If no filtering is being done choose None''',
             'disp_name': 'Phylum',
             'description': 'The full scientific name of the phylum or division in which the taxon is classified.',
             'format': 'text',
+            'grouping': 'Species, Classifications and Counts',
             'hstore': 'other',
             'dwcid': 'https://dwc.tdwg.org/terms/#dwc:phylum',
             'valid': {
@@ -1080,6 +1211,7 @@ If no filtering is being done choose None''',
        'description': '''Gender of the specimen.
 Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'format': 'text',
+       'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'http://rs.tdwg.org/dwc/terms/sex',
                 'valid': {
@@ -1095,6 +1227,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'disp_name': 'Kingdom',
        'description': 'The full scientific name of the kingdom in which the taxon is classified.',
        'format': 'text',
+       'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/terms/#dwc:kingdom',
                 'valid': {
@@ -1108,6 +1241,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'disp_name': 'Class',
        'description': 'The full scientific name of the class in which the taxon is classified.',
        'format': 'text',
+       'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/list/#dwc_class',
                 'valid': {
@@ -1120,6 +1254,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'disp_name': 'Order',
        'description': 'The full scientific name of the order in which the taxon is classified.',
        'format': 'text',
+       'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/terms/#dwc:order',
                 'valid': {
@@ -1132,6 +1267,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'disp_name': 'Family',
        'description': 'The full scientific name of the family in which the taxon is classified.',
        'format': 'text',
+       'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/list/#dwc_family',
                 'valid': {
@@ -1145,6 +1281,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
                   'description': '''The full scientific name, with authorship and date information if known.
 When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined''',
                   'format': 'text',
+                  'grouping': 'Species, Classifications and Counts',
                   'hstore': 'other',
                   'width': 20,
                   'dwcid': 'http://rs.tdwg.org/dwc/terms/scientificName',
@@ -1163,11 +1300,12 @@ When forming part of an Identification, this should be the name in lowest level 
                     'description': '''This should be a reference to the document that contains the sampling protocol used.
 Where possible, include the DOI of the document.''',
                     'format': 'text',
+                    'grouping': 'Sampling Protocol',
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
                         'validate': 'any',
-                        'input_title': 'Sampling protocol',
+                        'input_title': 'Sampling Protocol Document',
                         'input_message': '''This should be a reference to the document that contains the sampling protocol used.
 Where possible, include the DOI of the document.'''
                     }
@@ -1176,11 +1314,12 @@ Where possible, include the DOI of the document.'''
                     'disp_name': 'Sampling protocol section',
                     'description': '''This should be a reference to the section within sampling protocol document.''',
                     'format': 'text',
+                    'grouping': 'Sampling Protocol',
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
                         'validate': 'any',
-                        'input_title': 'Sampling protocol',
+                        'input_title': 'Sampling Protocol Section',
                         'input_message': '''This should be a reference to the section within sampling protocol document.'''
                     }
                     },
@@ -1189,11 +1328,12 @@ Where possible, include the DOI of the document.'''
                     'description': '''This should be a reference to the version of the sampling protocol document.
 This is not neccessary if you have included the DOI in the sampling protocol document.''',
                     'format': 'text',
+                    'grouping': 'Sampling Protocol',
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
                         'validate': 'any',
-                        'input_title': 'Sampling protocol',
+                        'input_title': 'Sampling Protocol Version',
                         'input_message': '''This should be a reference to the version of the sampling protocol document.
                         This is not neccessary if you have included the DOI in the sampling protocol document.'''
                     }
@@ -1206,6 +1346,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                  'disp_name': 'Weight (g)',
                  'description': 'Weight of the sample or specimen in grams',
                  'format': 'double precision',
+                 'grouping': 'Measurements, Facts, Descriptions',
                  'hstore': 'other',
                  'units': 'g',
                  'valid': {
@@ -1222,6 +1363,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                       'disp_name': 'Gonad Weight (g)',
                       'description': 'Wet weight of the gonad in in grams',
                       'format': 'double precision',
+                      'grouping': 'Measurements, Facts, Descriptions',
                       'hstore': 'other',
                       'units': 'g',
                       #                  'dwcid': 'http://rs.tdwg.org/dwc/terms/dynamicProperties',
@@ -1239,6 +1381,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                       'disp_name': 'Liver Weight (g)',
                       'description': 'Wet weight of the liver in in grams',
                       'format': 'double precision',
+                      'grouping': 'Measurements, Facts, Descriptions',
                       'hstore': 'other',
                       'units': 'g',
                       #                  'dwcid': 'http://rs.tdwg.org/dwc/terms/dynamicProperties',
@@ -1256,6 +1399,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                         'disp_name': 'Somatic Weight (g)',
                         'description': 'Wet weight of the fish when all inner organs are removed from the fish gonad in in grams',
                         'format': 'double precision',
+                        'grouping': 'Measurements, Facts, Descriptions',
                         'hstore': 'other',
                         'units': 'g',
                         #                  'dwcid': 'http://rs.tdwg.org/dwc/terms/dynamicProperties',
@@ -1274,6 +1418,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                       'description': '''The length of a fish measured from the most anterior part of the head to the deepest point of the notch in the tail fin in cm.
 Positive decimal number''',
                       'format': 'double precision',
+                      'grouping': 'Measurements, Facts, Descriptions',
                       'hstore': 'other',
                       'units': 'cm',
                       #                  'dwcid': 'http://rs.tdwg.org/dwc/terms/dynamicProperties',
@@ -1293,6 +1438,7 @@ Positive decimal number''',
                    'description': '''On the basis of shape, size, color of the gonads and other morphological featuers, at least six maturity stages can be recongnized
 Value in range [0, 7]''',
                    'format': 'int',
+                   'grouping': 'Measurements, Facts, Descriptions',
                    'hstore': 'other',
                    'units': '1',
                    'valid': {
@@ -1312,6 +1458,7 @@ Value in range [0, 7]''',
                  'description': '''Number of ectoparasites visible on the fins and gills of the fish
 Integer >= 0''',
                  'format': 'int',
+                 'grouping': 'Measurements, Facts, Descriptions',
                  'hstore': 'other',
                  'units': '1',
                  'valid': {
@@ -1330,6 +1477,7 @@ Integer >= 0''',
                  'description': '''Number of endoparasites visible in the body cavity of the fish
 Integer >= 0''',
                  'format': 'int',
+                 'grouping': 'Measurements, Facts, Descriptions',
                  'hstore': 'other',
                  'units': '1',
                  'valid': {
@@ -1351,6 +1499,7 @@ Integer >= 0''',
                   'disp_name': 'Sea Ice Core Type',
                   'description': 'The analysis the sea ice core is intended for',
                   'format': 'text',
+                  'grouping': 'Ice',
                   'hstore': 'other',
                   'valid': {
                       'validate': 'any',
@@ -1364,6 +1513,7 @@ Integer >= 0''',
 Float number larger than 0 ''',
                             'units': 'cm',
                             'format': 'double precision',
+                            'grouping': 'Ice',
                             'hstore': 'other',
                             'valid': {
                                 'validate': 'decimal',
@@ -1382,6 +1532,7 @@ Float number larger than 0 ''',
 Float number larger than 0 ''',
                            'units': 'cm',
                            'format': 'double precision',
+                           'grouping': 'Ice',
                            'hstore': 'other',
                            'valid': {
                                'validate': 'decimal',
@@ -1400,6 +1551,7 @@ Float number larger than 0 ''',
 Float number larger than 0 ''',
                            'units': 'cm',
                            'format': 'double precision',
+                           'grouping': 'Ice',
                            'hstore': 'other',
                            'valid': {
                                'validate': 'decimal',
@@ -1418,6 +1570,7 @@ Float number larger than 0 ''',
 Float number larger than -10 ''',
                                        'units': 'Celsius',
                                        'format': 'double precision',
+                                       'grouping': 'Ice',
                                        'hstore': 'other',
                                        'valid': {
                                            'validate': 'decimal',
@@ -1438,6 +1591,7 @@ Float number larger than or equal to 0
 Example: 0.029''',
                           'units': '1e-3',
                           'format': 'double precision',
+                          'grouping': 'Ice',
                           'hstore': 'other',
                           'valid': {
                               'validate': 'decimal',
@@ -1458,6 +1612,7 @@ Example: 0.029''',
 Float number larger than -10 degrees C''',
                                'inherit': True,
                                'format': 'double precision',
+                               'grouping': 'Water',
                                'hstore': 'other',
                                'units': 'Celsius',
                                'cf_name': 'sea_water_temperature',
@@ -1483,6 +1638,7 @@ Float number larger than or equal to 0
 Example: 29.003''',
                              'inherit': True,
                              'format': 'double precision',
+                             'grouping': 'Water',
                              'hstore': 'other',
                              'units': '1',
                              'cf_name': 'sea_water_practical_salinity',
@@ -1514,6 +1670,7 @@ Example: 3.5''',
                             'inherit': True,
                             'units': 'g kg-1',
                             'format': 'double precision',
+                            'grouping': 'Water',
                             'hstore': 'other',
                             'cf_name': 'sea_water_absolute_salinity',
                             'valid': {
@@ -1539,6 +1696,7 @@ Float number larger than or equal to 0
 Example: 3.0''',
                                   'inherit': True,
                                   'format': 'double precision',
+                                  'grouping': 'Water',
                                   'hstore': 'other',
                                   'units': 's m-1',
                                   'cf_name': 'sea_water_electrical_conductivity',
@@ -1560,6 +1718,7 @@ Example: 3.0''',
 Float number larger than 0''',
                     'inherit': True,
                     'format': 'double precision',
+                    'grouping': 'Water',
                     'hstore': 'other',
                     'units': 'dbar',
                     'cf_name': 'sea_water_pressure',
@@ -1579,6 +1738,7 @@ Float number larger than 0''',
                         'description': '''Sea Water Chlorophyll A in milligrams per cubic meter
 Positive float number (>= 0)''',
                         'format': 'double precision',
+                        'grouping': 'Water',
                         'hstore': 'other',
                         'units': 'mg m-3',
                         'cf_name': 'mass_concentration_of_chlorophyll_a_in_sea_water',
@@ -1599,6 +1759,7 @@ Positive float number (>= 0)''',
                         'description': '''Sea Water Phaeopigment in milligrams per cubic meter.
 Positive float number''',
                         'format': 'double precision',
+                        'grouping': 'Water',
                         'hstore': 'other',
                         'units': 'mg m-3',
                         'cf_name': 'mass_concentration_of_phaeopigments_in_sea_water',
@@ -1619,6 +1780,7 @@ Positive float number''',
                       'description': '''Sea ice Chlorophyll A in milligrams per cubic meter
 Positive float number (>= 0)''',
                       'format': 'double precision',
+                      'grouping': 'Ice',
                       'hstore': 'other',
                       'units': 'mg m-3',
                       'cf_name': 'mass_concentration_of_chlorophyll_a_in_sea_ice',
@@ -1639,6 +1801,7 @@ Positive float number (>= 0)''',
                       'description': '''Sea Ice Phaeopigment in milligrams per cubic meter
 Positive float number''',
                       'format': 'double precision',
+                      'grouping': 'Ice',
                       'hstore': 'other',
                       'units': 'mg m-3',
                       'cf_name': 'mass_concentration_of_phaeopigments_in_sea_ice',
@@ -1660,6 +1823,7 @@ Positive float number''',
 Sediment Chlorophyll A in milligrams per cubic meter
 Positive float number (>= 0)''',
                         'format': 'double precision',
+                        'grouping': 'Sediment',
                         'hstore': 'other',
                         'units': 'mg m-3',
                         'valid': {
@@ -1680,6 +1844,7 @@ Positive float number (>= 0)''',
 Sediment Phaeopigment in milligrams per cubic meter
 Positive float number''',
                         'format': 'double precision',
+                        'grouping': 'Sediment',
                         'hstore': 'other',
                         'units': 'mg m-3',
                         'valid': {
@@ -1705,6 +1870,7 @@ bisulfate.
 Float in range [-2, 16]''',
               'format': 'double precision',
               'hstore': 'other',
+              'grouping': 'Sediment',
               'units': '1',
               'valid': {
                   'validate': 'decimal',
@@ -1729,6 +1895,7 @@ Float in range [-2, 16]''',
 Sediment Total Organic Carbon in milligrams per litre
 Positive float number''',
                'format': 'double precision',
+               'grouping': 'Sediment',
                'hstore': 'other',
                'units': 'mg L-1',
                'valid': {
@@ -1749,6 +1916,7 @@ Positive float number''',
 Sediment Total Nitrogen in milligrams per litre
 Positive float number''',
               'format': 'double precision',
+              'grouping': 'Sediment',
               'hstore': 'other',
               'units': 'mg L-1',
               'valid': {
@@ -1769,6 +1937,7 @@ Positive float number''',
 Benthic respiration of Oxygen in millimole per square meter
 Positive float number''',
                       'format': 'double precision',
+                      'grouping': 'Sediment',
                       'hstore': 'other',
                       'units': 'mmol m-2',
                       'valid': {
@@ -1789,6 +1958,7 @@ Positive float number''',
 Sea Water Total dissolved inorganic carbon in umol per kg
 Positive float number''',
                     'format': 'double precision',
+                    'grouping': 'Water',
                     'hstore': 'other',
                     'units': 'umol kg-1',
                     'cf_name': 'mole_concentration_of_dissolved_inorganic_carbon_in_sea_water',
@@ -1810,6 +1980,7 @@ Positive float number''',
 Sea Ice Total dissolved inorganic carbon in umol per kg
 Positive float number''',
                   'format': 'double precision',
+                  'grouping': 'Ice',
                   'hstore': 'other',
                   'units': 'umol kg-1',
                   'valid': {
@@ -1830,6 +2001,7 @@ Positive float number''',
 Sea Water delta-O-18 in parts per thousand
 Positive float number''',
                     'format': 'double precision',
+                    'grouping': 'Water',
                     'hstore': 'other',
                     'units': '1e-3',
                     'valid': {
@@ -1850,6 +2022,7 @@ Positive float number''',
 Sea Ice delta-O-18 in parts per thousand
 Positive float number''',
                   'format': 'double precision',
+                  'grouping': 'Ice',
                   'hstore': 'other',
                   'units': '1e-3',
                   'valid': {
@@ -1874,6 +2047,7 @@ according to a series of buffers prepared in artificial seawater containing
 bisulfate.
 Float in range [-2, 16]''',
               'format': 'double precision',
+              'grouping': 'Water',
               'hstore': 'other',
               'units': '1',
               'cf_name': 'sea_water_ph_reported_on_total_scale',
@@ -1900,6 +2074,7 @@ Float in range [-2, 16]''',
 Sea Water Total Alkalinity in micromols per kilogram
 Positive float number''',
                       'format': 'double precision',
+                      'grouping': 'Water',
                       'hstore': 'other',
                       'units': 'umol kg-1',
                       'valid': {
@@ -1920,6 +2095,7 @@ Positive float number''',
 Sea Water Total Organic Carbon in milligrams per litre
 Positive float number''',
                'format': 'double precision',
+               'grouping': 'Water',
                'hstore': 'other',
                'units': 'mg L-1',
                'valid': {
@@ -1940,6 +2116,7 @@ Positive float number''',
 Sea Water Quantification of particulate organic nitrogen in micrograms per litre
 Positive float number''',
                'format': 'double precision',
+               'grouping': 'Water',
                'hstore': 'other',
                'units': 'ug L-1',
                'valid': {
@@ -1960,6 +2137,7 @@ Positive float number''',
 Sea Water Quantification of particulate organic carbon  in micrograms per litre
 Positive float number''',
                'format': 'double precision',
+               'grouping': 'Water',
                'hstore': 'other',
                'units': 'ug L-1',
                'valid': {
@@ -1984,6 +2162,7 @@ Positive float number''',
 Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_types.csv''',
               'long_list': True,
               'format': 'text',
+              'grouping': 'Sample Type/Intended Method',
               'hstore': False,
               'valid': {
                   'validate': 'list',
@@ -2002,6 +2181,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_type
 If multiple methods, separate with ';'.
 Examples: 'FCM', 'XCM', 'SEM' ''',
                   'format': 'text',
+                  'grouping': 'Sample Type/Intended Method',
                   'hstore': False,
                   'valid': {
                       'validate': 'any',
@@ -2017,6 +2197,7 @@ Examples: 'FCM', 'XCM', 'SEM' '''
 If multiple tissue types, organs etc. separate with ';'.
 Examples: 'heart', 'liver; brain', 'liver section' ''',
               'format': 'text',
+              'grouping': 'Sample Type/Intended Method',
               'hstore': 'other',
               'valid': {
                   'validate': 'any',
@@ -2036,6 +2217,7 @@ Examples: 'heart', 'liver; brain', 'liver section' '''
 Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv''',
                     'inherit': True,
                     'format': 'text',
+                    'grouping': 'Required',
                     'hstore': False,
                     'long_list': True,
                     'valid': {
@@ -2052,6 +2234,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'disp_name': 'Serial Number',
                 'description': 'The serial number of the instrument used',
                 'format': 'text',
+                'grouping': 'Numbering',
                 'hstore': 'other',
                 'valid': {
                     'validate': 'any',
@@ -2067,6 +2250,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'disp_name': 'Data filename',
                 'description': 'The name of the datafile',
                 'format': 'text',
+                'grouping': 'File Details',
                 'hstore': 'other',
                 'valid': {
                     'validate': 'any',
@@ -2083,6 +2267,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Main comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Comments',
                 'hstore': False,
                 'valid': {
                          'validate': 'any',
@@ -2095,6 +2280,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Additional comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
                          'validate': 'any',
@@ -2107,6 +2293,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Additional comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
                          'validate': 'any',
@@ -2119,6 +2306,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Additional comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
                          'validate': 'any',
@@ -2131,6 +2319,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Additional comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
                          'validate': 'any',
@@ -2147,6 +2336,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Additional comments about the sample or event.',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
                          'validate': 'any',
@@ -2159,6 +2349,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Timestamp when the sample was first logged.',
                 'width': 40,
                 'format': 'timestamp with time zone',
+                'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
                          'validate': 'any',
@@ -2171,6 +2362,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Timestamp when the log of the sample was last modified.',
                 'width': 40,
                 'format': 'timestamp with time zone',
+                'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
                          'validate': 'any',
@@ -2183,6 +2375,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'description': 'Where the source was logged (file or page).',
                 'width': 40,
                 'format': 'text',
+                'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
                          'validate': 'any',
@@ -2190,26 +2383,9 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                          'input_message': 'Where the source was logged (file or page).'
                 }
                 },
-
-
     ]
 
 
-
-# subsample_number = {'name': 'subsample_number',
-#                     'disp_name': 'Number of subsamples',
-#                     'format': 'int',
-#                     'hstore': 'other',
-#                     'valid': {
-#                         'validate': 'integer',
-#                         'criteria': '>',
-#                         'value': 0,
-#                         'input_title': 'Integer number of subsamples',
-#                         'input_message': '''Integer > 0''',
-#                         'error_title': 'Error',
-#                         'error_message': 'Integer > 0'
-#                     }
-#                     }
 
 # RETHINK THIS. MORE METADATA FROM ACDD CONVETIONS OR EML METADATA SO THE DATA ARE CLOSER TO BEING READY TO PUBLISH FOLLOWING THE CRUISE?
 # BUT CAN'T BE TOO MUCH THAT IT WILL BE A LOT OF WORK

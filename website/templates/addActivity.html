@@ -1,12 +1,20 @@
 {% extends "base.html" %} {% block title %}Edit Activity{% endblock %} {% block content
 %}
 
+<p>Upload spreadsheet containing activities here</p>
+
+<p>OR fill in the form below.</p>
 <h2>Activity Metadata:</h2>
 <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
 
 <form method="POST">
   {% for key, value in activity_metadata.items() %}
   <div class="form-row">
+    {% if key == 'minimumDepthInMeters' %}
+      <div class="col-sm-12">
+        Enter either depth or elevation, but not both. Enter minimum and maximum if known, even if they are the same value.
+      </div>
+    {% endif %}
     <label for="comment" class="col-sm-3 col-form-label">{% if value['required'] == True %}<span style="color:#ff0000">*</span>{% endif %}{{ value['disp_name'] }}  <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></label>
 
     {% if value['format'] == 'date' %}
@@ -23,7 +31,7 @@
     {% elif value['format'] == 'text' %}
       {% if key == 'stationName' %}
       <div class="col-sm-7">
-        <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example" required>
+        <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
           <option selected>{{value['value']}}</option>
           {% for station in stationNames %}
             <option>{{station}}</option>
@@ -36,7 +44,7 @@
       </div>
       {% elif key == 'gearType' %}
       <div class="col-sm-7">
-        <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example" required>
+        <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
           <option selected>{{value['value']}}</option>
           {% for gearType in gearTypes %}
             <option>{{gearType}}</option>
@@ -49,7 +57,7 @@
       </div>
       {% elif key == 'pi' %}
       <div class="col-sm-7">
-        <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example" required>
+        <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example">
           {% for person in personnel %}
             {% if person in pis %}
               <option selected="selected">{{person}}</option>
@@ -65,7 +73,7 @@
       </div>
       {% elif key == 'recordedBy' %}
       <div class="col-sm-7">
-        <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example" required>
+        <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example">
           {% for person in personnel %}
             {% if person in recordedBys %}
               <option selected="selected">{{person}}</option>
@@ -88,7 +96,7 @@
     {% elif value['format'] == 'double precision' %}
     <div class="col-sm-9">
       {% if key in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}"> <!--value={{endDecimalLatitude}}-->
+      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
       {% elif key in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
       <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
       {% elif key in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
@@ -112,8 +120,14 @@
   </div>
   <br>
   {% endfor %}
-  <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
+
+  {% include 'addfields.html' %}
+
+  <br>
+
+  <button type="submit" class="btn btn-primary btn-lg btn-block" name="submitbutton" value="submit">Submit</button>
 </form>
+
 <br>
 
 <h2>Children Registered:</h2>

@@ -4,3 +4,5 @@ psycopg2
 getpass
 pandas
 datetime
+numpy
+requests
