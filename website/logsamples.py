@@ -6,13 +6,14 @@ import uuid
 from website.database.get_data import get_data
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from website.database.checker import checker
+from website.database.checker import run as checker
 import website.database.fields as fields
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
+import pandas as pd
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -20,31 +21,33 @@ logsamples = Blueprint('logsamples', __name__)
 def edit_activity_page(eventID):
 
     activity_fields = {
-    'id': 'optional',
-    'catalogNumber': 'optional',
-    'stationName': 'required',
-    'gearType': 'required',
-    'eventDate': 'required',
-    'eventTime': 'required',
-    'endDate': 'optional',
-    'endTime': 'optional',
-    'decimalLatitude': 'required',
-    'decimalLongitude': 'required',
-    'endDecimalLatitude': 'optional',
-    'endDecimalLongitude': 'optional',
-    'minimumDepthInMeters': 'optional',
-    'maximumDepthInMeters': 'optional',
-    'minimumElevationInMeters': 'optional',
-    'maximumElevationInMeters': 'optional',
-    'pi_name': 'required',
-    'pi_email': 'required',
-    'recordedBy_name': 'required',
-    'recordedBy_email': 'required',
-    'samplingProtocolDoc': 'optional',
-    'samplingProtocolSection': 'optional',
-    'samplingProtocolVersion': 'optional',
-    'comments1': 'optional',
-    }
+        'id': 'optional',
+        'catalogNumber': 'optional',
+        'stationName': 'required',
+        'gearType': 'required',
+        'eventDate': 'required',
+        'eventTime': 'required',
+        'endDate': 'optional',
+        'endTime': 'optional',
+        'decimalLatitude': 'required',
+        'decimalLongitude': 'required',
+        'endDecimalLatitude': 'optional',
+        'endDecimalLongitude': 'optional',
+        'minimumDepthInMeters': 'optional',
+        'maximumDepthInMeters': 'optional',
+        'minimumElevationInMeters': 'optional',
+        'maximumElevationInMeters': 'optional',
+        'pi_name': 'required',
+        'pi_email': 'required',
+        'recordedBy_name': 'required',
+        'recordedBy_email': 'required',
+        'samplingProtocolDoc': 'optional',
+        'samplingProtocolSection': 'optional',
+        'samplingProtocolVersion': 'optional',
+        'comments1': 'optional',
+        }
+
+    required = [key for key in activity_fields.keys() if activity_fields[key] == 'required']
 
     df_personnel = get_data(DBNAME, 'personnel')
     df_personnel.sort_values(by='last_name', inplace=True)
@@ -184,17 +187,30 @@ def edit_activity_page(eventID):
                                 activity_metadata[key]['value'] = ''
 
         if request.form['submitbutton'] == 'submit':
-            print('FORM INPUT',form_input)
-            errors = checker(form_input, df_metadata_catalogue, DBNAME, eventID)
 
-            if len(errors) > 0:
+            form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pis'], df_personnel)
+            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBys'], df_personnel)
+
+            for key in ['pis', 'recordedBys', 'submitbutton']:
+                if key in form_input.keys():
+                    form_input.pop(key)
+
+            fields_to_check_dic = {}
+            for key, val in form_input.items():
+                fields_to_check_dic[key] = [val]
+                fields_to_check_df = pd.DataFrame.from_dict(fields_to_check_dic)
+
+            for col in ['eventDate','endDate', 'eventTime', 'endTime']:
+                if col in fields_to_check_df.columns:
+                    fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
+
+            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE)
+
+            if good == False:
                 for error in errors:
                     flash(error, category='error')
 
             else:
-                form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pis'], df_personnel)
-                form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBys'], df_personnel)
-
                 for field in fields.fields:
                     if field['name'] in activity_fields.keys():
                         if form_input[field['name']] == '':
@@ -242,9 +258,6 @@ def edit_activity_page(eventID):
                 groups.append(field['grouping'])
 
     groups = sorted(list(set(groups)))
-
-    for key, val in activity_metadata.items():
-        print(key, val, '\n')
 
     return render_template(
     "addActivity.html",
