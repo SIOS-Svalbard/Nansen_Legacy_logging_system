@@ -184,15 +184,15 @@ Could be read in with a code reader.''',
            },
     {'name': 'catalogNumber',
                  'disp_name': 'Catalogue Number',
-                 'description': '''Your own optional ID for each record, preferably unique. Note that each sample is also assigned its own UUID in the "ID" field by the system.''',
+                 'description': '''Your own optional ID for each record, preferably unique. Note that each sample is also assigned its own UUID in the "ID" field by the system. Can include text.''',
                  'width': 38,
                  'format': 'text',
                  'grouping': 'ID',
                  'hstore': False,
                  'valid': {
                      'validate': 'length',
-                     'criteria': '==',
-                     'value': 36,
+                     'criteria': '>',
+                     'value': 3,
                      'input_title': 'Parent ID',
                      'input_message': '''Your own optional ID for each record, preferably unique. Note that each sample is also assigned its own UUID in the "ID" field by the system.''',
                      'error_title': 'Error',
@@ -223,13 +223,15 @@ Positive integer''',
     {'name': 'recordNumber',
                 'disp_name': 'Record Number',
                 'description': '''This is an additional number used to identify the sample.
-This is in addition to the ID''',
+This is in addition to the ID. Numbers only.''',
                 'format': 'int',
                 'grouping': 'Numbering',
                 'hstore': 'other',
                 'dwcid': 'http://rs.tdwg.org/dwc/terms/recordNumber',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'integer',
+                    'criteria': '>',
+                    'value': 0,
                     'input_title': 'Recorded Number',
                     'input_message': '''This is an additional number used to identify the sample.
 This is in addition to the ID'''
@@ -247,12 +249,7 @@ This is in addition to the ID'''
                 'grouping': 'Cruise Details',
                 'hstore': False,
                 'valid': {
-                    'validate': 'any',
-                    'input_title': 'Cruise Number',
-                    'input_message': '''This is the same for one cruise''',
-                    'error_title': 'Error',
-                    'error_message': 'Not a valid cruise number '
-                }
+                    'validate': 'none'}
                 },
     {'name': 'cruiseName',
                 'disp_name': 'Cruise name',
@@ -260,7 +257,9 @@ This is in addition to the ID'''
                 'inherit': True,
                 'format': 'text',
                 'grouping': 'Cruise Details',
-                'hstore': False
+                'hstore': False,
+                'valid': {
+                    'validate': 'none'}
                 },
     {'name': 'projectName',
                 'disp_name': 'Project name',
@@ -268,7 +267,9 @@ This is in addition to the ID'''
                 'inherit': True,
                 'format': 'text',
                 'grouping': 'Cruise Details',
-                'hstore': False
+                'hstore': False,
+                'valid': {
+                    'validate': 'none'}
                 },
     {'name': 'vesselName',
                 'disp_name': 'Vessel name',
@@ -276,7 +277,9 @@ This is in addition to the ID'''
                 'inherit': True,
                 'format': 'text',
                 'grouping': 'Cruise Details',
-                'hstore': False
+                'hstore': False,
+                'valid': {
+                    'validate': 'none'}
                 },
 
     # ==============================================================================
@@ -291,14 +294,13 @@ This is in addition to the ID'''
           'grouping': 'Station',
           'hstore': False,
           'valid': {
-              'validate': 'any',
+              'validate': 'none',
               'input_title': 'Local Station ID',
               'input_message': '''This ID is a running series (per gear) for each samling event and is found in the cruise logger.
 '''
           }
           },
-    # ADD TABLE FOR DROPDOWN? RETHINK HOW STATION NAMES WILL BE HANDLED IN THIS SYSTEM. USEFUL FOR SCIENTISTS BUT MUST BE MANAGED MORE CONSISTENTLY THAN IN AEN
-    # SUGGESTED STATION NAMES BASED - THIS ACTIVITY OCCURRED xx METERS FROM THIS STATION.
+
     {'name': 'stationName',
                'disp_name': 'Station Name',
                'description': 'The full name of the station. e.g. P1 (NLEG01)',
@@ -308,7 +310,8 @@ This is in addition to the ID'''
                'grouping': 'Required',
                'hstore': False,
                'valid': {
-                   'validate': 'any',
+                   'validate': 'list',
+                   'source': 'stations',
                    'input_title': 'Station Name',
                    'input_message': '''The full name of the station. e.g. P1 (NLEG01)'''
                }
@@ -329,7 +332,7 @@ This is in addition to the ID'''
              'valid': {
                  'validate': 'date',
                  'criteria': 'between',
-                 'minimum': dt.datetime(2000, 1, 1),
+                 'minimum': dt.date(2000, 1, 1),
                  'maximum': '=TODAY()+2',
                  'input_title': 'Event Date',
                  'input_message': '''Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
@@ -378,7 +381,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
              'valid': {
                  'validate': 'date',
                  'criteria': 'between',
-                 'minimum': dt.datetime(2000, 1, 1),
+                 'minimum': dt.date(2000, 1, 1),
                  'maximum': '=TODAY()+2',
                  'input_title': 'Start Date',
                  'input_message': '''Middle date for event, for instance for noting the deepest point of a trawl or net haul.
@@ -400,7 +403,7 @@ Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z''',
              'hstore': 'other',
              'width': 12,
              'valid': {
-                 'validate': 'date',
+                 'validate': 'time',
                  'criteria': 'between',
                  'minimum': 0,  # Time in decimal days
                  'maximum': 0.9999999,  # Time in decimal days
@@ -426,7 +429,7 @@ Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
              'valid': {
                  'validate': 'date',
                  'criteria': 'between',
-                 'minimum': dt.datetime(2000, 1, 1),
+                 'minimum': dt.date(2000, 1, 1),
                  'maximum': '=TODAY()+2',
                  'input_title': 'End Date',
                  'input_message': '''Date of the end of the collection event period, in UTC time, e.g. 2022-04-10''',
@@ -862,7 +865,7 @@ This is measured from the top of the core.''',
             'grouping': 'Measurements, Facts, Descriptions',
             'hstore': 'other',
             'valid': {
-                'validate': 'any',
+                'validate': 'none',
                 'input_title': 'Colour',
                 'input_message': 'Colour'
             }
@@ -874,7 +877,7 @@ This is measured from the top of the core.''',
             'grouping': 'Measurements, Facts, Descriptions',
             'hstore': 'other',
             'valid': {
-                'validate': 'any',
+                'validate': 'none',
                 'input_title': 'Smell',
                 'input_message': 'Smell'
             }
@@ -894,7 +897,7 @@ Example: John Doe | Ola Nordmann''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'Recorded By',
                   'input_message': '''Full name of who has recorded/analysed the data.
 Can be a concatenated list, separated by: '|'
@@ -911,7 +914,7 @@ Example: johnd@unis.no | olan@unis.no''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'Recorded By',
                   'input_message': '''Email of who has recorded/analysed the data.
 Can be a concatenated list, separated by: '|'
@@ -928,7 +931,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'Recorded By',
                   'input_message': '''Institution of who has recorded/analysed the data.
 Can be a concatenated list, separated by: '|'. Please include for everyone listed, even if some are from the same institution.
@@ -945,7 +948,7 @@ Example: John Doe | Ola Nordmann''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'PI name',
                   'input_message': '''Full name of the principal investigator of the data.
 Can be a concatenated list, separated by: '|'
@@ -962,7 +965,7 @@ Example: john.doe@unis.no | ola.nordmann@unis.no''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'PI email',
                   'input_message': '''Email of the principal investigator of the data.
 Can be a concatenated list, separated by: '|'
@@ -979,7 +982,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard''',
               'grouping': 'Required',
               'hstore': False,
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'PI institution',
                   'input_message': '''Main institution of the principal investigator of the data.
 Please include for every PI listed, even if the same.
@@ -1000,16 +1003,9 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
                'width': 15,
                'valid': {
                    'validate': 'list',
-                   'source': [
-                       'neg 196 C (LN)',
-                       'neg 80 C',
-                       'neg 20 C',
-                       'Cool room',
-                       'Room temp'],
+                   'source': 'storage_temperatures',
                    'input_title': 'Storage temperature',
-                   'input_message': '''Choose the storage temperature used''',
-                   'error_title': 'Error',
-                   'error_message': 'Not a valid storage temperature'
+                   'input_message': '''Choose the storage temperature used'''
                }
                },
     {'name': 'fixative',
@@ -1019,7 +1015,7 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
             'grouping': 'Storage',
             'hstore': 'other',
             'valid': {
-                'validate': 'any',
+                'validate': 'none',
                 'input_title': 'Fixative',
                 'input_message': '''Fixative used for sample '''
             }
@@ -1033,7 +1029,7 @@ This could for instance be an institution or something more specific.''',
                   'grouping': 'Storage',
                   'hstore': False,
                   'valid': {
-                      'validate': 'any',
+                      'validate': 'none',
                       'input_title': 'Sample Location',
                       'input_message': '''The long-term storage location onshore, immediately after the cruise.
 This could for instance be an institution or something more specific.'''
@@ -1042,12 +1038,12 @@ This could for instance be an institution or something more specific.'''
     {'name': 'dilution_factor',
                    'disp_name': 'Dilution factor',
                    'description': 'Factor by which the sample has been diluted by',
-                   'format': 'int',
+                   'format': 'double precision',
                    'grouping': 'Filtering and Volumes',
                    'hstore': 'other',
                    'width': 20,
                    'valid': {
-                       'validate': 'integer',
+                       'validate': 'decimal',
                        'criteria': '>',
                        'value': 0,
                        'input_title': 'Dilution factor',
@@ -1063,7 +1059,7 @@ This could for instance be an institution or something more specific.'''
               'grouping': 'Storage',
               'hstore': 'other',
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'Sample Owner',
                   'input_message': '''Person who owns the sample'''
               }
@@ -1082,12 +1078,10 @@ If no filtering is being done choose None''',
           'width': 15,
           'valid': {
               'validate': 'list',
-              'source': ['None', 'GFF', '10 µm'],
+              'source': 'filters',
               'input_title': 'Filter',
               'input_message': '''Choose the filter used.
-If no filtering is being done choose None''',
-              'error_title': 'Error',
-              'error_message': 'Not a valid filter'
+If no filtering is being done choose None'''
           }
           },
     {'name': 'filteredVolumeInMilliliters',
@@ -1188,7 +1182,7 @@ If no filtering is being done choose None''',
             'hstore': 'other',
             'dwcid': 'http://rs.tdwg.org/dwc/terms/Taxon',
             'valid': {
-                'validate': 'any',
+                'validate': 'none',
                 'input_title': 'Taxon',
                 'input_message': 'A group of organisms considered by taxonomists to form a homogeneous unit.'
             }
@@ -1201,7 +1195,7 @@ If no filtering is being done choose None''',
             'hstore': 'other',
             'dwcid': 'https://dwc.tdwg.org/terms/#dwc:phylum',
             'valid': {
-                'validate': 'any',
+                'validate': 'none',
                 'input_title': 'Phylum',
                 'input_message': 'The full scientific name of the phylum or division in which the taxon is classified.'
             }
@@ -1215,12 +1209,10 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'hstore': 'other',
        'dwcid': 'http://rs.tdwg.org/dwc/terms/sex',
                 'valid': {
-                    'validate': 'any',
-                    # 'source': ['Male', 'Female', 'Undetermined'],
+                    'validate': 'list',
+                    'source': 'sex',
                     'input_title': 'Sex',
-                    'input_message': '''Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
-                    # 'error_title': 'Error',
-                    # 'error_message': 'Not a valid sex '
+                    'input_message': '''Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)'''
                 }
        },
     {'name': 'kingdom',
@@ -1231,8 +1223,8 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/terms/#dwc:kingdom',
                 'valid': {
-                    'validate': 'any',
-                    # 'source': ['Animalia', 'Archaea', 'Bacteria', 'Chromista', 'Fungi', 'Plantae', 'Protozoa', 'Viruses'],
+                    'validate': 'list',
+                    'source': 'kingdoms',
                     'input_title': 'Kingdom',
                     'input_message': '''The full scientific name of the kingdom in which the taxon is classified.''',
                 }
@@ -1245,7 +1237,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/list/#dwc_class',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'none',
                     'input_title': 'Class',
                     'input_message': 'The full scientific name of the class in which the taxon is classified.'
             }
@@ -1258,7 +1250,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/terms/#dwc:order',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'none',
                     'input_title': 'Order',
                     'input_message': 'The full scientific name of the order in which the taxon is classified.'
             }
@@ -1271,7 +1263,7 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'hstore': 'other',
        'dwcid': 'https://dwc.tdwg.org/list/#dwc_family',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'none',
                     'input_title': 'Family',
                     'input_message': 'The full scientific name of the family in which the taxon is classified.'
             }
@@ -1286,7 +1278,7 @@ When forming part of an Identification, this should be the name in lowest level 
                   'width': 20,
                   'dwcid': 'http://rs.tdwg.org/dwc/terms/scientificName',
                   'valid': {
-                      'validate': 'any',
+                      'validate': 'none',
                       'input_title': 'Scientific Name',
                       'input_message': '''The full scientific name, with authorship and date information if known.
 When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined'''
@@ -1304,7 +1296,7 @@ Where possible, include the DOI of the document.''',
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
-                        'validate': 'any',
+                        'validate': 'none',
                         'input_title': 'Sampling Protocol Document',
                         'input_message': '''This should be a reference to the document that contains the sampling protocol used.
 Where possible, include the DOI of the document.'''
@@ -1318,7 +1310,7 @@ Where possible, include the DOI of the document.'''
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
-                        'validate': 'any',
+                        'validate': 'none',
                         'input_title': 'Sampling Protocol Section',
                         'input_message': '''This should be a reference to the section within sampling protocol document.'''
                     }
@@ -1332,7 +1324,7 @@ This is not neccessary if you have included the DOI in the sampling protocol doc
                     'hstore': False,
                     'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
                     'valid': {
-                        'validate': 'any',
+                        'validate': 'none',
                         'input_title': 'Sampling Protocol Version',
                         'input_message': '''This should be a reference to the version of the sampling protocol document.
                         This is not neccessary if you have included the DOI in the sampling protocol document.'''
@@ -1502,7 +1494,7 @@ Integer >= 0''',
                   'grouping': 'Ice',
                   'hstore': 'other',
                   'valid': {
-                      'validate': 'any',
+                      'validate': 'none',
                       'input_title': 'Sea Ice Core Type',
                       'input_message': 'The analysis the sea ice core is intended for'
                   }
@@ -1765,7 +1757,7 @@ Positive float number''',
                         'cf_name': 'mass_concentration_of_phaeopigments_in_sea_water',
                         'valid': {
                             'validate': 'decimal',
-                            'criteria': '>',
+                            'criteria': '>=',
                             'value': 0,
                             'input_title': 'Sea Water Phaeopigment (mg/m^3)',
                             'input_message': '''
@@ -1807,7 +1799,7 @@ Positive float number''',
                       'cf_name': 'mass_concentration_of_phaeopigments_in_sea_ice',
                       'valid': {
                           'validate': 'decimal',
-                          'criteria': '>',
+                          'criteria': '>=',
                           'value': 0,
                           'input_title': 'Sea Ice Phaeopigment (mg/m^3)',
                           'input_message': '''
@@ -1849,7 +1841,7 @@ Positive float number''',
                         'units': 'mg m-3',
                         'valid': {
                             'validate': 'decimal',
-                            'criteria': '>',
+                            'criteria': '>=',
                             'value': 0,
                             'input_title': 'Sediment Phaeopigment (mg/m^3)',
                             'input_message': '''
@@ -2166,12 +2158,10 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_type
               'hstore': False,
               'valid': {
                   'validate': 'list',
-                  #'source': __sample_types,
+                  'source': 'sample_types',
                   'input_title': 'Sample type',
                   'input_message': '''Choose the sample type.
-Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_types.csv''',
-                  'error_title': 'Error',
-                  'error_message': 'Not a valid sample type'
+Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_types.csv'''
               }
               },
     # THIS SHOULD BECOME A MORE IMPORTANT TERM IN V2, AND MOST OF THE TERMS IN SAMPLE TYPE SHOULD BE MOVED TO INTENDED METHOD. MAKE REQUIRED TERM FOR SAMPLES.
@@ -2184,7 +2174,8 @@ Examples: 'FCM', 'XCM', 'SEM' ''',
                   'grouping': 'Sample Type/Intended Method',
                   'hstore': False,
                   'valid': {
-                      'validate': 'any',
+                      'validate': 'list',
+                      'source': 'intended_methods',
                       'input_title': 'Intended Method',
                       'input_message': '''The intended measurement or analysis method for the sample.
 If multiple methods, separate with ';'.
@@ -2200,7 +2191,7 @@ Examples: 'heart', 'liver; brain', 'liver section' ''',
               'grouping': 'Sample Type/Intended Method',
               'hstore': 'other',
               'valid': {
-                  'validate': 'any',
+                  'validate': 'none',
                   'input_title': 'Tissue Type',
                   'input_message': '''The type of tissue in the sample.
 If multiple tissue types, organs etc. separate with ';'.
@@ -2222,12 +2213,10 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                     'long_list': True,
                     'valid': {
                         'validate': 'list',
-                        #'source': __gear_types,
+                        'source': 'gear_types',
                         'input_title': 'Gear Type',
                         'input_message': '''Choose the gear used to retrieve the sample.
-Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv''',
-                        'error_title': 'Error',
-                        'error_message': 'Not a valid gear type'
+Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv'''
                     }
             },
     {'name': 'serialNumber',
@@ -2237,7 +2226,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Numbering',
                 'hstore': 'other',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'none',
                     'input_title': 'Instrument Serial Number',
                     'input_message': 'The serial number of the instrument used'
                 }
@@ -2253,7 +2242,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'File Details',
                 'hstore': 'other',
                 'valid': {
-                    'validate': 'any',
+                    'validate': 'none',
                     'input_title': 'Data filename',
                     'input_message': 'The name of the datafile'
                 }
@@ -2270,7 +2259,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Comments',
                 'hstore': False,
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Comments',
                          'input_message': 'Main comments about the sample or event.'
                 }
@@ -2283,7 +2272,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Comments #2',
                          'input_message': 'Additional comments about the sample or event.'
                 }
@@ -2296,7 +2285,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Comments #3',
                          'input_message': 'Additional comments about the sample or event.'
                 }
@@ -2309,7 +2298,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Comments #4',
                          'input_message': 'Additional comments about the sample or event.'
                 }
@@ -2322,7 +2311,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Comments',
                 'hstore': 'other',
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Comments #5',
                          'input_message': 'Additional comments about the sample or event.'
                 }
@@ -2339,7 +2328,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'History',
                          'input_message': 'History of when the sample was first logged and the record updated.'
                 }
@@ -2352,7 +2341,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Created',
                          'input_message': 'Timestamp when the sample was first logged.'
                 }
@@ -2365,7 +2354,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Modified',
                          'input_message': 'Timestamp when the log of the sample was last modified.'
                 }
@@ -2378,7 +2367,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 'grouping': 'Record Details',
                 'hstore': False,
                 'valid': {
-                         'validate': 'any',
+                         'validate': 'none',
                          'input_title': 'Source',
                          'input_message': 'Where the source was logged (file or page).'
                 }
@@ -2426,7 +2415,7 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
 #              'disp_name': 'Project ID',
 #              'width': 40,
 #              'valid': {
-#                  'validate': 'any',
+#                  'validate': 'none',
 #                  'input_title': 'Project ID',
 #                  'input_message': '''The project ID.
 # For the Nansen Legacy this is:

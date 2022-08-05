@@ -94,9 +94,6 @@ def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
 
     exe_str = string_1 + string_2 + string_3 + string_4 + string_5
 
-    print('STRING HERE')
-    print(exe_str)
-    print('END HERE')
     cur.execute(exe_str)
 
     conn.commit()
