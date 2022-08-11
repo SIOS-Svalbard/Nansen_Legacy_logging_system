@@ -469,7 +469,7 @@ def check_value(value, checker):
     else:
         return checker.validator.evaluate(value)
 
-def check_array(data, checker_list, registered_ids, required):
+def check_array(data, checker_list, registered_ids, required, new):
     """
     Checks the data according to the validators in the checker_list
     Returns True if the data is good, as well as an empty string
@@ -483,7 +483,9 @@ def check_array(data, checker_list, registered_ids, required):
     required: List of required columns
     registered_ids: List of UUIDS
         This is a list of UUIDS already registered in the metadata catalogue,so we can check for duplicates
-
+    new: Boolean
+        Whether the record(s) is being logged for the first time or not
+        Influences whether we check whether id already registered
     Returns
     ---------
     good : Boolean
@@ -521,7 +523,7 @@ def check_array(data, checker_list, registered_ids, required):
 
     for idx, row in data.iterrows():
         if row['id'] != '':
-            if row['id'] in registered_ids:
+            if row['id'] in registered_ids and new == True:
                 good = False
                 already_registered_ids.append(idx)
             elif not data['id'].is_unique:
@@ -638,11 +640,12 @@ def check_array(data, checker_list, registered_ids, required):
     '''
     Potential additional checks:
         1. Prevent people entering both elevation and depth.
+        2. Reject activities logged with same date and time as another activity
     '''
 
     return good, errors
 
-def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False):
+def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -663,6 +666,10 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False):
     METADATA_CATALOGUE: str
         Name of the metadata catalogue table within DBNAME
         Default: False boolean
+    new: Boolean
+        Whether the record(s) is being logged for the first time or not
+        Influences whether we check whether id already registered
+
     Returns
     ---------
     good: Boolean
@@ -684,7 +691,7 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False):
         registered_ids = []
 
     # Check the data array
-    good, errors = check_array(data, checker_list, registered_ids, required)
+    good, errors = check_array(data, checker_list, registered_ids, required, new)
 
     return good, errors
 

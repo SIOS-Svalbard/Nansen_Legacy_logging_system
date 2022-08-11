@@ -58,7 +58,7 @@ def split_personnel_list(personnel, df_personnel):
     personnel_institutions_list = []
 
     for person in personnel:
-        if person != 'Choose...':
+        if person != 'Choose...' and person != '':
             person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()
             person_last_name = df_personnel.loc[df_personnel['personnel'] == person, 'last_name'].item()
             person_name = person_first_name + ' ' + person_last_name
