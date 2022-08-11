@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="{{ url_for('static', filename='images/cropped-Logo-Nansen-Legacy_favicon.webp')}}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css')}}">
     <title>Learnings from Nansen Legacy logging system</title>
   </head>
   <body class="d-flex flex-column min-vh-100">
@@ -102,5 +103,17 @@
       type="text/javascript"
       src="{{ url_for('static', filename='js/bootstrap.min.js')}}"
     ></script>
+    <script src="{{ url_for('static', filename='js/flatpickr')}}"></script>
+    <script>
+      config = {
+        enableTime: true,
+        noCalendar: true,
+        time_24hr: true,
+        dateFormat: "H:i:S",
+        enableSeconds: true,
+        minuteIncrement: 5
+      }
+      flatpickr("input[type=time]", config);
+    </script>
   </body>
 </html>

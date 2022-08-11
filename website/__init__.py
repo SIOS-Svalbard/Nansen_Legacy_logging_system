@@ -4,7 +4,7 @@ from website.database.init_db import run as init_db
 import requests
 import numpy as np
 
-TOKTLOGGER = '172.16.1.39' # VM of toktlogger at UNIS on my laptop"
+TOKTLOGGER = '172.16.1.93' # VM of toktlogger at UNIS on my laptop"
 VESSEL_NAME = 'Kronprins Haakon'
 url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
 DBNAME = 'lfnl_db'

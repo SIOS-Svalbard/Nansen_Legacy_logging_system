@@ -283,41 +283,6 @@ This is in addition to the ID'''
                 },
 
     # ==============================================================================
-    # Station details
-    # ==============================================================================
-    {'name': 'statID',
-          'disp_name': 'Local Station ID',
-          'description': 'This ID is a running series (per gear) for each samling event and is found in the cruise logger.',
-          'inherit': True,
-          'width': 13,
-          'format': 'int',
-          'grouping': 'Station',
-          'hstore': False,
-          'valid': {
-              'validate': 'none',
-              'input_title': 'Local Station ID',
-              'input_message': '''This ID is a running series (per gear) for each samling event and is found in the cruise logger.
-'''
-          }
-          },
-
-    {'name': 'stationName',
-               'disp_name': 'Station Name',
-               'description': 'The full name of the station. e.g. P1 (NLEG01)',
-               'inherit': True,
-               'width': 13,
-               'format': 'text',
-               'grouping': 'Required',
-               'hstore': False,
-               'valid': {
-                   'validate': 'list',
-                   'source': 'stations',
-                   'input_title': 'Station Name',
-                   'input_message': '''The full name of the station. e.g. P1 (NLEG01)'''
-               }
-               },
-
-    # ==============================================================================
     # Timestamps
     # ==============================================================================
     {'name': 'eventDate',
@@ -637,6 +602,41 @@ Example: 15.0012''',
                               'num_format': '0.0000'
                           }
                           },
+                          
+    # ==============================================================================
+    # Station details
+    # ==============================================================================
+    {'name': 'statID',
+          'disp_name': 'Local Station ID',
+          'description': 'This ID is a running series (per gear) for each samling event and is found in the cruise logger.',
+          'inherit': True,
+          'width': 13,
+          'format': 'int',
+          'grouping': 'Station',
+          'hstore': False,
+          'valid': {
+              'validate': 'none',
+              'input_title': 'Local Station ID',
+              'input_message': '''This ID is a running series (per gear) for each samling event and is found in the cruise logger.
+'''
+          }
+          },
+
+    {'name': 'stationName',
+               'disp_name': 'Station Name',
+               'description': 'The full name of the station. e.g. P1 (NLEG01)',
+               'inherit': True,
+               'width': 13,
+               'format': 'text',
+               'grouping': 'Required',
+               'hstore': False,
+               'valid': {
+                   'validate': 'list',
+                   'source': 'stations',
+                   'input_title': 'Station Name',
+                   'input_message': '''The full name of the station. e.g. P1 (NLEG01)'''
+               }
+               },
 
     # ==============================================================================
     # Ship
