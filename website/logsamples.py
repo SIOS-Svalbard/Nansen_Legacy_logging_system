@@ -81,14 +81,16 @@ def edit_activity_page(eventID):
     # Splitting hstore to get column names
     if len(df_activity) == 1:
         n = 0
-        for a in df_activity['other'].item().split(', '): # Split fields with values from other fields with values
-            for b in a.split('=>'): # Split fields from values
-                n = n + 1
-                if (n % 2) != 0: # Only append odd numbers, just the fields not the values
-                    c = b[1:-1] # Removing first an last character, the quotation marks (")
-                    other_columns.append(c)
-                    activity_fields[c] = 'optional'
+        if df_activity['other'].item() != None:
+            for a in df_activity['other'].item().split(', '): # Split fields with values from other fields with values
+                for b in a.split('=>'): # Split fields from values
+                    n = n + 1
+                    if (n % 2) != 0: # Only append odd numbers, just the fields not the values
+                        c = b[1:-1] # Removing first an last character, the quotation marks (")
+                        other_columns.append(c)
+                        activity_fields[c] = 'optional'
 
+    print(df_activity.columns)
     for field in fields.fields:
         if field['name'] in activity_fields.keys():
             activity_metadata[field['name']] = {}
@@ -124,7 +126,7 @@ def edit_activity_page(eventID):
     else:
         recordedBys = []
 
-    activity_metadata['pi'] = {
+    activity_metadata['pis'] = {
         'disp_name': 'PI(s)',
         'description': 'Principal investigator for the sample or event',
         'format': 'text',
@@ -132,7 +134,7 @@ def edit_activity_page(eventID):
         'value': pis
         }
 
-    activity_metadata['recordedBy'] = {
+    activity_metadata['recordedBys'] = {
         'disp_name': 'Recorded By',
         'description': 'The person(s) responsible for recording the original event or sample.',
         'format': 'text',
@@ -204,7 +206,11 @@ def edit_activity_page(eventID):
                 if col in fields_to_check_df.columns:
                     fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
 
-            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE)
+            if eventID == 'addNew':
+                new = True
+            else:
+                new = False
+            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE, new)
 
             if good == False:
                 for error in errors:
@@ -258,6 +264,9 @@ def edit_activity_page(eventID):
                 groups.append(field['grouping'])
 
     groups = sorted(list(set(groups)))
+
+    for key, val in activity_metadata.items():
+        print(key, val)
 
     return render_template(
     "addActivity.html",
