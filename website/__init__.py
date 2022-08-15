@@ -47,9 +47,11 @@ def create_app():
     from .views import views
     from .registrations import registrations
     from .logsamples import logsamples
+    from .generatetemplates import generatetemplates
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
+    app.register_blueprint(generatetemplates, url_prefix='/')
 
     return app

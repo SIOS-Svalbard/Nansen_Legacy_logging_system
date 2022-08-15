@@ -17,8 +17,15 @@ import pandas as pd
 
 logsamples = Blueprint('logsamples', __name__)
 
-@logsamples.route('/editActivity/<eventID>', methods=['GET', 'POST'])
+@logsamples.route('/editActivity/<eventID>', methods=['GET'])
 def edit_activity_page(eventID):
+    return render_template(
+    "addActivity.html",
+    eventID=eventID
+    )
+
+@logsamples.route('/editActivity/form/<eventID>', methods=['GET', 'POST'])
+def edit_activity_form(eventID):
 
     activity_fields = {
         'id': 'optional',
@@ -90,7 +97,6 @@ def edit_activity_page(eventID):
                         other_columns.append(c)
                         activity_fields[c] = 'optional'
 
-    print(df_activity.columns)
     for field in fields.fields:
         if field['name'] in activity_fields.keys():
             activity_metadata[field['name']] = {}
@@ -265,11 +271,8 @@ def edit_activity_page(eventID):
 
     groups = sorted(list(set(groups)))
 
-    for key, val in activity_metadata.items():
-        print(key, val)
-
     return render_template(
-    "addActivity.html",
+    "addActivityForm.html",
     personnel=personnel,
     gearTypes=gearTypes,
     stationNames=stationNames,

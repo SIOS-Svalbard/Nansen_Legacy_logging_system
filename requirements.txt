@@ -6,3 +6,4 @@ pandas
 datetime
 numpy
 requests
+yaml
