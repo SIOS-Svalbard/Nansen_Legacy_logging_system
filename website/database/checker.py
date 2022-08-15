@@ -15,7 +15,6 @@ import psycopg2
 import getpass
 from website.database.get_data import get_data, get_registered_activities
 import website.database.fields as fields
-from website.spreadsheets.make_xlsx import Field
 from website.other_functions.other_functions import split_personnel_list
 import uuid
 
@@ -166,6 +165,78 @@ class Evaluator(object):
                 "The evaluator function is not returning a boolean")
         return res
 
+class Field(object):
+    """
+    Object for holding the specification of a cell
+    """
+
+    def __init__(self, name, disp_name, validation={},
+                 cell_format={}, width=20, long_list=False):
+        """
+        Initialising the object
+        Parameters
+        ----------
+        name : str
+               Name of object
+        disp_name : str
+               The title of the column
+        validation : dict, optional
+            A dictionary using the keywords defined in xlsxwriter
+        cell_format : dict, optional
+            A dictionary using the keywords defined in xlsxwriter
+        width : int, optional
+            Number of units for width
+        long_list : Boolean, optional
+            True for enabling the long list.
+        """
+        self.name = name  # Name of object
+        self.disp_name = disp_name  # Title of column
+        self.cell_format = cell_format  # For holding the formatting of the cell
+        self.validation = validation  # For holding the validation of the cell
+        self.long_list = long_list  # For holding the need for an entry in the
+        # variables sheet
+        self.width = width
+
+    def set_validation(self, validation):
+        """
+        Set the validation of the cell
+        Parameters
+        ----------
+        validation : dict
+            A dictionary using the keywords defined in xlsxwriter
+        """
+        self.validation = validation
+
+    def set_cell_format(self, cell_format):
+        """
+        Set the validation of the cell
+        Parameters
+        ----------
+        cell_format : dict
+            A dictionary using the keywords defined in xlsxwriter
+        """
+        self.cell_format = cell_format
+
+    def set_width(self, width):
+        """
+        Set the cell width
+        Parameters
+        ----------
+        width : int
+            Number of units for width
+        """
+        self.width = width
+
+    def set_long_list(self, long_list):
+        """
+        Set the need for moving the source in the list to a cell range in the
+        variables sheet
+        Parameters
+        ----------
+        long_list : Boolean
+            True for enabling the long list.
+        """
+        self.long_list = long_list
 
 class Checker(Field):
     """
@@ -226,7 +297,7 @@ class Checker(Field):
             validation = self.validation
 
         validate = validation['validate']
-        if validate == 'none':
+        if validate == 'any':
             return Evaluator(validation, func=lambda self, x: isinstance(str(x), str))
         elif validate == 'list' and DBNAME != False:
             table = validation['source']

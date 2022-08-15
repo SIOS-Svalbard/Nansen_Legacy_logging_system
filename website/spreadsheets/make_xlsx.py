@@ -8,91 +8,16 @@
 Based on https://github.com/SIOS-Svalbard/darwinsheet/blob/master/scripts/make_xlsx.py
 '''
 
-import sys
 import xlsxwriter
-import xml.etree.ElementTree
-from argparse import ArgumentParser, RawDescriptionHelpFormatter, Namespace
 import pandas as pd
 import website.database.fields as fields
+import os
+from argparse import Namespace
 
 DEBUG = 1
 
 DEFAULT_FONT = 'Calibri'
 DEFAULT_SIZE = 10
-
-
-class Field(object):
-    """
-    Object for holding the specification of a cell
-    """
-
-    def __init__(self, name, disp_name, validation={},
-                 cell_format={}, width=20, long_list=False):
-        """
-        Initialising the object
-        Parameters
-        ----------
-        name : str
-               Name of object
-        disp_name : str
-               The title of the column
-        validation : dict, optional
-            A dictionary using the keywords defined in xlsxwriter
-        cell_format : dict, optional
-            A dictionary using the keywords defined in xlsxwriter
-        width : int, optional
-            Number of units for width
-        long_list : Boolean, optional
-            True for enabling the long list.
-        """
-        self.name = name  # Name of object
-        self.disp_name = disp_name  # Title of column
-        self.cell_format = cell_format  # For holding the formatting of the cell
-        self.validation = validation  # For holding the validation of the cell
-        self.long_list = long_list  # For holding the need for an entry in the
-        # variables sheet
-        self.width = width
-
-    def set_validation(self, validation):
-        """
-        Set the validation of the cell
-        Parameters
-        ----------
-        validation : dict
-            A dictionary using the keywords defined in xlsxwriter
-        """
-        self.validation = validation
-
-    def set_cell_format(self, cell_format):
-        """
-        Set the validation of the cell
-        Parameters
-        ----------
-        cell_format : dict
-            A dictionary using the keywords defined in xlsxwriter
-        """
-        self.cell_format = cell_format
-
-    def set_width(self, width):
-        """
-        Set the cell width
-        Parameters
-        ----------
-        width : int
-            Number of units for width
-        """
-        self.width = width
-
-    def set_long_list(self, long_list):
-        """
-        Set the need for moving the source in the list to a cell range in the
-        variables sheet
-        Parameters
-        ----------
-        long_list : Boolean
-            True for enabling the long list.
-        """
-        self.long_list = long_list
 
 
 class Variable_sheet(object):
@@ -130,18 +55,9 @@ class Variable_sheet(object):
             The range of the list in Excel format
         """
 
-#         print(parameter_list)
         self.sheet.write(0, self.current_column, variable)
         name = 'Table_' + variable.replace(' ', '_').capitalize()
 
-        tab = self.sheet.add_table(
-            1, self.current_column,
-            1 + len(parameter_list), self.current_column,
-            {'name': name,
-                'header_row': 0}
-        )
-#         print(tab.properties['name'])
-        #
 
         for ii, par in enumerate(sorted(parameter_list, key=str.lower)):
             self.sheet.write(1 + ii, self.current_column, par)
@@ -169,7 +85,6 @@ def make_dict_of_fields():
         new = Field(field['name'], field['disp_name'])
         if 'valid' in field:
             new.set_validation(field['valid'])
-#             print(new.validation)
         if 'cell_format' in field:
             new.set_cell_format(field['cell_format'])
         if 'width' in field:
@@ -181,40 +96,6 @@ def make_dict_of_fields():
 
         field_dict[field['name']] = new
     return field_dict
-
-
-# def read_xml(args, xmlfile):
-    # """
-    # Read the XML file containing the definition of the wanted output xlsx files
-
-    # Parameters
-    # ----------
-    # args : argparse object
-    # The input args
-
-    # xmlfile : str
-    # The xml file to be read
-
-    # Returns
-    # ----------
-    # files : list
-    # List of dictionaries with the file specifications
-    # """
-
-    # files = []
-
-    # e = xml.etree.ElementTree.parse(xmlfile).getroot()
-    # if args.verbose > 0:
-    # print("Reading")
-    # for file in e.findall('file'):
-    # new = {}
-    # new['name'] = file.attrib['name']
-    # new['disp_name'] = file.find('disp_name').text
-    # new['fields'] = [
-    # child.text for child in file.find('fields').getchildren()]
-
-    # files.append(new)
-    # return files
 
 
 def write_conversion(args, workbook):
@@ -261,15 +142,6 @@ def write_conversion(args, workbook):
         'bg_color': '#FF94E8',
     })
 
-    input_format = workbook.add_format({
-        'bold': False,
-        'font_name': DEFAULT_FONT,
-        'text_wrap': True,
-        'valign': 'left',
-        'font_size': DEFAULT_SIZE
-    })
-
-    height = 15
     sheet.set_column(0, 2, width=30)
 
     sheet.write(1, 0, "Coordinate conversion ", parameter_format)
@@ -286,7 +158,7 @@ def write_conversion(args, workbook):
     sheet.write(10, 1, "=B9+B10/60 ", output_format)
 
 
-def write_metadata(args, workbook, field_dict, metadata_df):
+def write_metadata(args, workbook, metadata_df):
     """
     Adds a metadata sheet to workbook
     Parameters
@@ -295,9 +167,8 @@ def write_metadata(args, workbook, field_dict, metadata_df):
         The input arguments
     workbook : xlsxwriter Workbook
         The workbook for the metadata sheet
-    field_dict : dict
-        Contains a dictionary of Field objects and their name, made with
-        make_dict_of _fields()
+    metadata_df: Pandas dataframe
+        Pandas dataframe of filled-in metadata
 
     metadata_df: pandas.core.frame.DataFrame
         Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
@@ -325,7 +196,6 @@ def write_metadata(args, workbook, field_dict, metadata_df):
         'valign': 'left',
         'font_size': DEFAULT_SIZE
     })
-
 
     sheet.set_column(0, 0, width=30)
     sheet.set_column(2, 2, width=50)
@@ -370,18 +240,15 @@ def write_metadata(args, workbook, field_dict, metadata_df):
 
         sheet.set_row(ii, height)
 
-def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_df):
+def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
     """
     Writes the xlsx file based on the wanted fields
     Parameters
     ----------
     args : argparse object
         The input arguments
-    file_def : dict
-        The definition of the file wanted, generate this with read_xml
-    field_dict : dict
-        Contains a dictionary of Field objects and their name, made with
-        make_dict_of _fields()
+    fields_list : list
+        A list of the wanted fields
     metadata: Boolean
         Should the metadata sheet be written
     conversions: Boolean
@@ -394,7 +261,7 @@ def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_
         Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
     """
 
-    output = os.path.join(args.dir, file_def['name'] + '.xlsx')
+    output = args.filepath
     workbook = xlsxwriter.Workbook(output)
 
     # Set font
@@ -402,7 +269,8 @@ def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_
     workbook.formats[0].set_font_size(DEFAULT_SIZE)
 
     if metadata:
-        write_metadata(args, workbook, field_dict, metadata_df)
+        write_metadata(args, workbook, metadata_df)
+
     # Create sheet for data
     data_sheet = workbook.add_worksheet('Data')
     variable_sheet_obj = Variable_sheet(workbook)
@@ -453,65 +321,71 @@ def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_
     end_row = 20000  # ending row
 
     # Loop over all the variables needed
-    for ii in range(len(file_def['fields'])):
-        # Get the wanted field object
-        field = field_dict[file_def['fields'][ii]]
+    ii = 0
+    for idx, field in enumerate(fields.fields):
+        if field['name'] in fields_list:
+            # Write title row
+            data_sheet.write(title_row, ii, field['disp_name'], field_format)
 
-        # Write title row
-        data_sheet.write(title_row, ii, field.disp_name, field_format)
+            # Write row below with parameter name
+            data_sheet.write(parameter_row, ii, field['name'])
 
-        # Write row below with parameter name
-        data_sheet.write(parameter_row, ii, field.name)
-        # Write validation
-        if field.validation is not None:
-            if args.verbose > 0:
-                print("Writing validation for", file_def['fields'][ii])
+            # Write validation
+            if 'valid' in field.keys():
 
-            if field.long_list:
-                # We need to add the data to the validation sheet
-                # Copying the dict as we need to modify it
-                valid_copy = field.validation.copy()
+                if args.verbose > 0:
+                    print("Writing validation for", field['name'])
 
-                # Add the validation variable to the hidden sheet
-                ref = variable_sheet_obj.add_row(
-                    field.name, valid_copy['source'])
-                valid_copy.pop('source', None)
-                valid_copy['value'] = ref
-                valid_copy['input_message'].replace('\n', '\n\r')
-                data_sheet.data_validation(first_row=start_row,
-                                           first_col=ii,
-                                           last_row=end_row,
-                                           last_col=ii,
-                                           options=valid_copy)
-            else:
                 # Need to make sure that 'input_message' is not more than 255
-                valid_copy = field.validation.copy()
-                if len(valid_copy['input_message']) > 255:
-                    valid_copy['input_message'] = valid_copy[
-                        'input_message'][:252] + '...'
+                valid_copy = field['valid'].copy()
+                if len(field['description']) > 255:
+                    valid_copy['input_message'] = field['description'][:252] + '...'
+                else:
+                    valid_copy['input_message'] = field['description']
+
+                print(field['name'],valid_copy, '\n')
+
                 valid_copy['input_message'].replace('\n', '\n\r')
-                # Need to make sure that 'input_title' is not more than 32
-                # characters long
-                if len(valid_copy['input_title']) > 32:
-                    valid_copy['input_title'] = valid_copy[
-                        'input_title'][:32]
 
-                data_sheet.data_validation(first_row=start_row,
-                                           first_col=ii,
-                                           last_row=end_row,
-                                           last_col=ii,
-                                           options=valid_copy)
-        if field.cell_format is not None:
-            if not('font_name' in field.cell_format):
-                field.cell_format['font_name'] = DEFAULT_FONT
-            if not('font_size' in field.cell_format):
-                field.cell_format['font_size'] = DEFAULT_SIZE
-            cell_format = workbook.add_format(field.cell_format)
-            data_sheet.set_column(
-                ii, ii, width=field.width, cell_format=cell_format)
-        else:
-            data_sheet.set_column(first_col=ii, last_col=ii, width=field.width)
+                if len(field['disp_name']) > 32:
+                    valid_copy['input_title'] = field['disp_name'][:32]
+                else:
+                    valid_copy['input_title'] = field['disp_name']
 
+                if 'long_list' in field.keys():
+
+                    # Add the validation variable to the hidden sheet
+                    ref = variable_sheet_obj.add_row(
+                        field['name'], valid_copy['source'])
+                    valid_copy.pop('source', None)
+                    valid_copy['value'] = ref
+                    field['description'].replace('\n', '\n\r')
+                    data_sheet.data_validation(first_row=start_row,
+                                               first_col=ii,
+                                               last_row=end_row,
+                                               last_col=ii,
+                                               options=valid_copy)
+
+                else:
+
+                    data_sheet.data_validation(first_row=start_row,
+                                               first_col=ii,
+                                               last_row=end_row,
+                                               last_col=ii,
+                                               options=valid_copy)
+
+            if 'cell_format' in field.keys():
+                if 'font_name' not in field['cell_format']:
+                    field['cell_format']['font_name'] = DEFAULT_FONT
+                if 'font_size' not in field['cell_format']:
+                    field['cell_format']['font_size'] = DEFAULT_SIZE
+                cell_format = workbook.add_format(field['cell_format'])
+                data_sheet.set_column(
+                    ii, ii, width=20, cell_format=cell_format)
+            else:
+                data_sheet.set_column(first_col=ii, last_col=ii, width=20)
+
+            ii = ii + 1
 
     # Write optional data to data sheet
     if type(data) == pd.core.frame.DataFrame:
@@ -527,7 +401,7 @@ def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_
                 pass
 
     # Add header, done after the other to get correct format
-    data_sheet.write(0, 0, file_def['disp_name'], header_format)
+    data_sheet.write(0, 0, '', header_format)
     # Add hint about pasting
     data_sheet.merge_range(0, 1, 0, 7,
                            "When pasting only use 'paste special' / 'paste only', selecting numbers and/or text ",
@@ -541,50 +415,36 @@ def make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_
     # Hide ID row
     data_sheet.set_row(parameter_row, None, None, {'hidden': True})
 
-    # Colour the rows alternating
-#     row_col = workbook.add_format({'bg_color': '#F7FFFF'})
-#
-#     for row in range(start_row, int(end_row / 100), 2):
-#         data_sheet.set_row(row, cell_format=row_col)
-#         worksheet.write(row, 0, '')
-
     if conversions:
         write_conversion(args, workbook)
 
     workbook.close()
 
-
-def write_file(url, fields, field_dict, metadata=True, conversions=True, data=False, metadata_df=False):
+def write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False):
     """
     Method for calling from other python programs
     Parameters
     ----------
-    url: string
+    filepath: string
         The output file
-    fields : list
+    fields_list : list
         A list of the wanted fields
-    fields_dict: dict
-        A list of the wanted fields on the format shown in config.fields
     metadata: Boolean
         Should the metadata sheet be written
         Default: True
     conversions: Boolean
         Should the conversions sheet be written
         Default: True
-
     data: pandas.core.frame.DataFrame
         Optional parameter. Option to add data from a dataframe to the 'data' sheet.
-        Default: Not added
-
+        Default: False
     metadata_df: pandas.core.frame.DataFrame
         Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
-        Default: Not added
+        Default: False
     """
     args = Namespace()
     args.verbose = 0
-    args.dir = os.path.dirname(url)
-    file_def = {'name': os.path.basename(url).split('.')[0],
-                'disp_name': '',
-                'fields': fields}
+    args.dir = os.path.dirname(filepath)
+    args.filepath = filepath
 
-    make_xlsx(args, file_def, field_dict, metadata, conversions, data, metadata_df)
+    make_xlsx(args, fields_list, metadata, conversions, data, metadata_df)

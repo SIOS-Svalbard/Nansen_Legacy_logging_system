@@ -1,134 +1,19 @@
 {% extends "base.html" %} {% block title %}Edit Activity{% endblock %} {% block content
 %}
 
-<p>Upload spreadsheet containing activities here</p>
-
-<p>OR fill in the form below.</p>
-<h2>Activity Metadata:</h2>
-<p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
-
-<form method="POST">
-  {% for key, value in activity_metadata.items() %}
-  <div class="form-row">
-    {% if key == 'minimumDepthInMeters' %}
-      <div class="col-sm-12">
-        Enter either depth or elevation, but not both. Enter minimum and maximum if known, even if they are the same value.
-      </div>
-    {% endif %}
-    <label for="comment" class="col-sm-3 col-form-label">{% if value['required'] == True %}<span style="color:#ff0000">*</span>{% endif %}{{ value['disp_name'] }}  <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></label>
-
-    {% if value['format'] == 'date' %}
-    <div class="col-sm-9">
-      <input type="date" class="form-control" id="{{ key }}" name="{{ key }}" value="{{value['value']}}"> <!--value={{endDate}}-->
-    </div>
-
-    {% elif value['format'] == 'time' %}
-    <div class="col-sm-9">
-      <input type="time" class="form-control" id="{{ key }}" name="{{ key }}" value="{{value['value']}}">
-      <button type="button" onclick="document.getElementById('{{ key }}').value = ''">Remove time</button>
-    </div>
-
-    {% elif value['format'] == 'text' %}
-      {% if key == 'stationName' %}
-      <div class="col-sm-7">
-        <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
-          <option selected>{{value['value']}}</option>
-          {% for station in stationNames %}
-            <option>{{station}}</option>
-          {% endfor %}
-        </select>
-        <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-      </div>
-      <div class="col-sm-2">
-        <a class="btn btn-info" href="/register/stations" role="button">Register new</a>
-      </div>
-      {% elif key == 'gearType' %}
-      <div class="col-sm-7">
-        <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
-          <option selected>{{value['value']}}</option>
-          {% for gearType in gearTypes %}
-            <option>{{gearType}}</option>
-          {% endfor %}
-        </select>
-        <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-      </div>
-      <div class="col-sm-2">
-        <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
-      </div>
-      {% elif key == 'pis' %}
-      <div class="col-sm-7">
-        <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example">
-          {% for person in personnel %}
-            {% if person in pis %}
-              <option selected="selected">{{person}}</option>
-            {% else %}
-              <option>{{person}}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
-        <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
-      </div>
-      <div class="col-sm-2">
-        <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-      </div>
-      {% elif key == 'recordedBys' %}
-      <div class="col-sm-7">
-        <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example">
-          {% for person in personnel %}
-            {% if person in recordedBys %}
-              <option selected="selected">{{person}}</option>
-            {% else %}
-              <option>{{person}}</option>
-            {% endif %}
-          {% endfor %}
-        </select>
-        <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
-      </div>
-      <div class="col-sm-2">
-        <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-      </div>
-      {% else %}
-      <div class="col-sm-9">
-        <input type="text" class="form-control" name="{{ key }}" id="{{ key }}" placeholder="{{ key }}" value="{{value['value']}}">
-      </div>
-      {% endif %}
-
-    {% elif value['format'] == 'double precision' %}
-    <div class="col-sm-9">
-      {% if key in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-      <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      {% elif key in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
-      <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      {% elif key in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
-      <input type="number" step=0.0001 min=0 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      {% else %}
-      <input type="number" step=0.0001 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      {% endif %}
-    </div>
-    {% elif value['format'] == 'int' %}
-    <div class="col-sm-9">
-      <input type="number" step=1 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-    </div>
-
-    {% else %}
-    <div class="col-sm-9">
-    <input type="text" class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-    </div>
-
-    {% endif %}
-
-  </div>
+<div class="container .text-center">
+  <h2>Using on-screen form</h2>
   <br>
-  {% endfor %}
+  <a class="btn btn-primary btn-lg" href="/editActivity/form/{{eventID}}" role="button">Go to form</a>
 
-  {% include 'addfields.html' %}
+  <br><br><br>
 
+  <h2>Using spreadsheet</h2>
   <br>
+  <a class="btn btn-primary btn-lg" href="/editActivity/submitActivities" role="button">Submit activities</a>
 
-  <button type="submit" class="btn btn-primary btn-lg btn-block" name="submitbutton" value="submit">Submit</button>
-</form>
+  <a class="btn btn-secondary btn-lg" href="/generateTemplate" role="button">Generate empty template</a>
+</div>
 
-<br>
 
-<h2>Children Registered:</h2>
 {% endblock %}
