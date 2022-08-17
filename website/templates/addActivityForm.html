@@ -30,7 +30,7 @@
       <div class="col-sm-7">
         <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
           <option selected>{{value['value']}}</option>
-          {% for station in stationNames %}
+          {% for station in value['source'] %}
             <option>{{station}}</option>
           {% endfor %}
         </select>
@@ -43,7 +43,7 @@
       <div class="col-sm-7">
         <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
           <option selected>{{value['value']}}</option>
-          {% for gearType in gearTypes %}
+          {% for gearType in value['source'] %}
             <option>{{gearType}}</option>
           {% endfor %}
         </select>
@@ -52,11 +52,11 @@
       <div class="col-sm-2">
         <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
       </div>
-      {% elif key == 'pis' %}
+      {% elif key == 'pi_details' %}
       <div class="col-sm-7">
         <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example">
-          {% for person in personnel %}
-            {% if person in pis %}
+          {% for person in value['source'] %}
+            {% if person in value['value'] %}
               <option selected="selected">{{person}}</option>
             {% else %}
               <option>{{person}}</option>
@@ -68,11 +68,11 @@
       <div class="col-sm-2">
         <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
       </div>
-      {% elif key == 'recordedBys' %}
+      {% elif key == 'recordedBy_details' %}
       <div class="col-sm-7">
         <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example">
-          {% for person in personnel %}
-            {% if person in recordedBys %}
+          {% for person in value['source'] %}
+            {% if person in value['value'] %}
               <option selected="selected">{{person}}</option>
             {% else %}
               <option>{{person}}</option>

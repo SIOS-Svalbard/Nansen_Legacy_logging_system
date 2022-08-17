@@ -240,48 +240,48 @@ This is in addition to the ID'''
                 },
 
     # ==============================================================================
-    # Cruise Details
+    # Cruise Details - all in metadata hstore
     # ==============================================================================
-    {'name': 'cruiseNumber',
-                'disp_name': 'Cruise number',
-                'description': 'A number that can be used to uniquely identify each cruise',
-                'inherit': True,
-                'format': 'int',
-                'grouping': 'Cruise Details',
-                'hstore': False,
-                'valid': {
-                    'validate': 'any'}
-                },
-    {'name': 'cruiseName',
-                'disp_name': 'Cruise name',
-                'description': 'Full name of the cruise',
-                'inherit': True,
-                'format': 'text',
-                'grouping': 'Cruise Details',
-                'hstore': False,
-                'valid': {
-                    'validate': 'any'}
-                },
-    {'name': 'projectName',
-                'disp_name': 'Project name',
-                'description': 'Full name of the project',
-                'inherit': True,
-                'format': 'text',
-                'grouping': 'Cruise Details',
-                'hstore': False,
-                'valid': {
-                    'validate': 'any'}
-                },
-    {'name': 'vesselName',
-                'disp_name': 'Vessel name',
-                'description': 'Full name of the vessel',
-                'inherit': True,
-                'format': 'text',
-                'grouping': 'Cruise Details',
-                'hstore': False,
-                'valid': {
-                    'validate': 'any'}
-                },
+    # {'name': 'cruiseNumber',
+    #             'disp_name': 'Cruise number',
+    #             'description': 'A number that can be used to uniquely identify each cruise',
+    #             'inherit': True,
+    #             'format': 'int',
+    #             'grouping': 'Cruise Details',
+    #             'hstore': False,
+    #             'valid': {
+    #                 'validate': 'any'}
+    #             },
+    # {'name': 'cruiseName',
+    #             'disp_name': 'Cruise name',
+    #             'description': 'Full name of the cruise',
+    #             'inherit': True,
+    #             'format': 'text',
+    #             'grouping': 'Cruise Details',
+    #             'hstore': False,
+    #             'valid': {
+    #                 'validate': 'any'}
+    #             },
+    # {'name': 'projectName',
+    #             'disp_name': 'Project name',
+    #             'description': 'Full name of the project',
+    #             'inherit': True,
+    #             'format': 'text',
+    #             'grouping': 'Cruise Details',
+    #             'hstore': False,
+    #             'valid': {
+    #                 'validate': 'any'}
+    #             },
+    # {'name': 'vesselName',
+    #             'disp_name': 'Vessel name',
+    #             'description': 'Full name of the vessel',
+    #             'inherit': True,
+    #             'format': 'text',
+    #             'grouping': 'Cruise Details',
+    #             'hstore': False,
+    #             'valid': {
+    #                 'validate': 'any'}
+    #             },
 
     # ==============================================================================
     # Timestamps
@@ -636,7 +636,9 @@ Example: 15.0012''',
                    'validate': 'list',
                    'source': 'stations',
                    'input_title': 'Station Name',
-                   'input_message': '''The full name of the station. e.g. P1 (NLEG01)'''
+                   'input_message': '''The full name of the station. e.g. P1 (NLEG01)''',
+                   'error_title': 'Error',
+                   'error_message': 'Not a valid value, pick a value from the drop-down list.'
                }
                },
 
@@ -892,7 +894,6 @@ This is measured from the top of the core.''',
     # ==============================================================================
     # Personnel
     # ==============================================================================
-    # FROM TABLE
     {'name': 'recordedBy_name',
               'disp_name': 'Recorded By (Name)',
               'description': '''Full name of who has recorded/analysed the data.
@@ -942,6 +943,28 @@ Example: University Centre in Svalbard | University Centre in Svalbard''',
                   'input_message': '''Institution of who has recorded/analysed the data.
 Can be a concatenated list, separated by: '|'. Please include for everyone listed, even if some are from the same institution.
 Example: University Centre in Svalbard | University Centre in Svalbard'''
+              }
+              },
+    {'name': 'recordedBy_details',
+              'disp_name': 'Recorded By',
+              'description': '''Details of who has recorded/analysed the data.
+Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).
+Can be a concatenated list, separated by: '|'.''',
+              'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
+              'format': 'text',
+              'grouping': 'Required',
+              'hstore': False,
+              'long_list': True,
+              'valid': {
+                  'validate': 'list',
+                  'source': 'personnel',
+                  'error_title': 'Error',
+                  'error_message': 'Not a valid value, pick a value from the drop-down list.',
+                  'input_title': 'Recorded By',
+                  'input_message': '''Details of who has recorded/analysed the data.
+    Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).
+    Can be a concatenated list, separated by: '|'.''',
+
               }
               },
     # FROM TABLE, LINK TO EMAIL AND INSTITUTION AUTOMATICALLY. WHAT ABOUT WHEN PI CHANGES INSTITUTION?
@@ -995,6 +1018,28 @@ Please include for every PI listed, even if the same.
 Example: University Centre in Svalbard | University Centre in Svalbard'''
               }
               },
+    {'name': 'pi_details',
+              'disp_name': 'PI Details',
+              'description': '''Details of the principal investigator of the data.
+Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).
+Can be a concatenated list, separated by: '|'
+''',
+              'format': 'text',
+              'grouping': 'Required',
+              'hstore': False,
+              'long_list': True,
+              'valid': {
+                  'validate': 'list',
+                  'source': 'personnel',
+                  'input_title': 'PI Details',
+                  'input_message': '''Details of the principal investigator of the data.
+    Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).
+    Can be a concatenated list, separated by: '|'
+    ''',
+                  'error_title': 'Error',
+                  'error_message': 'Not a valid value, pick a value from the drop-down list.'
+              }
+              },
 
     # ==============================================================================
     # Storage
@@ -1007,11 +1052,14 @@ Example: University Centre in Svalbard | University Centre in Svalbard'''
                'grouping': 'Storage',
                'hstore': 'other',
                'width': 15,
+               'long_list': True,
                'valid': {
                    'validate': 'list',
                    'source': 'storage_temperatures',
                    'input_title': 'Storage temperature',
-                   'input_message': '''Choose the storage temperature used'''
+                   'input_message': '''Choose the storage temperature used''',
+                   'error_title': 'Error',
+                   'error_message': 'Not a valid value, pick a value from the drop-down list.'
                }
                },
     {'name': 'fixative',
@@ -1082,12 +1130,14 @@ If no filtering is being done choose None''',
           'grouping': 'Filtering and Volumes',
           'hstore': 'other',
           'width': 15,
+          'long_list': True,
           'valid': {
               'validate': 'list',
               'source': 'filters',
               'input_title': 'Filter',
-              'input_message': '''Choose the filter used.
-If no filtering is being done choose None'''
+              'input_message': '''Choose the filter used. If no filtering is being done choose None''',
+              'error_title': 'Error',
+              'error_message': 'Not a valid value, pick a value from the drop-down list.'
           }
           },
     {'name': 'filteredVolumeInMilliliters',
@@ -1214,12 +1264,15 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
        'dwcid': 'http://rs.tdwg.org/dwc/terms/sex',
-                'valid': {
-                    'validate': 'list',
-                    'source': 'sex',
-                    'input_title': 'Sex',
-                    'input_message': '''Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)'''
-                }
+       'long_list': True,
+       'valid': {
+            'validate': 'list',
+            'source': 'sex',
+            'input_title': 'Sex',
+            'input_message': '''Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
+            'error_title': 'Error',
+            'error_message': 'Not a valid value, pick a value from the drop-down list.'
+            }
        },
     {'name': 'kingdom',
        'disp_name': 'Kingdom',
@@ -1227,12 +1280,15 @@ Male (M), female (F), maybe male (M?), maybe female (F?) or unknown (?)''',
        'format': 'text',
        'grouping': 'Species, Classifications and Counts',
        'hstore': 'other',
+       'long_list': True,
        'dwcid': 'https://dwc.tdwg.org/terms/#dwc:kingdom',
                 'valid': {
                     'validate': 'list',
                     'source': 'kingdoms',
                     'input_title': 'Kingdom',
                     'input_message': '''The full scientific name of the kingdom in which the taxon is classified.''',
+                    'error_title': 'Error',
+                    'error_message': 'Not a valid value, pick a value from the drop-down list.'
                 }
        },
     {'name': 'class',
@@ -1293,50 +1349,6 @@ When forming part of an Identification, this should be the name in lowest level 
                       'left': True
                   }
                   },
-    {'name': 'samplingProtocolDoc',
-                    'disp_name': 'Sampling protocol document',
-                    'description': '''This should be a reference to the document that contains the sampling protocol used.
-Where possible, include the DOI of the document.''',
-                    'format': 'text',
-                    'grouping': 'Sampling Protocol',
-                    'hstore': False,
-                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
-                    'valid': {
-                        'validate': 'any',
-                        'input_title': 'Sampling Protocol Document',
-                        'input_message': '''This should be a reference to the document that contains the sampling protocol used.
-Where possible, include the DOI of the document.'''
-                    }
-                    },
-    {'name': 'samplingProtocolSection',
-                    'disp_name': 'Sampling protocol section',
-                    'description': '''This should be a reference to the section within sampling protocol document.''',
-                    'format': 'text',
-                    'grouping': 'Sampling Protocol',
-                    'hstore': False,
-                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
-                    'valid': {
-                        'validate': 'any',
-                        'input_title': 'Sampling Protocol Section',
-                        'input_message': '''This should be a reference to the section within sampling protocol document.'''
-                    }
-                    },
-    {'name': 'samplingProtocolVersion',
-                    'disp_name': 'Sampling protocol version',
-                    'description': '''This should be a reference to the version of the sampling protocol document.
-This is not neccessary if you have included the DOI in the sampling protocol document.''',
-                    'format': 'text',
-                    'grouping': 'Sampling Protocol',
-                    'hstore': False,
-                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
-                    'valid': {
-                        'validate': 'any',
-                        'input_title': 'Sampling Protocol Version',
-                        'input_message': '''This should be a reference to the version of the sampling protocol document.
-                        This is not neccessary if you have included the DOI in the sampling protocol document.'''
-                    }
-                    },
-
     # ==============================================================================
     # Probable MeasurementOrFact types from Darwin Core
     # ==============================================================================
@@ -2167,7 +2179,9 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_type
                   'source': 'sample_types',
                   'input_title': 'Sample type',
                   'input_message': '''Choose the sample type.
-Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_types.csv'''
+Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_sample_types.csv''',
+                  'error_title': 'Error',
+                  'error_message': 'Not a valid value, pick a value from the drop-down list.'
               }
               },
     # THIS SHOULD BECOME A MORE IMPORTANT TERM IN V2, AND MOST OF THE TERMS IN SAMPLE TYPE SHOULD BE MOVED TO INTENDED METHOD. MAKE REQUIRED TERM FOR SAMPLES.
@@ -2186,7 +2200,9 @@ Examples: 'FCM', 'XCM', 'SEM' ''',
                       'input_title': 'Intended Method',
                       'input_message': '''The intended measurement or analysis method for the sample.
 If multiple methods, separate with ';'.
-Examples: 'FCM', 'XCM', 'SEM' '''
+Examples: 'FCM', 'XCM', 'SEM' ''',
+                      'error_title': 'Error',
+                      'error_message': 'Not a valid value, pick a value from the drop-down list.'
                   }
                   },
     {'name': 'tissueType',
@@ -2223,7 +2239,9 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                         'source': 'gear_types',
                         'input_title': 'Gear Type',
                         'input_message': '''Choose the gear used to retrieve the sample.
-Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv'''
+Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv''',
+                        'error_title': 'Error',
+                        'error_message': 'Not a valid value, pick a value from the drop-down list.'
                     }
             },
     {'name': 'serialNumber',
@@ -2254,6 +2272,53 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                     'input_message': 'The name of the file that contains the data'
                 }
                 },
+
+    # ==============================================================================
+    # Sampling protocols
+    # ==============================================================================
+    {'name': 'samplingProtocolDoc',
+                    'disp_name': 'Sampling protocol document',
+                    'description': '''This should be a reference to the document that contains the sampling protocol used.
+Where possible, include the DOI of the document.''',
+                    'format': 'text',
+                    'grouping': 'Sampling Protocol',
+                    'hstore': False,
+                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
+                    'valid': {
+                        'validate': 'any',
+                        'input_title': 'Sampling Protocol Document',
+                        'input_message': '''This should be a reference to the document that contains the sampling protocol used.
+Where possible, include the DOI of the document.'''
+                    }
+                    },
+    {'name': 'samplingProtocolSection',
+                    'disp_name': 'Sampling protocol section',
+                    'description': '''This should be a reference to the section within sampling protocol document.''',
+                    'format': 'text',
+                    'grouping': 'Sampling Protocol',
+                    'hstore': False,
+                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
+                    'valid': {
+                        'validate': 'any',
+                        'input_title': 'Sampling Protocol Section',
+                        'input_message': '''This should be a reference to the section within sampling protocol document.'''
+                    }
+                    },
+    {'name': 'samplingProtocolVersion',
+                    'disp_name': 'Sampling protocol version',
+                    'description': '''This should be a reference to the version of the sampling protocol document.
+This is not neccessary if you have included the DOI in the sampling protocol document.''',
+                    'format': 'text',
+                    'grouping': 'Sampling Protocol',
+                    'hstore': False,
+                    'dwcid': 'https://dwc.tdwg.org/terms/#dwc:samplingProtocol',
+                    'valid': {
+                        'validate': 'any',
+                        'input_title': 'Sampling Protocol Version',
+                        'input_message': '''This should be a reference to the version of the sampling protocol document.
+                        This is not neccessary if you have included the DOI in the sampling protocol document.'''
+                    }
+                    },
 
     # ==============================================================================
     # Comments
@@ -2380,57 +2445,3 @@ Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.
                 }
                 },
     ]
-
-
-
-# RETHINK THIS. MORE METADATA FROM ACDD CONVETIONS OR EML METADATA SO THE DATA ARE CLOSER TO BEING READY TO PUBLISH FOLLOWING THE CRUISE?
-# BUT CAN'T BE TOO MUCH THAT IT WILL BE A LOT OF WORK
-# IS PI_NAME REALLY NECCESSARY WHEN ALSO PROVIDED FOR EACH INDIVIDUAL SAMPLE? WHAT DOES THIS ADD?
-# ==============================================================================
-# For metadata fields
-# ==============================================================================
-
-# title = make_string_dict('title')
-# title['valid']['input_message'] = 'A short descriptive title of the dataset'
-
-# abstract = make_string_dict('abstract')
-# abstract['valid'][
-#     'input_message'] = '''An abstract providing context for the dataset.
-# It should briefly explain the sampling and analysis procedures used to obtain the data.
-# Here it is possible to refer to a published protocol'''
-
-# pi_name = make_string_dict('pi_name')
-# pi_name['disp_name'] = 'Principal investigator (PI)'
-
-# pi_email = make_string_dict('pi_email')
-# pi_email['disp_name'] = 'PI email'
-
-# pi_institution = make_string_dict('pi_institution')
-# pi_institution['disp_name'] = 'PI institution'
-
-# pi_address = make_string_dict('pi_address')
-# pi_address['disp_name'] = 'PI address'
-
-# project_long = make_string_dict('project_long')
-# project_long['disp_name'] = 'Project long name'
-
-# project_short = make_string_dict('project_short')
-# project_short['disp_name'] = 'Project short name'
-
-
-# projectID = {'name': 'projectID',
-#              'disp_name': 'Project ID',
-#              'width': 40,
-#              'valid': {
-#                  'validate': 'any',
-#                  'input_title': 'Project ID',
-#                  'input_message': '''The project ID.
-# For the Nansen Legacy this is:
-# The Nansen Legacy (RCN # 276730)'''
-#              }
-#              }
-
-
-# # List of all the available fields
-# fields = [getattr(sys.modules[__name__], item) for item in dir() if not item.startswith(
-#     "__") and isinstance(getattr(sys.modules[__name__], item), dict)]

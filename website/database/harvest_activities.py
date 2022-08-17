@@ -95,7 +95,7 @@ def get_bottom_depth(start_datetime, TOKTLOGGER):
 
     return bottomdepthinmeters
 
-def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VESSEL_NAME):
+def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
     '''
     Provide IP or DNS of toktlogger to access IMR API
 
@@ -164,8 +164,6 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         (id,
         eventid,
         catalognumber,
-        cruisenumber,
-        vesselname,
         statid,
         eventdate,
         eventtime,
@@ -186,8 +184,6 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VE
         ('{activity["id"]}',
         '{activity["id"]}',
         '{readable_id}',
-        {CRUISE_NUMBER},
-        '{VESSEL_NAME}',
         {activity["localstationNumber"]},
         '{eventDate}',
         '{eventTime}',
