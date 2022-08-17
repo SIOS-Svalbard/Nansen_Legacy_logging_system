@@ -19,3 +19,13 @@ def get_registered_activities(DBNAME, METADATA_CATALOGUE):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid is NULL;', con=conn)
     return df
+
+def get_personnel_list(DBNAME=False, table='personnel'):
+    if DBNAME == False:
+        df_personnel = pd.read_csv(f'website/database/{table}.csv')
+    else:
+        df_personnel = get_data(DBNAME, table)
+    df_personnel.sort_values(by='last_name', inplace=True)
+    df_personnel['personnel'] = df_personnel['first_name'] + ' ' + df_personnel['last_name'] + ' (' + df_personnel['email'] + ')'
+    personnel = list(df_personnel['personnel'])
+    return personnel

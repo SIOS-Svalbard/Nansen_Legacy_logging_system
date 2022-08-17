@@ -86,7 +86,12 @@
           {% for col, row_ in zip(column_names, row) %}
           {% if col == link_column %}
             <td>
-              <a class="btn btn-primary" href="/editActivity/{{row_}}" role="button">View/Edit</a>
+              <a
+              class="btn btn-primary"
+              href="/editActivity/form/{{row_}}"
+              role="button">
+              View/Edit
+            </a>
             </td>
             <td>
               <a class="btn btn-warning" href="#" role="button">Log samples</a>

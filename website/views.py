@@ -23,7 +23,8 @@ def home():
     else:
         cruise_leader_name = co_cruise_leader_name = cruise_name = False
 
-    activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER, VESSEL_NAME).reset_index()
+    # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
+    activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE).reset_index()
 
     activities_df['message'] = 'Okay'
 

@@ -13,6 +13,7 @@ import pandas as pd
 import website.database.fields as fields
 import os
 from argparse import Namespace
+from website.database.get_data import get_data, get_personnel_list
 
 DEBUG = 1
 
@@ -58,6 +59,12 @@ class Variable_sheet(object):
         self.sheet.write(0, self.current_column, variable)
         name = 'Table_' + variable.replace(' ', '_').capitalize()
 
+        self.sheet.add_table(
+            1, self.current_column,
+            1 + len(parameter_list), self.current_column,
+            {'name': name,
+                'header_row': 0}
+        )
 
         for ii, par in enumerate(sorted(parameter_list, key=str.lower)):
             self.sheet.write(1 + ii, self.current_column, par)
@@ -157,6 +164,34 @@ def write_conversion(args, workbook):
     sheet.write(10, 0, "Decimal degrees ", output_format)
     sheet.write(10, 1, "=B9+B10/60 ", output_format)
 
+def write_readme(args, workbook):
+    """
+    Adds a README sheet to workbook
+    Parameters
+    ----------
+    args : argparse object
+        The input arguments
+    workbook : xlsxwriter Workbook
+        The workbook for the README sheet
+    """
+
+    sheet = workbook.add_worksheet('README')
+
+    sheet.set_column(0, 2, width=30)
+
+    header_format = workbook.add_format({
+        'font_name': DEFAULT_FONT,
+        'right': True,
+        'bottom': True,
+        'bold': True,
+        'text_wrap': True,
+        'valign': 'center',
+        'font_size': 25,
+        'bg_color': '#B9F6F5',
+    })
+
+    sheet.write(1, 0, "README", header_format)
+    sheet.set_row(1, 30)
 
 def write_metadata(args, workbook, metadata_df):
     """
@@ -240,7 +275,7 @@ def write_metadata(args, workbook, metadata_df):
 
         sheet.set_row(ii, height)
 
-def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
+def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME):
     """
     Writes the xlsx file based on the wanted fields
     Parameters
@@ -259,6 +294,9 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
 
     metadata_df: pandas.core.frame.DataFrame
         Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
+    DBNAME: string
+        Name of the database where the metadata catalogue is hosted
+        Default: False, for when template generate used independent of the database
     """
 
     output = args.filepath
@@ -276,13 +314,11 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
     variable_sheet_obj = Variable_sheet(workbook)
 
     header_format = workbook.add_format({
-        #         'bg_color': '#C6EFCE',
         'font_color': '#FF0000',
         'font_name': DEFAULT_FONT,
         'bold': False,
         'text_wrap': False,
         'valign': 'vcenter',
-        #         'indent': 1,
         'font_size': DEFAULT_SIZE + 2
     })
 
@@ -322,70 +358,90 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
 
     # Loop over all the variables needed
     ii = 0
-    for idx, field in enumerate(fields.fields):
+
+    for field in fields.fields:
         if field['name'] in fields_list:
-            # Write title row
-            data_sheet.write(title_row, ii, field['disp_name'], field_format)
 
-            # Write row below with parameter name
-            data_sheet.write(parameter_row, ii, field['name'])
-
-            # Write validation
-            if 'valid' in field.keys():
-
-                if args.verbose > 0:
-                    print("Writing validation for", field['name'])
-
-                # Need to make sure that 'input_message' is not more than 255
-                valid_copy = field['valid'].copy()
-                if len(field['description']) > 255:
-                    valid_copy['input_message'] = field['description'][:252] + '...'
-                else:
-                    valid_copy['input_message'] = field['description']
-
-                print(field['name'],valid_copy, '\n')
-
-                valid_copy['input_message'].replace('\n', '\n\r')
-
-                if len(field['disp_name']) > 32:
-                    valid_copy['input_title'] = field['disp_name'][:32]
-                else:
-                    valid_copy['input_title'] = field['disp_name']
-
-                if 'long_list' in field.keys():
-
-                    # Add the validation variable to the hidden sheet
-                    ref = variable_sheet_obj.add_row(
-                        field['name'], valid_copy['source'])
-                    valid_copy.pop('source', None)
-                    valid_copy['value'] = ref
-                    field['description'].replace('\n', '\n\r')
-                    data_sheet.data_validation(first_row=start_row,
-                                               first_col=ii,
-                                               last_row=end_row,
-                                               last_col=ii,
-                                               options=valid_copy)
-
-                else:
-
-                    data_sheet.data_validation(first_row=start_row,
-                                               first_col=ii,
-                                               last_row=end_row,
-                                               last_col=ii,
-                                               options=valid_copy)
-
-            if 'cell_format' in field.keys():
-                if 'font_name' not in field['cell_format']:
-                    field['cell_format']['font_name'] = DEFAULT_FONT
-                if 'font_size' not in field['cell_format']:
-                    field['cell_format']['font_size'] = DEFAULT_SIZE
-                cell_format = workbook.add_format(field['cell_format'])
-                data_sheet.set_column(
-                    ii, ii, width=20, cell_format=cell_format)
+            if field['name'] in ['pi_details','recordedBy_details']:
+                duplication = 3 # 3 copies of these columns
             else:
-                data_sheet.set_column(first_col=ii, last_col=ii, width=20)
+                duplication = 1 # One copy of all other columns
 
-            ii = ii + 1
+            while duplication > 0:
+
+                # Write title row
+                data_sheet.write(title_row, ii, field['disp_name'], field_format)
+
+                # Write row below with parameter name
+                data_sheet.write(parameter_row, ii, field['name']+ '_' + str(duplication))
+
+                # Write validation
+                if 'valid' in field.keys():
+
+                    if args.verbose > 0:
+                        print("Writing validation for", field['name'])
+
+                    # Need to make sure that 'input_message' is not more than 255
+                    valid_copy = field['valid'].copy()
+                    if len(field['description']) > 255:
+                        valid_copy['input_message'] = field['description'][:252] + '...'
+                    else:
+                        valid_copy['input_message'] = field['description']
+
+                    valid_copy['input_message'].replace('\n', '\n\r')
+
+                    if len(field['disp_name']) > 32:
+                        valid_copy['input_title'] = field['disp_name'][:32]
+                    else:
+                        valid_copy['input_title'] = field['disp_name']
+
+                    if 'long_list' in field.keys():
+
+                        # Add the validation variable to the hidden sheet
+                        table = valid_copy['source']
+                        if DBNAME == False:
+                            df = pd.read_csv(f'website/database/{table}.csv')
+                        else:
+                            df = get_data(DBNAME, table)
+
+                        if field['name'] in ['pi_details', 'recordedBy_details']:
+                            lst_values = get_personnel_list(DBNAME=DBNAME, table='personnel')
+                        else:
+                            lst_values = list(df[field['name']])
+
+                        ref = variable_sheet_obj.add_row(
+                            field['name']+str(duplication), lst_values)
+
+                        valid_copy.pop('source', None)
+                        valid_copy['value'] = ref
+
+                        data_sheet.data_validation(first_row=start_row,
+                                                   first_col=ii,
+                                                   last_row=end_row,
+                                                   last_col=ii,
+                                                   options=valid_copy)
+
+                    else:
+
+                        data_sheet.data_validation(first_row=start_row,
+                                                   first_col=ii,
+                                                   last_row=end_row,
+                                                   last_col=ii,
+                                                   options=valid_copy)
+
+                if 'cell_format' in field.keys():
+                    if 'font_name' not in field['cell_format']:
+                        field['cell_format']['font_name'] = DEFAULT_FONT
+                    if 'font_size' not in field['cell_format']:
+                        field['cell_format']['font_size'] = DEFAULT_SIZE
+                    cell_format = workbook.add_format(field['cell_format'])
+                    data_sheet.set_column(
+                        ii, ii, width=20, cell_format=cell_format)
+                else:
+                    data_sheet.set_column(first_col=ii, last_col=ii, width=20)
+
+                ii = ii + 1
+                duplication = duplication - 1
 
     # Write optional data to data sheet
     if type(data) == pd.core.frame.DataFrame:
@@ -418,9 +474,11 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df):
     if conversions:
         write_conversion(args, workbook)
 
+    write_readme(args, workbook)
+
     workbook.close()
 
-def write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False):
+def write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=False):
     """
     Method for calling from other python programs
     Parameters
@@ -441,10 +499,13 @@ def write_file(filepath, fields_list, metadata=True, conversions=True, data=Fals
     metadata_df: pandas.core.frame.DataFrame
         Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
         Default: False
+    DBNAME: string
+        Name of the database where the metadata catalogue is hosted
+        Default: False, for when template generate used independent of the database
     """
     args = Namespace()
     args.verbose = 0
     args.dir = os.path.dirname(filepath)
     args.filepath = filepath
 
-    make_xlsx(args, fields_list, metadata, conversions, data, metadata_df)
+    make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME)

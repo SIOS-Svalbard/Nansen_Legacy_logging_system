@@ -19,10 +19,10 @@
             {{group}}
           </button>
           <div class="dropdown-menu">
-             {% for field in fields %}
-               {% if field['grouping'] == group %}
-                 <label for="comment" class="col-sm-9 col-form-label">{{field["disp_name"]}} <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="14" title='{{field["description"]}}'></label>
-                 <input type=checkbox class="col-sm-3" value=y name='{{field["name"]}}'>
+             {% for field, vals in fields.items() %}
+               {% if vals['grouping'] == group %}
+                 <label class="col-sm-9 col-form-label">{{vals["disp_name"]}} <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="14" title='{{vals["description"]}}'></label>
+                 <input type=checkbox class="col-sm-3" value=y name='{{field}}'>
                {% endif %}
              {% endfor %}
            </div>
