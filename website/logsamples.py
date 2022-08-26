@@ -209,6 +209,6 @@ def edit_activity_form(eventID):
     "addActivityForm.html",
     eventID=eventID,
     activity_metadata=activity_metadata,
-    fields=extra_fields_dic,
+    extra_fields_dic=extra_fields_dic,
     groups=groups
     )

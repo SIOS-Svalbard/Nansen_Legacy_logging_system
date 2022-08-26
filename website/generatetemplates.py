@@ -27,6 +27,7 @@ def generate_template():
     '''
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
 
+    added_fields_dic = {}
     if request.method == 'POST':
 
         form_input = request.form.to_dict(flat=False)
@@ -35,9 +36,9 @@ def generate_template():
             if key not in required_fields_dic.keys() and key not in recommended_fields_dic.keys() and key != 'submitbutton':
                 for field in fields.fields:
                     if field['name'] == key:
-                        extra_fields_dic[key] = {}
-                        extra_fields_dic[key]['disp_name'] = field['disp_name']
-                        extra_fields_dic[key]['description'] = field['description']
+                        added_fields_dic[key] = {}
+                        added_fields_dic[key]['disp_name'] = field['disp_name']
+                        added_fields_dic[key]['description'] = field['description']
 
         if form_input['submitbutton'] == ['generateTemplate']:
 
@@ -48,21 +49,22 @@ def generate_template():
                     fields_list = fields_list + [field]
 
             filepath = '/tmp/generated_template.xlsx'
-
-            write_file(filepath, fields_list, metadata=False, conversions=True, data=False, metadata_df=False)
+            print('TABLE',CRUISE_DETAILS_TABLE)
+            write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
             return send_file(filepath, as_attachment=True)
 
-    if len(extra_fields_dic) > 0:
-        extra_fields_bool = True
+    if len(added_fields_dic) > 0:
+        added_fields_bool = True
     else:
-        extra_fields_bool = False
+        added_fields_bool = False
 
     return render_template(
     "generateTemplate.html",
     required_fields_dic = required_fields_dic,
     recommended_fields_dic = recommended_fields_dic,
     extra_fields_dic = extra_fields_dic,
-    groups=groups,
-    extra_fields_bool=extra_fields_bool
+    groups = groups,
+    added_fields_dic = added_fields_dic,
+    added_fields_bool = added_fields_bool
     )
