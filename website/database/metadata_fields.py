@@ -88,7 +88,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Dataset ID',
+                    'input_message': "An identifier for the data set, provided by and unique within its naming authority. The combination of the 'naming authority' and the 'id' should be globally unique, but the id can be globally unique by itself also. IDs can be URLs, URNs, DOIs, meaningful text strings, a local key, or any other unique string of characters. The id should not include white space characters."
+                    }
                 },
     {'name': 'naming_authority',
                 'disp_name': "Naming Authority",
@@ -101,7 +104,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Naming Authority',
+                    'input_message': "The organization that provides the initial id (see above) for the dataset. The naming authority should be uniquely specified by this attribute. We recommend using reverse-DNS naming for the naming authority; URIs are also acceptable. Example: 'edu.ucar.unidata'."
+                    }
                 },
     {'name': 'language',
                 'disp_name': "Language",
@@ -115,7 +121,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Language',
+                    'input_message': "The language in which the resource (not the metadata document) is written"
+                    }
                 },
     {'name': 'title',
                 'disp_name': 'Title',
@@ -133,7 +142,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Title',
+                    'input_message': 'A short phrase or sentence describing the dataset. In many discovery systems, the title will be displayed in the results list from a search, and therefore should be human readable and reasonable to display in a list of such names.'
+                    }
                 },
     {'name': 'summary',
                 'disp_name': 'Summary',
@@ -151,7 +163,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Summary',
+                    'input_message': 'A paragraph describing the dataset, analogous to an abstract for a paper.'
+                    }
                 },
     {'name': 'metadataProvider',
                 'disp_name': 'Metadata Provider',
@@ -164,7 +179,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Metadata Provider',
+                    'input_message': 'The metadataProvider is the person or organization responsible for providing documentation for the resource.'
+                    }
                 },
     # Keywords in EML are separate 'keyword' fields, how do I manage this?!
     # Separate into EML on output by splitting them? Or have multiple fields to begin with?
@@ -182,11 +200,14 @@ metadata_fields = [
                     'recommendations': 'Required'
                 },
                 'required': False,
-                'link': 'GCMD Keywords: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all?gtm_scheme=all'
+                'link': 'https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all?gtm_scheme=all',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Keyword(s)',
+                    'input_message': "A comma-separated list of key words and/or phrases. Keywords may be common words or phrases, terms from a controlled vocabulary (GCMD is required), or URIs for terms from a controlled vocabulary (see also 'keywords_vocabulary' attribute). If keywords are extracted from e.g. GCMD Science Keywords, add keywords_vocabulary='GCMDSK' and prefix in any case each keyword with the appropriate prefix."
+                    }
                 },
     {'name': 'keywords_vocabulary',
                 'disp_name': "Keywords Vocabulary",
@@ -205,7 +226,10 @@ metadata_fields = [
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Keywords Vocabulary',
+                    'input_message': "If you are using a controlled vocabulary for the words/phrases in your 'keywords' attribute, this is the unique name or identifier of the vocabulary from which keywords are taken. If more than one keyword vocabulary is used, each may be presented with a prefix and a following comma, so that keywords may optionally be prefixed with the controlled vocabulary key. Example: 'GCMD:GCMD Keywords, CF:NetCDF COARDS Climate and Forecast Standard Names'."
+                    }
                 },
     {'name': 'geospatial_lat_min',
                 'disp_name': "Minimum Latitude",
@@ -421,11 +445,14 @@ Example: 15.0012''',
                     'recommendations': 'Suggested',
                 },
                 'required': False,
-                'default': 'm'
+                'default': 'm',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'
+                    'validate': 'any',
+                    'input_title': 'Vertical Units',
+                    'input_message': "Units for the vertical axis described in 'geospatial_vertical_min' and 'geospatial_vertical_max' attributes."
+
                     }
                 },
     {'name': 'studyAreaDescription',
@@ -440,6 +467,8 @@ Example: 15.0012''',
                 'grouping': 'Dataset Details',
                 'valid': {
                     'validate': 'any',
+                    'input_title': 'Study Area Description',
+                    'input_message': "The studyAreaDescription field documents the physical area associated with the research project. It can include descriptions of the geographic, temporal, and taxonomic coverage of the research location and descriptions of domains (themes) of interest such as climate, geology, soils or disturbances."
                     }
                 },
 
@@ -471,7 +500,7 @@ Example: 15.0012''',
                     'error_message': 'Not a valid date [2000-01-01, today + 2]'
                 },
                 'cell_format': {
-                    'num_format': 'yyyy-mm-dd hh:mm''
+                    'num_format': 'yyyy-mm-dd hh:mm'
                 }
                 },
     {'name': 'time_coverage_end',
@@ -503,7 +532,7 @@ Example: 15.0012''',
                     'error_message': 'Not a valid date [2000-01-01, today + 2]'
                 },
                 'cell_format': {
-                    'num_format': 'yyyy-mm-dd hh:mm''
+                    'num_format': 'yyyy-mm-dd hh:mm'
                 }
                 },
     # Populate ACDD or EML automatically? Then the user needs to choose the version of CF or DwC later?
@@ -518,7 +547,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Conventions',
+                    'input_message': "A comma-separated string of the conventions that are followed by the dataset. For files that follow this version of ACDD, include the string 'ACDD-1.3'. (This attribute is described in the NetCDF Users Guide.)"
+                    }
                 },
     {'name': 'history',
                 'disp_name': "Data History",
@@ -531,7 +563,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'History',
+                    'input_message': "Provides an audit trail for modifications to the original data. This attribute is also in the NetCDF Users Guide: 'This is a character array with a line for each invocation of a program that has modified the dataset. Well-behaved generic netCDF applications should append a line containing: date, time of day, user name, program name and command arguments.' To include a more complete description you can append a reference to an ISO Lineage entity; see NOAA EDM ISO Lineage guidance."
+                    }
                 },
     {'name': 'source',
                 'disp_name': "Date Source",
@@ -549,7 +584,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Data Source',
+                    'input_message': "The methods field documents scientific methods used in the collection of this dataset. It includes information on items such as tools, instrument calibration and software."
+                    }
                 },
     {'name': 'processing_level',
                 'disp_name': "Processing Level",
@@ -559,15 +597,18 @@ Example: 15.0012''',
                     'recommendations': 'Recommended',
                 },
                 'eml': {
-                    'name': "methods",
-                    'description': "methodStep",
+                    'name': "methodStep",
+                    'description': "The methodStep field allows for repeated sets of elements that document a series of procedures followed to produce a data object. These include text descriptions of the procedures, relevant literature, software, instrumentation, source data and any quality control measures taken.",
                     'recommendations': 'Optional',
                 },
                 'required': False,
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Processing Level',
+                    'input_message': "A textual description of the processing (or quality control) level of the data."
+                    }
                 },
     {'name': 'date_created',
                 'disp_name': "Date Created",
@@ -596,7 +637,7 @@ Example: 15.0012''',
                     'error_message': 'Not a valid date [2000-01-01, today + 2]'
                 },
                 'cell_format': {
-                    'num_format': 'yyyy-mm-dd hh:mm''
+                    'num_format': 'yyyy-mm-dd hh:mm'
                 }
                 },
     {'name': 'creator_name',
@@ -611,13 +652,16 @@ Example: 15.0012''',
                     'description': "The 'creator' element provides the full name of the person, organization, or position who created the resource. The list of creators for a resource represent the people and organizations who should be cited for the resource.",
                     'recommendations': 'Required',
                 },
-                'required': False,
+                'required': True,
                 'format': 'text',
                 'derive_from': ['recordedBy_name', 'pi_name'],
                 'derive_by': 'concat',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Creator Name',
+                    'input_message': "The name of the person (or other creator type specified by the creator_type attribute) principally responsible for creating this data. See last paragraph under creator_type."
+                    }
                 },
     {'name': 'creator_type',
                 'disp_name': "Creator Type",
@@ -633,7 +677,12 @@ Example: 15.0012''',
                 'default': 'person',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Creator Type',
+                    'input_message': '''Specifies type of creator with one of the following: 'person', 'group', 'institution', or 'position'. If this attribute is not specified, the creator is assumed to be a person.
+
+    If multiple persons are involved, please list these as a comma separated string. In such situation please remember to add a comma separated string for creator_institution and creator_email as well. Consistency between these fields are done from left to right.'''
+                    }
                 },
     {'name': 'creator_institution',
                 'disp_name': "Creator Institution",
@@ -647,13 +696,16 @@ Example: 15.0012''',
                     'description': "The full name of the organization that is associated with the resource. This field is intended to describe which institution or overall organization is associated with the resource being described.",
                     'recommendations': 'Required',
                 },
-                'required': False,
+                'required': True,
                 'format': 'text',
                 'derive_from': ['recordedBy_institution', 'pi_institution'],
                 'derive_by': 'concat',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Creator Institution',
+                    'input_message': "The institution of the creator; should uniquely identify the creator's institution. This attribute's value should be specified even if it matches the value of publisher_institution, or if creator_type is institution. See last paragraph under creator_type."
+                    }
                 },
     {'name': 'creator_email',
                 'disp_name': "Creator Email",
@@ -667,13 +719,16 @@ Example: 15.0012''',
                     'description': 'The electronic mail address is the email address for the party. It is intended to be an Internet SMTP email address, which should consist of a username followed by the @ symbol, followed by the email server domain name address.',
                     'recommendations': 'Required',
                 },
-                'required': False,
+                'required': True,
                 'format': 'text',
                 'derive_from': ['recordedBy_email', 'pi_email'],
                 'derive_by': 'concat',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Creator Email',
+                    'input_message': "The email address of the person (or other creator type specified by the creator_type attribute) principally responsible for creating this data. See last paragraph under creator_type."
+                    }
                 },
     {'name': 'creator_url',
                 'disp_name': "Creator URL",
@@ -691,7 +746,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Creator URL',
+                    'input_message': "The URL of the person (or other creator type specified by the creator_type attribute) principally responsible for creating this data. See last paragraph under creator_type."
+                    }
                 },
     {'name': 'institution',
                 'disp_name': "Institution",
@@ -704,7 +762,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Institution',
+                    'input_message': "The name of the institution principally responsible for originating this data. This attribute is recommended by the CF convention. If provided as a string ending with a keyword in parantheses (), the main text will be interpreted as the long name and the keyword in the parantheses as the short name. E.g. 'Norwegian Meteorological Institute (MET)'"
+                    }
                 },
     {'name': 'project',
                 'disp_name': "Project",
@@ -725,7 +786,10 @@ Example: 15.0012''',
                 'derive_by': 'copy',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Project',
+                    'input_message': "The name of the project(s) principally responsible for originating this data. Multiple projects can be separated by commas, as described under Attribute Content Guidelines. Examples: 'PATMOS-X', 'Extended Continental Shelf Project'. If each substring includes a keyword in parantheses, this is interpreted as the short name for the project while the rest is the long name. E.g. 'Nansen Legacy (NLEG)'."
+                    }
                 },
     {'name': 'publisher_name',
                 'disp_name': "Publisher Name",
@@ -738,7 +802,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Publisher Name',
+                    'input_message': "The name of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format."
+                    }
                 },
     {'name': 'publisher_email',
                 'disp_name': "Publisher Email",
@@ -751,7 +818,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Publisher Email',
+                    'input_message': "The email address of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format."
+                    }
                 },
     {'name': 'publisher_url',
                 'disp_name': "Publisher URL",
@@ -764,7 +834,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Publisher URL',
+                    'input_message': "The URL of the person (or other entity specified by the publisher_type attribute) responsible for publishing the data file or product to users, with its current metadata and format."
+                    }
                 },
     {'name': 'license',
                 'disp_name': "License",
@@ -778,7 +851,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'License',
+                    'input_message': "Provide the URL to a standard or specific license, enter 'Freely Distributed' or 'None', or describe any restrictions to data access and distribution in free text. It is strongly recommended to use identifiers and URL's from https://spdx.org/licenses/ and to use a form similar to <URL>(<Identifier>) using elements from the SPDX source listed above."
+                    }
                 },
     {'name': 'instrument',
                 'disp_name': "Instrument",
@@ -793,10 +869,13 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Instrument',
+                    'input_message': "Name of the contributing instrument(s) or sensor(s) used to create this data set or product. Indicate controlled vocabulary used in instrument_vocabulary. Comma separated list."
+                    }
                 },
     {'name': 'instrument_vocabulary',
-                'disp_name': "Intrument Vocabulary",
+                'disp_name': "Instrument Vocabulary",
                 'acdd': {
                     'name': "instrument_vocabulary",
                     'description': "Controlled vocabulary for the names used in the 'instrument' attribute. Comma separated list. Remember to use prefixes like for keywords.",
@@ -808,7 +887,10 @@ Example: 15.0012''',
                 'format': 'text',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Instrument Vocabulary',
+                    'input_message': "Controlled vocabulary for the names used in the 'instrument' attribute. Comma separated list. Remember to use prefixes like for keywords."
+                    }
                 },
     {'name': 'cruise_number',
                 'disp_name': "Cruise Number",
@@ -819,7 +901,10 @@ Example: 15.0012''',
                 'derive_by': 'copy',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Cruise Number',
+                    'input_message': "cruise number"
+                    }
                 },
     {'name': 'cruise_name',
                 'disp_name': "Cruise Name",
@@ -830,7 +915,10 @@ Example: 15.0012''',
                 'derive_by': 'copy',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Cruise Name',
+                    'input_message': "cruise name"
+                    }
                 },
     {'name': 'vessel_name',
                 'disp_name': "Vessel Name",
@@ -841,6 +929,9 @@ Example: 15.0012''',
                 'derive_by': 'copy',
                 'grouping': 'Dataset Details',
                 'valid': {
-                    'validate': 'any'}
+                    'validate': 'any',
+                    'input_title': 'Vessel Name',
+                    'input_message': "vessel name"
+                    }
                 }
     ]

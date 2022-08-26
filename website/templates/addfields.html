@@ -19,7 +19,7 @@
             {{group}}
           </button>
           <div class="dropdown-menu">
-             {% for field, vals in fields.items() %}
+             {% for field, vals in extra_fields_dic.items() %}
                {% if vals['grouping'] == group %}
                  <label class="col-sm-9 col-form-label">{{vals["disp_name"]}} <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="14" title='{{vals["description"]}}'></label>
                  <input type=checkbox class="col-sm-3" value=y name='{{field}}'>

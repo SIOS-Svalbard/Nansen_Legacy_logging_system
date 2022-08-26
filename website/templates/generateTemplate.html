@@ -39,9 +39,9 @@
       <br>
       <button class="btn btn-primary btn-lg btn-block" type="submit" name="submitbutton" value="generateTemplate">Generate</button>
       <br>
-      {% if extra_fields_bool == True %}
+      {% if added_fields_bool == True %}
       <h3>Extra</h3><br>
-      {% for key, field in extra_fields_dic.items() %}
+      {% for key, field in added_fields_dic.items() %}
       <div class="form-check">
         <label class="form-check-label">
           <input class="form-check-input" type="checkbox" id="{{ key }}" name="{{ key }}" checked="checked">
