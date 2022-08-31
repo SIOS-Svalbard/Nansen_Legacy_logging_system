@@ -55,7 +55,11 @@ def submit_spreadsheet():
                   flash(error, category='error')
 
           else:
-              new=True
+              if request.form['submitbutton'] == 'new':
+                  new = True
+              elif request.form['submitbutton'] == 'update':
+                  new = False
+
               required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
               required = list(required_fields_dic.keys())
               recommended = list(recommended_fields_dic.keys())
@@ -87,7 +91,7 @@ def submit_spreadsheet():
                   required.remove('recordedBy_details')
                   required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
 
-              good, errors = checker(data_df, required, DBNAME, METADATA_CATALOGUE, new)
+              good, errors = checker(data_df, required, DBNAME, METADATA_CATALOGUE, new, firstrow=4)
 
               if good == False:
                   for error in errors:
@@ -104,7 +108,6 @@ def submit_spreadsheet():
                       if field['format'] == 'time' and field['name'] in data_df.columns:
                           data_df[field['name']] = data_df[field['name']].astype('object')
                           data_df[field['name']].fillna('NULL', inplace=True)
-                          print(data_df[field['name']])
 
                   # How should I assign eventids if using spreadsheets?
                   if 'parentID' not in data_df.columns and 'eventID' not in data_df.columns:
@@ -112,39 +115,34 @@ def submit_spreadsheet():
                   elif 'parentID' not in data_df.columns:
                       pass
 
-                  #try:
+                  try:
 
-                  if new == True:
+                      if new == True:
 
-                      data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                      data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                      data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-                      data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
+                          data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                          data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                          data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
+                          data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                      insert_into_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
+                          insert_into_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
 
-                      flash('Data from file uploaded successfully!', category='success')
+                          flash('Data from file uploaded successfully!', category='success')
 
-                  else:
+                      else:
 
-                      # These need to be updated to pull multiple values.
-                      data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
-                      data_df['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
-                      data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                          df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+                          ids = list(data_df['id'])
+                          data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
+                          data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
+                          data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                          update_record_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
 
-                      # Is update working when changing ID? What about fetching above? Need an original ID and new ID variable surely.
-                      update_record_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
+                          flash('Data from file updated successfully!', category='success')
 
-                      flash('Data from file updated successfully!', category='success')
+                      return redirect(url_for('views.home'))
 
-                  return redirect(url_for('views.home'))
-
-                  #except:
-                #      flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
-
-                      # Unexpected fail error message if above fails?
-
-
+                  except:
+                      flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     return render_template(
     "submitSpreadsheet.html"
