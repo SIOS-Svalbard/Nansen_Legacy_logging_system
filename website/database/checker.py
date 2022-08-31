@@ -544,7 +544,7 @@ def check_value(value, checker):
     else:
         return checker.validator.evaluate(value)
 
-def check_array(data, checker_list, registered_ids, required, new):
+def check_array(data, checker_list, registered_ids, required, new, firstrow):
     """
     Checks the data according to the validators in the checker_list
     Returns True if the data is good, as well as an empty string
@@ -561,6 +561,10 @@ def check_array(data, checker_list, registered_ids, required, new):
     new: Boolean
         Whether the record(s) is being logged for the first time or not
         Influences whether we check whether id already registered
+    firstrow: int
+        Row number of first row in source data that includes data.
+        If data are submitted from the GUI form, this should be 0 or not provided.
+        If data are submitted from the Excel templates this should be 4.
     Returns
     ---------
     good : Boolean
@@ -598,19 +602,20 @@ def check_array(data, checker_list, registered_ids, required, new):
 
     for idx, row in data.iterrows():
         if row['id'] != '':
+            rownum = idx + firstrow
             if row['id'] in registered_ids and new == True:
                 good = False
-                already_registered_ids.append(idx)
+                already_registered_ids.append(rownum)
             elif not data['id'].is_unique:
-                duplicate_ids.append(idx)
+                duplicate_ids.append(rownum)
                 good = False
             elif 'parentID' in data.columns:
                 if data['id'] == data['parentID']:
-                    parent_child.append(idx)
+                    parent_child.append(rownum)
                     good = False
         if 'parentID' in data.columns:
             if row['parentID'] != '' and row['parentID'] not in registered_ids or row['parentID'] not in data['id'].values:
-                missing_parents.append(idx)
+                missing_parents.append(rownum)
 
     if already_registered_ids != []:
         if len(data) > 1:
@@ -643,15 +648,16 @@ def check_array(data, checker_list, registered_ids, required, new):
         blanks = []
 
         for idx, row in data.iterrows():
+            rownum = idx + firstrow
             val = row[col]
             if not check_value(val, checker):
 
-                content_errors.append(idx)
+                content_errors.append(rownum)
 
             if col in required:
 
                 if val == '':
-                    blanks.append(idx)
+                    blanks.append(rownum)
 
         if content_errors != []:
             if len(data) > 1:
@@ -669,19 +675,21 @@ def check_array(data, checker_list, registered_ids, required, new):
 
         if col == 'minimumDepthInMeters' and 'minimumDepthInMeters' in data.columns:
             for idx, row in data.iterrows():
+                rownum = idx + firstrow
                 mindepth = row[col]
                 maxdepth = row['maximumDepthInMeters']
                 if maxdepth != '' and mindepth != '':
                     if mindepth > float(maxdepth):
-                        minmaxdepths.append(idx)
+                        minmaxdepths.append(rownum)
 
         if col == 'minimumElevationInMeters' and 'minimumElevationInMeters' in data.columns:
             for idx, row in data.iterrows():
+                rownum = idx + firstrow
                 minelevation = row[col]
                 maxelevation = row['maximumElevationInMeters']
                 if maxelevation != '' and minelevation != '':
                     if minelevation > float(maxelevation):
-                        minmaxelevations.append(idx)
+                        minmaxelevations.append(rownum)
 
     if minmaxdepths != []:
         if len(data) > 1:
@@ -698,13 +706,14 @@ def check_array(data, checker_list, registered_ids, required, new):
     missingdepths = []
 
     for idx, row in data.iterrows():
+        rownum = idx + firstrow
         n = 0
         for col in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
             if col in data.columns:
                 if row[col] == '':
                     n = n + 1
         if n == 4:
-            missingdepths.append(idx)
+            missingdepths.append(rownum)
 
     if missingdepths != []:
         if len(data) > 1:
@@ -720,7 +729,7 @@ def check_array(data, checker_list, registered_ids, required, new):
 
     return good, errors
 
-def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True):
+def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -744,6 +753,10 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True):
     new: Boolean
         Whether the record(s) is being logged for the first time or not
         Influences whether we check whether id already registered
+    firstrow: int
+        Row number of first row in source data that includes data.
+        If data are submitted from the GUI form, this should be 0 or not provided.
+        If data are submitted from the Excel templates this should be 4.
 
     Returns
     ---------
@@ -766,6 +779,6 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True):
         registered_ids = []
 
     # Check the data array
-    good, errors = check_array(data, checker_list, registered_ids, required, new)
+    good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow)
 
     return good, errors
