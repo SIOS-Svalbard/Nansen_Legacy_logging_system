@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% block title %}Submit Spreadsheet{% endblock %} {% block content
+%}
+<h1>Submit spreadsheet to metadata catalogue</h1>
+<br>
+<h3>Requirements</h3>
+<ul>
+  <li>Spreadsheet must have been developed using the <a href="/generateTemplate">Nansen Legacy template generator</a></li>
+  <li>Spreadsheet must contain a sheet named <em>Data</em> and a sheet named <em>Metadata</em></li>
+</ul>
+
+<br><br>
+
+<h3>Submit your spreadsheet here!</h3>
+<br>
+<form action = "http://127.0.0.1:5000/editActivity/submitSpreadsheet" method = "POST" enctype = "multipart/form-data">
+   <input type = "file" name = "file" /><br><br>
+   <button type="submit" class="btn btn-primary btn-lg" name="submitbutton" value="submit">Submit spreadsheet</button>
+</form>
+<br><br>
+
+<h3>Need to generate a template?</h3>
+<a class="btn btn-secondary btn-lg" href="/generateTemplate" role="button">Generate empty template</a>
+<br><br>
+{% endblock %}

@@ -681,7 +681,10 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                 data_sheet.write(title_row, ii, field['disp_name'], field_format)
 
                 # Write row below with parameter name
-                data_sheet.write(parameter_row, ii, field['name']+ '_' + str(duplication))
+                if field['name'] in ['pi_details','recordedBy_details']:
+                    data_sheet.write(parameter_row, ii, field['name']+ '_' + str(3-duplication))
+                else:
+                    data_sheet.write(parameter_row, ii, field['name'])
 
                 # Write validation
                 if 'valid' in field.keys():
