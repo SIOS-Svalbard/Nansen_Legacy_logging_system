@@ -54,7 +54,7 @@
       </div>
       {% elif key == 'pi_details' %}
       <div class="col-sm-7">
-        <select multiple class="custom-select" id="pis" name="pis" aria-label="Default select example">
+        <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
           {% for person in value['source'] %}
             {% if person in value['value'] %}
               <option selected="selected">{{person}}</option>
@@ -70,7 +70,7 @@
       </div>
       {% elif key == 'recordedBy_details' %}
       <div class="col-sm-7">
-        <select multiple class="custom-select" id="recordedBys" name="recordedBys" aria-label="Default select example">
+        <select multiple class="custom-select" id="recordedBy_details" name="recordedBy_details" aria-label="Default select example">
           {% for person in value['source'] %}
             {% if person in value['value'] %}
               <option selected="selected">{{person}}</option>
