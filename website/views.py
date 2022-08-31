@@ -39,7 +39,7 @@ def home():
     for col in required_cols:
         activities_df.loc[activities_df[col].isnull(), 'message'] = 'Missing metadata'
 
-    activities_df_home = activities_df[['stationname','eventdate', 'enddate','decimallatitude','decimallongitude','geartype','pi_name','message','id']]
+    activities_df_home = activities_df[['stationname','eventdate', 'eventtime','decimallatitude','decimallongitude','geartype','pi_name','message','id']]
     activities_df_home.sort_values(by=['eventdate'], ascending=False, inplace=True)
 
     num_activities = len(activities_df_home)
