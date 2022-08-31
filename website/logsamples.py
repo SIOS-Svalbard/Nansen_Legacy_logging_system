@@ -18,15 +18,15 @@ import pandas as pd
 
 logsamples = Blueprint('logsamples', __name__)
 
-@logsamples.route('/editActivity/<eventID>', methods=['GET'])
-def edit_activity_page(eventID):
+@logsamples.route('/editActivity/<ID>', methods=['GET'])
+def edit_activity_page(ID):
     return render_template(
     "addActivity.html",
-    eventID=eventID
+    ID=ID
     )
 
-@logsamples.route('/editActivity/form/<eventID>', methods=['GET', 'POST'])
-def edit_activity_form(eventID):
+@logsamples.route('/editActivity/form/<ID>', methods=['GET', 'POST'])
+def edit_activity_form(ID):
 
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
 
@@ -37,7 +37,7 @@ def edit_activity_form(eventID):
 
     df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
 
-    df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID]
+    df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID]
 
     # Creating new columns from the hstore key/value pairs in the 'other' column
     df_activity = df_activity.join(df_activity['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
@@ -68,7 +68,7 @@ def edit_activity_form(eventID):
                 activity_fields[field['name']]['required'] = True
             else:
                 activity_fields[field['name']]['required'] = False
-            if eventID == 'addNew':
+            if ID == 'addNew':
                 if field['format'] in ['double precision', 'date', 'time']:
                     activity_fields[field['name']]['value'] = None
                 else:
@@ -153,7 +153,7 @@ def edit_activity_form(eventID):
                 if col in fields_to_check_df.columns:
                     fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
 
-            if eventID == 'addNew':
+            if ID == 'addNew':
                 new = True
             else:
                 new = False
@@ -165,8 +165,8 @@ def edit_activity_form(eventID):
                 required.remove('recordedBy_details')
                 required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
 
-            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE, new)
-
+            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE, new, old_id=ID)
+            print('HERE',good)
             if good == False:
                 for error in errors:
                     flash(error, category='error')
@@ -182,7 +182,7 @@ def edit_activity_form(eventID):
 
                 form_input['eventID'] = form_input['id']
 
-                if eventID == 'addNew':
+                if ID == 'addNew':
 
                     form_input['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                     form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -195,18 +195,18 @@ def edit_activity_form(eventID):
 
                 else:
 
-                    form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == eventID, 'history'].iloc[0]
+                    form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID, 'history'].iloc[0]
                     form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
                     form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-                    update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+                    update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
 
                     flash('Activity edited!', category='success')
 
                 return redirect(url_for('views.home'))
 
-    if eventID == 'addNew':
-        eventID = ''
+    if ID == 'addNew':
+        ID = ''
 
     # Reordering dictionary to order in fields.py
     activity_metadata = {}
@@ -216,7 +216,7 @@ def edit_activity_form(eventID):
 
     return render_template(
     "addActivityForm.html",
-    eventID=eventID,
+    ID=ID,
     activity_metadata=activity_metadata,
     extra_fields_dic=extra_fields_dic,
     groups=groups

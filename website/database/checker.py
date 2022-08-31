@@ -544,7 +544,7 @@ def check_value(value, checker):
     else:
         return checker.validator.evaluate(value)
 
-def check_array(data, checker_list, registered_ids, required, new, firstrow):
+def check_array(data, checker_list, registered_ids, required, new, firstrow, old_id):
     """
     Checks the data according to the validators in the checker_list
     Returns True if the data is good, as well as an empty string
@@ -565,6 +565,10 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow):
         Row number of first row in source data that includes data.
         If data are submitted from the GUI form, this should be 0 or not provided.
         If data are submitted from the Excel templates this should be 4.
+    old_id: string
+        If UUID has been updated using the GUI form, this is the ID previously used
+        for that record. If ID has been changed, checking as if it is a new ID.
+        Default = False, for use when submitting multiple records, e.g. from spreadsheet
     Returns
     ---------
     good : Boolean
@@ -590,7 +594,6 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow):
     if unknown_columns != []:
         errors.append(f'Field name not recognised: {unknown_columns}')
 
-
     if not(good):
         errors.append("Not doing any more tests until all required fields are present and all fields are recognised")
         return good, errors
@@ -602,6 +605,8 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow):
 
     for idx, row in data.iterrows():
         if row['id'] != '':
+            if row['id'] != old_id and old_id != False:
+                new = True
             rownum = idx + firstrow
             if row['id'] in registered_ids and new == True:
                 good = False
@@ -729,7 +734,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow):
 
     return good, errors
 
-def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0):
+def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -757,6 +762,10 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, fir
         Row number of first row in source data that includes data.
         If data are submitted from the GUI form, this should be 0 or not provided.
         If data are submitted from the Excel templates this should be 4.
+    old_id: string
+        If UUID has been updated using the GUI form, this is the ID previously used
+        for that record. If ID has been changed, checking as if it is a new ID.
+        Default = False, for use when submitting multiple records, e.g. from spreadsheet
 
     Returns
     ---------
@@ -779,6 +788,6 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, fir
         registered_ids = []
 
     # Check the data array
-    good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow)
+    good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow, old_id)
 
     return good, errors

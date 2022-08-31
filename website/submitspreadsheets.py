@@ -26,14 +26,21 @@ def submit_spreadsheet():
     Generate template html page code
     '''
     if request.method == 'POST':
-          f = request.files['file']
-          filepath = '/tmp/'+f.filename
-          f.save(filepath)
 
-          errors = []
-          good = True
+        f = request.files['file']
 
-          if filepath.endswith(".xlsx"):
+        if f.filename == '':
+            flash('No file selected', category='error')
+
+        else:
+
+            filepath = '/tmp/'+f.filename
+            f.save(filepath)
+
+            errors = []
+            good = True
+
+            if filepath.endswith(".xlsx"):
               try:
                   data_df = pd.read_excel(filepath, sheet_name = 'Data', header=2)
               except:
@@ -46,15 +53,15 @@ def submit_spreadsheet():
                   errors.append('No sheet named "Metadata" found. Did you upload the correct file?')
                   good = False
 
-          else:
+            else:
               errors.append('File must be an "XLSX" file.')
               good = False
 
-          if good == False:
+            if good == False:
               for error in errors:
                   flash(error, category='error')
 
-          else:
+            else:
               if request.form['submitbutton'] == 'new':
                   new = True
               elif request.form['submitbutton'] == 'update':
@@ -136,6 +143,8 @@ def submit_spreadsheet():
                           data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
                           data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                           update_record_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
+
+                          [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
 
                           flash('Data from file updated successfully!', category='success')
 

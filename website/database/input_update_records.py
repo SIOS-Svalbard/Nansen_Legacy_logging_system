@@ -48,7 +48,7 @@ def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
+def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID):
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     cur = conn.cursor()
@@ -57,7 +57,7 @@ def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
     string_2 = ''
     string_3 = ''
     string_4 = ''
-    string_5 = f" WHERE id = '{form_input['id']}';"
+    string_5 = f" WHERE id = '{ID}';"
 
     # MAIN FIELDS
     for field in fields.fields:
