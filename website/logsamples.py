@@ -184,7 +184,7 @@ def edit_activity_form(ID):
                         if form_input[field['name']] == '':
                             if field['format'] in ['int', 'double precision', 'time', 'date']:
                                 form_input[field['name']] = 'NULL'
-                            elif field['format'] == 'uuid':
+                            elif field['name'] == 'id':
                                 form_input[field['name']] = str(uuid.uuid1())
 
                 form_input['eventID'] = form_input['id']

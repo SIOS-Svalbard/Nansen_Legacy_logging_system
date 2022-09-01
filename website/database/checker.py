@@ -653,7 +653,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     missing_parents = []
 
     for idx, row in data.iterrows():
-        if row['id'] != '':
+        if row['id'] != '' and type(row['id']) == str:
             if row['id'] != old_id and old_id != False:
                 new = True
             rownum = idx + firstrow

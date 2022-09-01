@@ -124,8 +124,11 @@ def submit_spreadsheet():
                             if field['format'] in ['int', 'double precision', 'time', 'date']:
                                 data_df[field['name']] = data_df[field['name']].replace([''], 'NULL')
                                 data_df[field['name']].fillna('NULL', inplace=True)
-                            elif field['format'] == 'uuid':
-                                data_df[field['name']] = data_df[field['name']].replace([''], str(uuid.uuid1()))
+                            elif field['name'] == 'id':
+                                data_df[field['name']].fillna('', inplace=True)
+                                for idx, row in data_df.iterrows():
+                                    if row[field['name']] == '':
+                                        data_df[field['name']][idx] = str(uuid.uuid1())
                         if field['format'] == 'time' and field['name'] in data_df.columns:
                             data_df[field['name']] = data_df[field['name']].astype('object')
                             data_df[field['name']].fillna('NULL', inplace=True)
@@ -136,36 +139,36 @@ def submit_spreadsheet():
                     elif 'parentID' not in data_df.columns:
                         pass
 
-                    # try:
+                    try:
 
-                    if new == True:
+                        if new == True:
 
-                        data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                        data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                        data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-                        data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
+                            data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                            data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                            data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
+                            data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                        insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                        flash('Data from file uploaded successfully!', category='success')
+                            flash('Data from file uploaded successfully!', category='success')
 
-                    else:
+                        else:
 
-                        df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
-                        ids = list(data_df['id'])
-                        data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
-                        data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ New version submitted from spreadsheet, source filename " + f.filename)
-                        data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                        update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+                            ids = list(data_df['id'])
+                            data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
+                            data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ New version submitted from spreadsheet, source filename " + f.filename)
+                            data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                            update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                        [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
+                            [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
 
-                        flash('Data from file updated successfully!', category='success')
+                            flash('Data from file updated successfully!', category='success')
 
-                        return redirect(url_for('views.home'))
+                            return redirect(url_for('views.home'))
 
-                    # except:
-                    #     flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+                    except:
+                        flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     return render_template(
     "submitSpreadsheet.html"
