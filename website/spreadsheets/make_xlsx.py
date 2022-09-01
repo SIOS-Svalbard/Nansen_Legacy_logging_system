@@ -463,9 +463,7 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
             eml_description = ''
             eml_format = blank_format
 
-        if mfield['required'] == True:
-            input_format = input_required_format
-        elif mfield['format'] == 'datetime':
+        if mfield['format'] == 'datetime':
             input_format = input_datetime_format
         else:
             input_format = input_optional_format
@@ -557,7 +555,7 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
     for col in range(len(cols)):
         sheet.write(row+1, col,'',bottom_border_format)
 
-    sheet.merge_range('C2:C4', 'Required for metadata catalogue', input_required_key_format)
+    #sheet.merge_range('C2:C4', 'Required for metadata catalogue', input_required_key_format)
 
     sheet.merge_range('D2:E2', 'Highly recommended ACDD term', acdd_highly_recommended_format)
     sheet.merge_range('D3:E3', 'Recommended ACDD term', acdd_recommended_format)
