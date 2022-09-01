@@ -607,12 +607,12 @@ Example: 15.0012''',
                     'minimum': dt.datetime(2000, 1, 1, 00, 00),
                     'maximum': '=TODAY()+2',
                     'input_title': 'Date Created',
-                    'input_message': '''The date on which this version of the data was created. (Modification of values implies a new version, hence this would be assigned the date of the most recent values modification.) Metadata changes are not considered when assigning the date_created. The ISO 8601:2004 extended date format is recommended, as described in the Attribute Content Guidance section. E.g. 2020-10-20T12:35:00Z.''',
+                    'input_message': '''The datetime on which this version of the data was created. (Modification of values implies a new version, hence this would be assigned the date of the most recent values modification.) Metadata changes are not considered when assigning the date_created. The ISO 8601:2004 extended date format is recommended, as described in the Attribute Content Guidance section. E.g. 2020-10-20T12:35:00Z.''',
                     'error_title': 'Error',
-                    'error_message': 'Not a valid date [2000-01-01, today + 2]'
+                    'error_message': 'Not a valid datetime [2000-01-01, today + 2]'
                 },
                 'cell_format': {
-                    'num_format': 'yyyy-mm-dd hh:mm'
+                    'num_format': 'yyyy-mm-dd hh:mm:ss'
                 }
                 },
     {'name': 'creator_name',

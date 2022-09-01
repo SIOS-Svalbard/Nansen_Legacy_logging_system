@@ -365,7 +365,7 @@ class Checker(Field):
 
             form = formula.replace('=', '')
             if 'TODAY()' in form:
-                form = form.replace('TODAY()', 'datetime.date.today()')
+                form = form.replace('TODAY()', 'datetime.datetime.today()')
             if '+' in form:
                 parts = form.split('+')
                 parts[1] = 'datetime.timedelta(days=' + parts[1] + ')'
@@ -418,7 +418,7 @@ class Checker(Field):
                 ev.set_func(lambda self, x: eval(
                     "x" + self.validation['criteria'] + "self.limit"))
                 return ev
-        elif validate == 'date' or validate == 'datetime':
+        elif validate == 'date':
             if criteria == 'between':
                 minimum = validation['minimum']
                 maximum = validation['maximum']
@@ -449,6 +449,39 @@ class Checker(Field):
 
                 return ev
 
+        elif validate == 'datetime':
+            if criteria == 'between':
+                minimum = validation['minimum']
+                maximum = validation['maximum']
+                if not(isinstance(minimum, datetime.datetime)):
+                    # We now have a formula
+                    minimum = _formula_to_date(minimum)
+                if not(isinstance(maximum, datetime.datetime)):
+                    # We now have a formula
+                    maximum = _formula_to_date(maximum)
+
+                ev = Evaluator(validation)
+                ev.minimum = minimum
+                ev.maximum = maximum
+                ev.set_func(lambda self, x: self.minimum <= x <= self.maximum)
+                # ev.set_func(lambda self,x: print(self.minimum , x , self.maximum))
+                return ev
+
+            else:
+                limit = validation['value']
+                if not(isinstance(limit, datetime.datetime)):
+                    # We now have a formula
+                    limit = _formula_to_date(limit)
+
+                ev = Evaluator(validation)
+                ev.limit = limit
+
+                ev.set_func(lambda self, x: eval(
+                    "x" + self.validation['criteria'] + "self.limit"))
+
+                return ev
+
+        else:
             raise NotImplementedError("No validator available for the object")
 
 def clean(data):
@@ -811,7 +844,7 @@ def check_meta(metadata, metadata_checker_list):
         blanks = []
 
         val = metadata[col].item()
-        if not check_value(val, metadata_checker) and val != 'NULL':
+        if val != 'NULL' and not check_value(val, metadata_checker):
             good = False
             errors.append(f'Content in wrong format ({metadata_checker.disp_name})')
 

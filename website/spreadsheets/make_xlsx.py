@@ -470,6 +470,7 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
 
         if 'default' in mfield.keys():
             content = mfield['default']
+            print(content, type(content))
         elif 'derive_from' in mfield.keys():
             content = derive_content(mfield, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
         else:
@@ -716,7 +717,6 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                         if field['name'] in ['pi_details', 'recordedBy_details']:
                             lst_values = get_personnel_list(DBNAME=DBNAME, table='personnel')
                         else:
-                            print(df.columns)
                             lst_values = list(df[field['name'].lower()])
 
                         ref = variable_sheet_obj.add_row(
