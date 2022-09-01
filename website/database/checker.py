@@ -15,14 +15,20 @@ import psycopg2
 import getpass
 from website.database.get_data import get_data, get_registered_activities
 import website.database.fields as fields
+import website.database.metadata_fields as metadata_fields
 from website.other_functions.other_functions import split_personnel_list
 import uuid
 
 def make_valid_dict(DBNAME):
     """
     Makes a dictionary of the possible fields with their validation.
-    Does this by reading the fields list from the fields.py library, the
-    dwcterms.rdf (Darwin core) file  and dcterms.rdf (Dublin Core)
+    Does this by reading the fields list from the fields.py library.
+    Parameters
+    ---------
+    DBNAME: str
+        Name of PSQL database that hosts the metadata catalogue
+        and other tables where lists of values for certain fields are registered
+        Default: False boolean
     Returns
     ---------
     field_dict : dict
@@ -43,6 +49,37 @@ def make_valid_dict(DBNAME):
             field_dict[field['name']] = new
 
     return field_dict
+
+def make_valid_dict_metadata(DBNAME):
+    """
+    Makes a dictionary of the possible metadata fields with their validation.
+    Does this by reading the metadata fields list from the metadata_fields.py library.
+    Parameters
+    ---------
+    DBNAME: str
+        Name of PSQL database that hosts the metadata catalogue
+        and other tables where lists of values for certain fields are registered
+        Default: False boolean
+    Returns
+    ---------
+    metadata_field_dict : dict
+        Dictionary of the possible metadata fields
+        Contains a Checker object under each name
+    """
+    # First we go through the metadata_fields.py
+    metadata_field_dict = {}
+    for metadata_field in metadata_fields.metadata_fields:
+        if metadata_field['name'] not in ['recordedBy_details', 'pi_details']:
+            new = Checker(DBNAME, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
+            if 'valid' in metadata_field:
+                new.set_validation(DBNAME, metadata_field['valid'])
+            if 'inherit' in metadata_field:
+                new.inherit = metadata_field['inherit']
+            if 'units' in metadata_field:
+                new.units = metadata_field['units']
+            metadata_field_dict[metadata_field['name']] = new
+
+    return metadata_field_dict
 
 def format_num(num):
     """
@@ -301,9 +338,12 @@ class Checker(Field):
         if validate == 'any':
             return Evaluator(validation, func=lambda self, x: isinstance(str(x), str))
         elif validate == 'list' and DBNAME != False:
-            table = validation['source']
-            df = get_data(DBNAME, table)
-            lst = df[self.name.lower()].values
+            if type(validation['source']) == list:
+                lst = validation['source']
+            else:
+                table = validation['source']
+                df = get_data(DBNAME, table)
+                lst = df[self.name.lower()].values
             return Evaluator(lst, func=lambda self, x: str(x) in self.validation)
 
         criteria = validation['criteria']
@@ -378,7 +418,7 @@ class Checker(Field):
                 ev.set_func(lambda self, x: eval(
                     "x" + self.validation['criteria'] + "self.limit"))
                 return ev
-        elif validate == 'date':
+        elif validate == 'date' or validate == 'datetime':
             if criteria == 'between':
                 minimum = validation['minimum']
                 maximum = validation['maximum']
@@ -529,6 +569,13 @@ def check_value(value, checker):
             pass
         if type(value) == datetime.date(1, 1, 1).__class__:
             return checker.validator.evaluate(value)
+    elif checker.validation['validate'] == 'datetime':
+        try:
+            value = value.to_pydatetime()
+        except:
+            pass
+        if type(value) == datetime.datetime(1, 1, 1).__class__:
+            return checker.validator.evaluate(value)
     elif checker.validation['validate'] == 'time':
         if isinstance(value,datetime.time):
             value = value
@@ -541,6 +588,8 @@ def check_value(value, checker):
         except ValueError:
             num = value
         return checker.validator.evaluate(num)
+    elif checker.validation['validate'] == 'list':
+        return checker.validator.evaluate(value)
     else:
         return checker.validator.evaluate(value)
 
@@ -734,7 +783,41 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
 
     return good, errors
 
-def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
+def check_meta(metadata, metadata_checker_list):
+    """
+    Checks the data according to the validators in the checker_list
+    Returns True if the data is good, as well as an empty string
+    Parameters
+    ---------
+    metadata : pandas dataframe
+        The metadata to be checked.
+        The first row should contain the names of the fields as specified in metadata_fields.py
+    metadata_checker_list : dict of Checker objects
+        This is a list of the possible checkers made by make_valid_dict_metadata
+    Returns
+    ---------
+    good : Boolean
+        A boolean specifying if the data passed the checks (True)
+    errors: list of strings
+        A string per error, describing where the error was found
+        On the form: paramName: disp_name : row
+    """
+
+    good = True
+    errors = []
+
+    for col in metadata.columns:
+        metadata_checker = metadata_checker_list[col]
+        blanks = []
+
+        val = metadata[col].item()
+        if not check_value(val, metadata_checker) and val != 'NULL':
+            good = False
+            errors.append(f'Content in wrong format ({metadata_checker.disp_name})')
+
+    return good, errors
+
+def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -745,6 +828,9 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, fir
     data: Pandas dataframe
         Pandas dataframe of data to be checked.
         'other' hstore should be expanded into separate columns before input
+    metadata: Pandas dataframe
+        Pandas dataframe of the metadata to be checked
+        Default False, if not present (not compulsary)
     required: List
         List of required columns
         Default: Empty list []
@@ -789,5 +875,13 @@ def run(data, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, fir
 
     # Check the data array
     good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow, old_id)
+
+    if type(metadata) == pd.core.frame.DataFrame:
+        metadata_checker_list = make_valid_dict_metadata(DBNAME)
+        g, e = check_meta(metadata, metadata_checker_list)
+
+    good = good and g
+    for ii in e:
+        errors.append(ii)
 
     return good, errors

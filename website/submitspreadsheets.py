@@ -8,6 +8,7 @@ from website.database.input_update_records import insert_into_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.checker import run as checker
 import website.database.fields as fields
+import website.database.metadata_fields as metadata_fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
@@ -48,8 +49,11 @@ def submit_spreadsheet():
                     errors.append('No sheet named "Data" found. Did you upload the correct file?')
                     good = False
                 try:
-                    metadata_df = pd.read_excel(filepath, sheet_name = 'Metadata', header=6)
+                    metadata_df = pd.read_excel(filepath, sheet_name = 'Metadata', header=6, usecols='B:C', index_col=0)
+                    metadata_df = metadata_df.transpose()
+                    metadata_df.fillna('NULL', inplace=True)
                 except:
+                    metadata_df = False
                     warnings.append('No sheet named "Metadata" found. Uploading the data without it.')
 
             else:
@@ -100,7 +104,15 @@ def submit_spreadsheet():
                     required.remove('recordedBy_details')
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
 
-                good, errors = checker(data_df, required, DBNAME, METADATA_CATALOGUE, new, firstrow=4)
+                good, errors = checker(
+                    data=data_df,
+                    metadata=metadata_df,
+                    required=required,
+                    DBNAME=DBNAME,
+                    METADATA_CATALOGUE=METADATA_CATALOGUE,
+                    new=new,
+                    firstrow=4
+                    )
 
                 if good == False:
                     for error in errors:
@@ -124,36 +136,36 @@ def submit_spreadsheet():
                     elif 'parentID' not in data_df.columns:
                         pass
 
-                    try:
+                    # try:
 
-                        if new == True:
+                    if new == True:
 
-                            data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-                            data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
+                        data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                        data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                        data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
+                        data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                            insert_into_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
+                        insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                            flash('Data from file uploaded successfully!', category='success')
+                        flash('Data from file uploaded successfully!', category='success')
 
-                        else:
+                    else:
 
-                            df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
-                            ids = list(data_df['id'])
-                            data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
-                            data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
-                            data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            update_record_metadata_catalogue_df(data_df, DBNAME, METADATA_CATALOGUE)
+                        df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+                        ids = list(data_df['id'])
+                        data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
+                        data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ New version submitted from spreadsheet, source filename " + f.filename)
+                        data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                        update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                            [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
+                        [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
 
-                            flash('Data from file updated successfully!', category='success')
+                        flash('Data from file updated successfully!', category='success')
 
-                            return redirect(url_for('views.home'))
+                        return redirect(url_for('views.home'))
 
-                    except:
-                      flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+                    # except:
+                    #     flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     return render_template(
     "submitSpreadsheet.html"

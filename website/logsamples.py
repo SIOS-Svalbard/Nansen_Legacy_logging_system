@@ -165,8 +165,15 @@ def edit_activity_form(ID):
                 required.remove('recordedBy_details')
                 required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
 
-            good, errors = checker(fields_to_check_df, required, DBNAME, METADATA_CATALOGUE, new, old_id=ID)
-            print('HERE',good)
+            good, errors = checker(
+                data=fields_to_check_df,
+                required=required,
+                DBNAME=DBNAME,
+                METADATA_CATALOGUE=METADATA_CATALOGUE,
+                new=new,
+                old_id=ID
+                )
+
             if good == False:
                 for error in errors:
                     flash(error, category='error')
