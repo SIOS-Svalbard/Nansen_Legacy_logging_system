@@ -141,7 +141,7 @@ def derive_content(mfield, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CA
             content = ''
 
     else:
-        content = 'STILL NEED TO DERIVE, SEE MAKE_XLSX.PY FILE, DERIVE_CONTENT FUNCTION'
+        content = ''
 
     return content
 
