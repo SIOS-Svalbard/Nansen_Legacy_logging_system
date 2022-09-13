@@ -9,7 +9,7 @@ from website.database.input_update_records import insert_into_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.checker import run as checker
 import website.database.fields as fields
-from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
+from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
@@ -81,16 +81,12 @@ def edit_activity_form(ID):
                         activity_fields[field['name']]['value'] = df_activity[field['name'].lower()].item()
 
     if len(df_activity) == 1 and df_activity['pi_name'].item() not in ['', None]:
-        pi_names = df_activity['pi_name'].item().split(' | ')
-        pi_emails = df_activity['pi_email'].item().split(' | ')
-        activity_fields['pi_details']['value'] = [f"{name} ({email})" for (name, email) in zip(pi_names, pi_emails)]
+        activity_fields['pi_details']['value'] = combine_personnel_details(df_activity['pi_name'].item(),df_activity['pi_email'].item())
     else:
         activity_fields['pi_details']['value'] = []
 
     if len(df_activity) == 1 and df_activity['recordedby_name'].item() not in ['', None]:
-        recordedBy_names = df_activity['recordedby_name'].item().split(' | ')
-        recordedBy_emails = df_activity['recordedby_email'].item().split(' | ')
-        activity_fields['recordedBy_details']['value'] = [f"{name} ({email})" for (name, email) in zip(recordedBy_names, recordedBy_emails)]
+        activity_fields['recordedBy_details']['value'] = combine_personnel_details(df_activity['recordedby_name'].item(),df_activity['recordedby_email'].item())
     else:
         activity_fields['recordedBy_details']['value'] = []
 

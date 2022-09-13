@@ -1,63 +1,64 @@
 {% extends "base.html" %} {% block title %}Registered Institutions{% endblock %} {% block content
 %}
-<h2>Registered Institutions:</h2>
-<br>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Full Name</th>
-      <th scope="col">Short Name</th>
-      <th scope="col">Comment</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for i in range(0, len) %}
-    <tr>
-      <td>{{full_names[i]}}</td>
-      <td>{{short_names[i]}}</td>
-      <td>{{comments[i]}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<br>
-
-<h3>Can't find your institution? Add it here!</h3>
-
-<form method="POST">
-  <div class="row">
-    <div class="col">
-      <label for="institutionFull">Insitution full name</label>
-      <input
-        type="text"
-        class="form-control"
-        id="institutionFull"
-        name="institutionFull"
-        placeholder="Full Name"
-      />
-    </div>
-    <div class="col">
-      <label for="institutionShort">Insitution short name</label>
-      <input
-        type="text"
-        class="form-control"
-        id="institutionShort"
-        name="institutionShort"
-        placeholder="Short Name"
-      />
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="comment">Comments</label>
-    <input
-      type="text"
-      class="form-control"
-      id="comment"
-      placeholder="Optional comments about the institution">
-  </div>
+<div class="container">
+  <h2>Registered Institutions:</h2>
   <br>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Full Name</th>
+        <th scope="col">Short Name</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(0, len) %}
+      <tr>
+        <td>{{full_names[i]}}</td>
+        <td>{{short_names[i]}}</td>
+        <td>{{comments[i]}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
+  <br>
+
+  <h3>Can't find your institution? Add it here!</h3>
+
+  <form method="POST">
+    <div class="row">
+      <div class="col">
+        <label for="institutionFull">Insitution full name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="institutionFull"
+          name="institutionFull"
+          placeholder="Full Name"
+        />
+      </div>
+      <div class="col">
+        <label for="institutionShort">Insitution short name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="institutionShort"
+          name="institutionShort"
+          placeholder="Short Name"
+        />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="comment">Comments</label>
+      <input
+        type="text"
+        class="form-control"
+        id="comment"
+        placeholder="Optional comments about the institution">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
 {% endblock %}

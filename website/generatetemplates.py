@@ -49,7 +49,7 @@ def generate_template():
                     fields_list = fields_list + [field]
 
             filepath = '/tmp/generated_template.xlsx'
-            print('TABLE',CRUISE_DETAILS_TABLE)
+
             write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
             return send_file(filepath, as_attachment=True)
