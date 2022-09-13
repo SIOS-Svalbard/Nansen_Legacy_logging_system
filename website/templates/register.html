@@ -1,107 +1,112 @@
 {% extends "base.html" %} {% block title %}Registering Details{% endblock %} {% block content
 %}
-<h2>Select what you want to register</h2>
-<br>
-<p>These will make up drop-down lists that you can select from when logging your samples. This improves consistency in how metadata are logged.</p>
-<br>
 
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-primary btn-lg" role="button" href="/register/sampleTypes">Sample types</a>
+<div class="container">
+  <h2>Select what you want to register</h2>
+  <br>
+  <p>These will make up drop-down lists that you can select from when logging your samples. This improves consistency in how metadata are logged.</p>
+  <br>
+
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-primary btn-lg" role="button" href="/register/sampleTypes">Sample types</a>
+    </div>
+    <div class="col">
+      Physical thing sampled
+    </div>
   </div>
-  <div class="col">
-    Physical thing sampled
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-secondary btn-lg" role="button" href="/register/gearTypes">Gear types</a>
+    </div>
+    <div class="col">
+      Gear or instrumentation used to collect the sample
+    </div>
   </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-success btn-lg" role="button" href="/register/intendedMethods">Intended methods</a>
+    </div>
+    <div class="col">
+      Method of analysis that the sample will be used for
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-danger btn-lg" role="button" href="/register/institutions">Institutions</a>
+    </div>
+    <div class="col">
+      Institutions involved in collecting the samples
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-warning btn-lg" role="button" href="/register/stations">Stations</a>
+    </div>
+    <div class="col">
+      Station names and coordinates
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-info btn-lg" role="button" href="/register/personnel">Personnel</a>
+    </div>
+    <div class="col">
+      Details of the people involved
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-dark btn-lg" role="button" href="/register/projects">Projects</a>
+    </div>
+    <div class="col">
+      Name of the project
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-primary btn-lg" role="button" href="/register/storageTemps">Storage temperatures</a>
+    </div>
+    <div class="col">
+      Temperature the sample should be stored at
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-secondary btn-lg" role="button" href="/register/filters">Filters</a>
+    </div>
+    <div class="col">
+      Filters used in collecting the sample
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-success btn-lg" role="button" href="/register/sex">Sex</a>
+    </div>
+    <div class="col">
+      Gender of the organism sampled
+    </div>
+  </div>
+  <hr>
+  <div class="row align-items-center">
+    <div class="col">
+      <a class="btn btn-danger btn-lg" role="button" href="/register/kingdoms">Kingdoms</a>
+    </div>
+    <div class="col">
+      The full scientific name of the kingdom in which the taxon is classified.
+    </div>
+  </div>
+  <hr>
 </div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-secondary btn-lg" role="button" href="/register/gearTypes">Gear types</a>
-  </div>
-  <div class="col">
-    Gear or instrumentation used to collect the sample
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-success btn-lg" role="button" href="/register/intendedMethods">Intended methods</a>
-  </div>
-  <div class="col">
-    Method of analysis that the sample will be used for
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-danger btn-lg" role="button" href="/register/institutions">Institutions</a>
-  </div>
-  <div class="col">
-    Institutions involved in collecting the samples
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-warning btn-lg" role="button" href="/register/stations">Stations</a>
-  </div>
-  <div class="col">
-    Station names and coordinates
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-info btn-lg" role="button" href="/register/personnel">Personnel</a>
-  </div>
-  <div class="col">
-    Details of the people involved
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-dark btn-lg" role="button" href="/register/projects">Projects</a>
-  </div>
-  <div class="col">
-    Name of the project
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-primary btn-lg" role="button" href="/register/storageTemps">Storage temperatures</a>
-  </div>
-  <div class="col">
-    Temperature the sample should be stored at
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-secondary btn-lg" role="button" href="/register/filters">Filters</a>
-  </div>
-  <div class="col">
-    Filters used in collecting the sample
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-success btn-lg" role="button" href="/register/sex">Sex</a>
-  </div>
-  <div class="col">
-    Gender of the organism sampled
-  </div>
-</div>
-<hr>
-<div class="row align-items-center">
-  <div class="col">
-    <a class="btn btn-danger btn-lg" role="button" href="/register/kingdoms">Kingdoms</a>
-  </div>
-  <div class="col">
-    The full scientific name of the kingdom in which the taxon is classified.
-  </div>
-</div>
-<hr>
+
+
 {% endblock %}

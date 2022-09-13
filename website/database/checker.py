@@ -672,8 +672,8 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     for col in data.columns:
         if col not in checker_list.keys():
             unknown_columns.append(col)
-            good = False
     if unknown_columns != []:
+        good = False
         errors.append(f'Field name not recognised: {unknown_columns}')
 
     if not(good):
@@ -705,22 +705,26 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 missing_parents.append(rownum)
 
     if already_registered_ids != []:
+        good = False
         if len(data) > 1:
             errors.append(f'ID(s) already registered in the system, Rows: {already_registered_ids}')
         else:
             errors.append('ID already registered in the system')
 
     if duplicate_ids != []:
+        good = False
         if len(data) > 1:
             errors.append(f'ID(s) registered more than once in same upload, Rows: {duplicate_ids}')
 
     if parent_child != []:
+        good = False
         if len(data) > 1:
             errors.append(f'ID is same as Parent ID, Rows: {parent_child}')
         else:
             errors.append('ID and ParentID cannot be the same')
 
     if missing_parents != []:
+        good = False
         if len(data) > 1:
             errors.append(f'ParentID not registered, Rows {missing_parents}')
         else:
@@ -738,7 +742,6 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
             rownum = idx + firstrow
             val = row[col]
             if not check_value(val, checker):
-
                 content_errors.append(rownum)
 
             if col in required:
@@ -747,6 +750,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                     blanks.append(rownum)
 
         if content_errors != []:
+            good = False
             if len(data) > 1:
                 errors.append(checker.disp_name + ' ('+checker.name + ')'+", Rows: " +
                               to_ranges_str(content_errors) + ' Error: Content in wrong format')
@@ -754,6 +758,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 errors.append(f'Content in wrong format ({checker.disp_name})')
 
         if blanks != []:
+            good = False
             if len(data) > 1:
                 errors.append(checker.disp_name + ' ('+checker.name + ')'+", Rows: " +
                               to_ranges_str(content_errors) + ' Error: Value missing (required)')
@@ -779,12 +784,14 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                         minmaxelevations.append(rownum)
 
     if minmaxdepths != []:
+        good = False
         if len(data) > 1:
             errors.append(f'Maximum depth must be greater than or equal to minimum depth, Rows: {minmaxdepths}')
         else:
             errors.append('Maximum depth must be greater than or equal to minimum depth.')
 
     if minmaxelevations != []:
+        good = False
         if len(data) > 1:
             errors.append(f'Maximum elevation must be greater than or equal to minimum depth, Rows: {minmaxdepths}')
         else:
@@ -803,6 +810,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
             missingdepths.append(rownum)
 
     if missingdepths != []:
+        good = False
         if len(data) > 1:
             errors.append(f'Please include an elevation or depth (preferably both minimum and maximum, they can be the same), Rows: {missingdepths}')
         else:
@@ -908,7 +916,9 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
 
     # Check the data array
     good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow, old_id)
-
+    
+    g = True
+    e = []
     if type(metadata) == pd.core.frame.DataFrame:
         metadata_checker_list = make_valid_dict_metadata(DBNAME)
         g, e = check_meta(metadata, metadata_checker_list)

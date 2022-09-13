@@ -56,6 +56,9 @@ def split_personnel_list(personnel, df_personnel):
     personnel_emails_list = []
     personnel_institutions_list = []
 
+    if type(personnel) == str:
+        personnel = [personnel]
+
     for person in personnel:
         if person != 'Choose...' and person != '' and type(person) == str:
             person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()
@@ -73,3 +76,30 @@ def split_personnel_list(personnel, df_personnel):
     personnel_institutions = " | ".join(personnel_institutions_list)
 
     return personnel_names, personnel_emails, personnel_institutions
+
+def combine_personnel_details(names,emails):
+    '''
+    Combine personnel details from format stored in PSQL to format required for combined dropdown list
+
+    Parameters
+    ----------
+    names : string
+        Pipe-delimited list of names, e.g. 'Luke Marsden | John Doe'.
+    emails : string
+        Pipe-delimited list of emails, e.g. 'lukem@unis.no | johnd@unis.no'
+
+    Returns
+    -------
+    personnel : list
+        e.g. ['Luke Marsden (lukem@unis.no)', 'John Doe (johnd@unis.no)']
+
+    '''
+
+    try:
+        names_list = names.split(' | ')
+        emails_list = emails.split(' | ')
+        personnel = [f"{name} ({email})" for (name, email) in zip(names_list, emails_list)]
+    except:
+        personnel = []
+
+    return personnel

@@ -1,50 +1,51 @@
 {% extends "base.html" %} {% block title %}Registered Intended Methods{% endblock %} {% block content
 %}
-<h2>Registered intended methods:</h2>
-<br>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Intended Method</th>
-      <th scope="col">Comment</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for i in range(0, len) %}
-    <tr>
-      <td>{{registered_intended_methods[i]}}</td>
-      <td>{{comments[i]}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<br>
-
-<h3>Can't find an intended method that describes the analysis that will performed on your sample or event? Add one here!</h3>
-
-<form method="POST">
-  <div class="form-group">
-    <label for="intended_method">Intended methods</label>
-    <input
-      type="text"
-      class="form-control"
-      id="intended_method"
-      name="intended_method"
-      placeholder="Optional comments about the institution">
-      <small class="form-text text-muted" id="intended_method_help">What will you be using your sample for?</small>
-  </div>
-  <div class="form-group">
-    <label for="comment">Comments</label>
-    <input
-      type="text"
-      class="form-control"
-      id="comment"
-      name="comment"
-      placeholder="Optional comments about the intended method to aid other users">
-  </div>
+<div class="container">
+  <h2>Registered intended methods:</h2>
   <br>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Intended Method</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(0, len) %}
+      <tr>
+        <td>{{registered_intended_methods[i]}}</td>
+        <td>{{comments[i]}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
+  <br>
+
+  <h3>Can't find an intended method that describes the analysis that will performed on your sample or event? Add one here!</h3>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="intended_method">Intended methods</label>
+      <input
+        type="text"
+        class="form-control"
+        id="intended_method"
+        name="intended_method"
+        placeholder="Optional comments about the institution">
+        <small class="form-text text-muted" id="intended_method_help">What will you be using your sample for?</small>
+    </div>
+    <div class="form-group">
+      <label for="comment">Comments</label>
+      <input
+        type="text"
+        class="form-control"
+        id="comment"
+        name="comment"
+        placeholder="Optional comments about the intended method to aid other users">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
 {% endblock %}

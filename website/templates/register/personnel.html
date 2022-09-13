@@ -1,93 +1,94 @@
 {% extends "base.html" %} {% block title %}Personnel{% endblock %} {% block content
 %}
-<h2>Registered personnel:</h2>
-<br>
-<h4>Need to consider what to do if institution or email changes or people want to be removed</h4>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">First name</th>
-      <th scope="col">Last name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Institution</th>
-      <th scope="col">Comment</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for i in range(0, len) %}
-    <tr>
-      <td>{{first_names[i]}}</td>
-      <td>{{last_names[i]}}</td>
-      <td>{{emails[i]}}</td>
-      <td>{{institutions[i]}}</td>
-      <td>{{comments[i]}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<br>
-
-<h3>Register your details here</h3>
-
-<form method="POST">
-  <div class="row">
-    <div class="col">
-      <label for="first_name">First Name</label>
-      <input
-        type="text"
-        class="form-control"
-        id="first_name"
-        name="first_name"
-        placeholder="First Name"
-      />
-    </div>
-    <div class="col">
-      <label for="last_name">Last Name</label>
-      <input
-        type="text"
-        class="form-control"
-        id="last_name"
-        name="last_name"
-        placeholder="Last Name"
-      />
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input
-      type="email"
-      class="form-control"
-      id="email"
-      name="email"
-      placeholder="Email">
-  </div>
-  <div class="row">
-    <div class="col">
-      <label for="institution">Institution</label><br>
-      <select class="form-select" id="institution" name="institution" aria-label="Default select example">
-        <option selected>Choose...</option>
-        {% for institution in registered_institutions %}
-          <option>{{institution}}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col">
-      <br>
-      <span>Can't see your institution? Register it &nbsp; </span><a class="btn btn-success" href="/register/institutions" role="button">here</a>
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="comment">Comment</label>
-    <input
-      type="text"
-      class="form-control"
-      id="comment"
-      name="comment"
-      placeholder="Optional comments that might aid the user">
-  </div>
+<div class="container">
+  <h2>Registered personnel:</h2>
   <br>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+  <h4>Need to consider what to do if institution or email changes or people want to be removed</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">First name</th>
+        <th scope="col">Last name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Institution</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(0, len) %}
+      <tr>
+        <td>{{first_names[i]}}</td>
+        <td>{{last_names[i]}}</td>
+        <td>{{emails[i]}}</td>
+        <td>{{institutions[i]}}</td>
+        <td>{{comments[i]}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
+  <br>
+
+  <h3>Register your details here</h3>
+
+  <form method="POST">
+    <div class="row">
+      <div class="col">
+        <label for="first_name">First Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="first_name"
+          name="first_name"
+          placeholder="First Name"
+        />
+      </div>
+      <div class="col">
+        <label for="last_name">Last Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="last_name"
+          name="last_name"
+          placeholder="Last Name"
+        />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        placeholder="Email">
+    </div>
+    <div class="row">
+      <div class="col">
+        <label for="institution">Institution</label><br>
+        <select class="form-select" id="institution" name="institution" aria-label="Default select example">
+          <option selected>Choose...</option>
+          {% for institution in registered_institutions %}
+            <option>{{institution}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col">
+        <br>
+        <span>Can't see your institution? Register it &nbsp; </span><a class="btn btn-success" href="/register/institutions" role="button">here</a>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="comment">Comment</label>
+      <input
+        type="text"
+        class="form-control"
+        id="comment"
+        name="comment"
+        placeholder="Optional comments that might aid the user">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
 {% endblock %}

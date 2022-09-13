@@ -55,6 +55,9 @@
     <br>
   </div>
   <div class="float-right">
+    {% if missing %}
+    <a class="btn btn-danger btn-lg" href="/missingMetadata" role="button">Register missing metadata</a>
+    {% endif %}
     <a class="btn btn-secondary btn-lg" href="/editActivity/addNew" role="button">Add/Edit activities</a>
   </div>
 
@@ -87,11 +90,11 @@
           {% if col == link_column %}
             <td>
               <a
-              class="btn btn-primary"
-              href="/editActivity/form/{{row_}}"
-              role="button">
-              View/Edit
-            </a>
+                class="btn btn-primary"
+                href="/editActivity/form/{{row_}}"
+                role="button">
+                View/Edit
+              </a>
             </td>
             <td>
               <a class="btn btn-warning" href="#" role="button">Log samples</a>

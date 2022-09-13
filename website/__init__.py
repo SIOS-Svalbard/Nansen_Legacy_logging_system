@@ -4,7 +4,7 @@ from website.database.init_db import run as init_db
 import requests
 import numpy as np
 
-TOKTLOGGER = '172.16.1.214' # VM of toktlogger at UNIS on my laptop"
+TOKTLOGGER = '172.16.0.203' # VM of toktlogger at UNIS on my laptop"
 VESSEL_NAME = 'Kronprins Haakon'
 url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
 DBNAME = 'lfnl_db'
@@ -49,11 +49,13 @@ def create_app():
     from .logsamples import logsamples
     from .generatetemplates import generatetemplates
     from .submitspreadsheets import submitspreadsheets
+    from .missingmetadata import missingmetadata
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
     app.register_blueprint(generatetemplates, url_prefix='/')
     app.register_blueprint(submitspreadsheets, url_prefix='/')
+    app.register_blueprint(missingmetadata, url_prefix='/')
 
     return app

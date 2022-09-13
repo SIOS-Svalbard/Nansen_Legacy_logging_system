@@ -1,84 +1,85 @@
 {% extends "base.html" %} {% block title %}Registered Stations{% endblock %} {% block content
 %}
-<h2>Registered stations:</h2>
-<br>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Station Name</th>
-      <th scope="col">Latitude</th>
-      <th scope="col">Longitude</th>
-      <th scope="col">Comment</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for i in range(0, len) %}
-    <tr>
-      <td>{{registered_stations[i]}}</td>
-      <td>{{decimalLatitudes[i]}}</td>
-      <td>{{decimalLongitudes[i]}}</td>
-      <td>{{comments[i]}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-<br>
-
-<h3>Need to assign station based on coordinates visited. Or leave an option to also assign before visiting based on intended coordinates?</h3>
-
-<h3>You can register a new station here so that you can use it later!</h3>
-
-<form method="POST">
-  <div class="form-group">
-    <label for="stationName">Station Name</label>
-    <input
-      type="text"
-      class="form-control"
-      id="stationName"
-      name="stationName"
-      placeholder="Station Name"
-    />
-  </div>
-  <div class="row">
-    <div class="col">
-      <label for="decimalLatitude">Decimal Latitude</label>
-      <input
-        type="number"
-        step=0.0001
-        class="form-control"
-        id="decimalLatitude"
-        name="decimalLatitude"
-        min=-90
-        max=90
-        placeholder="Decimal Latitude (-90 to 90)"
-      />
-    </div>
-    <div class="col">
-      <label for="decimalLongitude">Decimal Longitude</label>
-      <input
-        type="number"
-        step=0.0001
-        class="form-control"
-        id="decimalLongitude"
-        name="decimalLongitude"
-        min=-180
-        max=180
-        placeholder="Decimal Longitude (-180 to 180)"
-      />
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="comment">Comments</label>
-    <input
-      type="text"
-      class="form-control"
-      id="comment"
-      name="comment"
-      placeholder="Optional comments about the station">
-  </div>
+<div class="container">
+  <h2>Registered stations:</h2>
   <br>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Station Name</th>
+        <th scope="col">Latitude</th>
+        <th scope="col">Longitude</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(0, len) %}
+      <tr>
+        <td>{{registered_stations[i]}}</td>
+        <td>{{decimalLatitudes[i]}}</td>
+        <td>{{decimalLongitudes[i]}}</td>
+        <td>{{comments[i]}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
+  <br>
+
+  <h3>Need to assign station based on coordinates visited. Or leave an option to also assign before visiting based on intended coordinates?</h3>
+
+  <h3>You can register a new station here so that you can use it later!</h3>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="stationName">Station Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="stationName"
+        name="stationName"
+        placeholder="Station Name"
+      />
+    </div>
+    <div class="row">
+      <div class="col">
+        <label for="decimalLatitude">Decimal Latitude</label>
+        <input
+          type="number"
+          step=0.0001
+          class="form-control"
+          id="decimalLatitude"
+          name="decimalLatitude"
+          min=-90
+          max=90
+          placeholder="Decimal Latitude (-90 to 90)"
+        />
+      </div>
+      <div class="col">
+        <label for="decimalLongitude">Decimal Longitude</label>
+        <input
+          type="number"
+          step=0.0001
+          class="form-control"
+          id="decimalLongitude"
+          name="decimalLongitude"
+          min=-180
+          max=180
+          placeholder="Decimal Longitude (-180 to 180)"
+        />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="comment">Comments</label>
+      <input
+        type="text"
+        class="form-control"
+        id="comment"
+        name="comment"
+        placeholder="Optional comments about the station">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
 {% endblock %}
