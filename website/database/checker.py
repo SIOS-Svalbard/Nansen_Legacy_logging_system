@@ -430,7 +430,7 @@ class Checker(Field):
                     maximum = _formula_to_date(maximum)
                 ev = Evaluator(validation)
                 ev.minimum = minimum
-                ev.maximum = maximum
+                ev.maximum = maximum.date()
                 ev.set_func(lambda self, x: self.minimum <= x <= self.maximum)
                 # ev.set_func(lambda self,x: print(self.minimum , x , self.maximum))
                 return ev
@@ -610,7 +610,7 @@ def check_value(value, checker):
         if type(value) == datetime.datetime(1, 1, 1).__class__:
             return checker.validator.evaluate(value)
     elif checker.validation['validate'] == 'time':
-        if isinstance(value,datetime.time):
+        if isinstance(value,datetime.time) or value == None:
             value = value
         else:
             value = value.to_pydatetime().time()
@@ -697,11 +697,11 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 duplicate_ids.append(rownum)
                 good = False
             elif 'parentID' in data.columns:
-                if data['id'] == data['parentID']:
+                if row['id'] == row['parentID']:
                     parent_child.append(rownum)
                     good = False
         if 'parentID' in data.columns:
-            if row['parentID'] != '' and row['parentID'] not in registered_ids or row['parentID'] not in data['id'].values:
+            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values:
                 missing_parents.append(rownum)
 
     if already_registered_ids != []:
@@ -741,8 +741,9 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
         for idx, row in data.iterrows():
             rownum = idx + firstrow
             val = row[col]
-            if not check_value(val, checker):
-                content_errors.append(rownum)
+            if val != 'NULL':
+                if not check_value(val, checker):
+                    content_errors.append(rownum)
 
             if col in required:
 
@@ -770,7 +771,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 rownum = idx + firstrow
                 mindepth = row[col]
                 maxdepth = row['maximumDepthInMeters']
-                if maxdepth != '' and mindepth != '':
+                if maxdepth not in ['', None, 'NULL'] and mindepth not in ['', None, 'NULL']:
                     if mindepth > float(maxdepth):
                         minmaxdepths.append(rownum)
 
@@ -779,7 +780,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 rownum = idx + firstrow
                 minelevation = row[col]
                 maxelevation = row['maximumElevationInMeters']
-                if maxelevation != '' and minelevation != '':
+                if maxelevation not in ['', None, 'NULL'] and minelevation not in ['', None, 'NULL']:
                     if minelevation > float(maxelevation):
                         minmaxelevations.append(rownum)
 
@@ -916,7 +917,7 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
 
     # Check the data array
     good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow, old_id)
-    
+
     g = True
     e = []
     if type(metadata) == pd.core.frame.DataFrame:

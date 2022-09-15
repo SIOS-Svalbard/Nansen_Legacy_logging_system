@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import getpass
 import uuid
-from website.database.get_data import get_data, get_personnel_df
+from website.database.get_data import get_data, get_personnel_df, get_registered_activities
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -35,7 +35,7 @@ def edit_activity_form(ID):
     required = list(required_fields_dic.keys())
     recommended = list(recommended_fields_dic.keys())
 
-    df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+    df_metadata_catalogue = get_registered_activities(DBNAME, METADATA_CATALOGUE)
 
     df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID]
 
@@ -145,7 +145,10 @@ def edit_activity_form(ID):
                 fields_to_check_dic[key] = [val]
                 fields_to_check_df = pd.DataFrame.from_dict(fields_to_check_dic)
 
-            for col in ['eventDate','endDate', 'eventTime', 'endTime']:
+            for col in ['eventTime', 'endTime']:
+                if col in fields_to_check_df.columns:
+                    fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
+            for col in ['eventDate','endDate']:
                 if col in fields_to_check_df.columns:
                     fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
 

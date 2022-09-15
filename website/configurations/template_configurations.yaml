@@ -2,4 +2,8 @@ setups:
   - name: activity
     fields:
       required: [eventDate, eventTime, stationName, decimalLatitude, decimalLongitude, gearType, pi_details, recordedBy_details]
-      recommended: [id, catalogNumber, endDate, endTime, endDecimalLatitude, endDecimalLongitude, minimumDepthInMeters, maximumDepthInMeters, minimumElevationInMeters, maximumElevationInMeters,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,comments1]
+      recommended: [id, statID, catalogNumber, endDate, endTime, endDecimalLatitude, endDecimalLongitude, minimumDepthInMeters, maximumDepthInMeters, minimumElevationInMeters, maximumElevationInMeters,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,comments1]
+  - name: niskin
+    fields:
+      required: [parentID, gearType, bottleNumber, minimumDepthInMeters, maximumDepthInMeters, pi_details, recordedBy_details]
+      recommended: [id, catalogNumber,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,dataFilename, comments1]

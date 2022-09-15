@@ -13,11 +13,16 @@ def get_data(DBNAME, table):
 def get_all_ids(DBNAME, METADATA_CATALOGUE):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     df = pd.read_sql(f'SELECT id FROM {METADATA_CATALOGUE};', con=conn)
-    return df
+    return df['id'].tolist()
 
 def get_registered_activities(DBNAME, METADATA_CATALOGUE):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid is NULL;', con=conn)
+    return df
+
+def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where id in {tuple(ids)};', con=conn)
     return df
 
 def get_personnel_df(DBNAME=False, table='personnel'):
