@@ -5,7 +5,8 @@ import getpass
 import uuid
 from website.database.get_data import get_data
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from website.database.harvest_niskins import harvest_niskins
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -25,7 +26,7 @@ def home():
 
     # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
     activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE).reset_index()
-
+    harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER)
     activities_df['message'] = 'Okay'
 
     # Get this from configuration file

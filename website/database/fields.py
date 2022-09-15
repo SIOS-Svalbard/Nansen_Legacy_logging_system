@@ -1621,6 +1621,7 @@ Example: 0.029''',
                                'description': '''Sea water temperature in Celsius
 Float number larger than -10 degrees C''',
                                'inherit': True,
+                               'inherit_weak': True,
                                'format': 'double precision',
                                'grouping': 'Water',
                                'hstore': 'other',
@@ -1647,6 +1648,7 @@ solution, producing a value on the Practical Salinity Scale of 1978 (PSS-78).
 Float number larger than or equal to 0
 Example: 29.003''',
                              'inherit': True,
+                             'inherit_weak': True,
                              'format': 'double precision',
                              'grouping': 'Water',
                              'hstore': 'other',
@@ -1678,6 +1680,7 @@ in sea water.
 Float number larger than or equal to 0
 Example: 3.5''',
                             'inherit': True,
+                            'inherit_weak': True,
                             'units': 'g kg-1',
                             'format': 'double precision',
                             'grouping': 'Water',
@@ -1705,6 +1708,7 @@ Example: 3.5''',
 Float number larger than or equal to 0
 Example: 3.0''',
                                   'inherit': True,
+                                  'inherit_weak': True,
                                   'format': 'double precision',
                                   'grouping': 'Water',
                                   'hstore': 'other',
@@ -1727,6 +1731,7 @@ Example: 3.0''',
                     'description': '''Sea water pressure in decibar
 Float number larger than 0''',
                     'inherit': True,
+                    'inherit_weak': True,
                     'format': 'double precision',
                     'grouping': 'Water',
                     'hstore': 'other',
@@ -2230,6 +2235,7 @@ Examples: 'heart', 'liver; brain', 'liver section' '''
                     'description': '''Choose the gear used to retrieve the sample.
 Listed at: https://github.com/SIOS-Svalbard/AeN_doc/blob/master/list_gear_types.csv''',
                     'inherit': True,
+                    'inherit_weak': True,
                     'format': 'text',
                     'grouping': 'Required',
                     'hstore': False,

@@ -8,6 +8,7 @@ TOKTLOGGER = '172.16.0.203' # VM of toktlogger at UNIS on my laptop"
 VESSEL_NAME = 'Kronprins Haakon'
 url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
 DBNAME = 'lfnl_db'
+BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
 
 try:
     response = requests.get(url)

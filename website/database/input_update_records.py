@@ -139,18 +139,19 @@ def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CAT
         if n != 0:
             string_4 = string_4[:-2] + "'"
 
-        # METADATA INTO METADATA HSTORE
-        n = 0
-        for metadata_field in metadata_fields.metadata_fields:
-            if metadata_field['name'] in metadata_df.columns and metadata_df[metadata_field['name']].item() != 'NULL':
-                if n == 0:
-                    string_2 = string_2 + ", metadata"
-                    string_4 = string_4 + ", '"
-                    n = n + 1
-                string_4 = string_4 + f'''"{metadata_field['name']}" => "{metadata_df[metadata_field['name']].item()}", '''
+        if metadata_df != False:
+            # METADATA INTO METADATA HSTORE
+            n = 0
+            for metadata_field in metadata_fields.metadata_fields:
+                if metadata_field['name'] in metadata_df.columns and metadata_df[metadata_field['name']].item() != 'NULL':
+                    if n == 0:
+                        string_2 = string_2 + ", metadata"
+                        string_4 = string_4 + ", '"
+                        n = n + 1
+                    string_4 = string_4 + f'''"{metadata_field['name']}" => "{metadata_df[metadata_field['name']].item()}", '''
 
-        if n != 0:
-            string_4 = string_4[:-2] + "'"
+            if n != 0:
+                string_4 = string_4[:-2] + "'"
 
         exe_str = string_1 + string_2 + string_3 + string_4 + string_5
 
@@ -218,7 +219,6 @@ def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_C
                 string_6 = string_6[:-2] + "])"
 
         exe_str = string_1 + string_2 + string_3 + string_4 + string_5 + string_6 + string_7
-        print(exe_str)
         cur.execute(exe_str)
 
         # Removing hstore fields when value deleted when updating the record
