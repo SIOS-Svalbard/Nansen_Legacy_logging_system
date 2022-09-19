@@ -3,7 +3,8 @@ import psycopg2
 import psycopg2.extras
 import getpass
 import uuid
-from website.database.get_data import get_data, get_personnel_df, get_registered_activities
+from website.database.get_children_list_of_dics import get_children_list_of_dics
+from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -15,6 +16,7 @@ import requests
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd
+from math import isnan
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -89,6 +91,13 @@ def edit_activity_form(ID):
         activity_fields['recordedBy_details']['value'] = combine_personnel_details(df_activity['recordedby_name'].item(),df_activity['recordedby_email'].item())
     else:
         activity_fields['recordedBy_details']['value'] = []
+
+    # Get children
+    if ID != 'addNew':
+        ids = [ID]
+        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+    else:
+        children_list_of_dics = []
 
     if request.method == 'POST':
 
@@ -225,5 +234,24 @@ def edit_activity_form(ID):
     ID=ID,
     activity_metadata=activity_metadata,
     extra_fields_dic=extra_fields_dic,
-    groups=groups
+    groups=groups,
+    children_list_of_dics=children_list_of_dics,
+    len=len,
+    isnan=isnan
+    )
+
+@logsamples.route('/logSamples/<ID>', methods=['GET', 'POST'])
+def log_samples(ID):
+    # Get children
+    if ID != 'addNew':
+        ids = [ID]
+        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+    else:
+        children_list_of_dics = []
+    return render_template(
+    "logSamples.html",
+    ID=ID,
+    children_list_of_dics=children_list_of_dics,
+    len=len,
+    isnan=isnan
     )

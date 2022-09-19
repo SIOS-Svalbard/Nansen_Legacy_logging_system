@@ -148,6 +148,7 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
     if len(df_cruise) > 0:
 
         df_cruise['gearType'] = 'Niskin'
+        df_cruise['sampleType'] = 'Niskin Bottle'
         df_cruise['eventID'] = df_cruise['id']
 
         for col in ['recordedBy_details', 'pi_details']:

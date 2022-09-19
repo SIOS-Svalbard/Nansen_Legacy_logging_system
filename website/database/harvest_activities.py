@@ -205,7 +205,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
 
     conn.commit()
 
-    activities_df = pd.read_sql(f'select * from {METADATA_CATALOGUE};', con=conn)
+    activities_df = get_registered_activities(DBNAME, METADATA_CATALOGUE)
 
     cur.close()
     conn.close()

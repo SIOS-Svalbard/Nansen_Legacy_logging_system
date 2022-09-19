@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block title %}Log samples{% endblock %} {% block content
+%}
+
+<div class="container">
+  <h1>Log samples</h1>
+
+  <h4>Suggestions</h4>
+
+  <p>Suggestions for this activity: Niskin bottle (image?), L-ADCP master and slave?</p>
+
+  <h4>Or choose type of sample that you want to log.</h4>
+  <p> Select sampleType from checkboxes in modal, perhaps grouped in categories</p>
+
+</div>
+
+
+<div class="container">
+  {% include 'tableChildren.html' %}
+</div>
+
+{% endblock %}

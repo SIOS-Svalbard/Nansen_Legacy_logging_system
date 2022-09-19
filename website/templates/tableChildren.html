@@ -1,0 +1,52 @@
+{% if len(children_list_of_dics) > 0 %}
+<br><h2>Children</h2><br>
+{% endif %}
+
+{% for table in children_list_of_dics %}
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        {% for field, value in table.items() %}
+          {% if field == 'id' %}
+            <th scope="col"></th>
+            <th scope="col"></th>
+          {% else %}
+            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row_num in range(len(table['id']['values'])) %}
+      <tr>
+        {% for field, value in table.items() %}
+          <td>
+
+          {% if field == 'id' %}
+            <a
+              class="btn btn-primary"
+              href="/editActivity/form/{{value['values'][row_num]}}"
+              role="button">
+              View/edit
+            </a>
+          </td>
+          <td>
+            <a
+              class="btn btn-warning"
+              href="/editActivity/form/{{value['values'][row_num]}}"
+              role="button">
+              Log samples
+            </a>
+
+          {% else %}
+            {{value['values'][row_num]}}
+
+          {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br>
+{% endfor %}
