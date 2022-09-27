@@ -5,5 +5,9 @@ setups:
       recommended: [id, statID, catalogNumber, endDate, endTime, endDecimalLatitude, endDecimalLongitude, minimumDepthInMeters, maximumDepthInMeters, minimumElevationInMeters, maximumElevationInMeters,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,comments1]
   - name: niskin
     fields:
-      required: [parentID, gearType, bottleNumber, minimumDepthInMeters, maximumDepthInMeters, pi_details, recordedBy_details]
+      required: [parentID, gearType, sampleType, bottleNumber, minimumDepthInMeters, maximumDepthInMeters, pi_details, recordedBy_details]
       recommended: [id, catalogNumber,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,dataFilename, comments1]
+  - name: default
+    fields:
+      required: [parentID, gearType, sampleType, pi_details, recordedBy_details]
+      recommended: [id, catalogNumber,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion, comments1]

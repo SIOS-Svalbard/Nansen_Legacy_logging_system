@@ -11,13 +11,14 @@
         id="cruiseName"
         name="cruiseName"
         placeholder="Full name of cruise"
+        value="{{ current_cruise_name }}"
       />
     </div>
     <div class="row">
       <div class="col">
-        <label for="cruise_name">Project</label><br>
+        <label for="cruise_project">Project</label><br>
         <select class="form-select" id="project" name="project" aria-label="Default select example">
-          <option selected>Choose...</option>
+          <option selected>{{ current_cruise_project }}</option>
           {% for project in projects %}
             <option>{{project}}</option>
           {% endfor %}
@@ -29,16 +30,16 @@
     </div>
     <div class="row">
       <div class="col">
-        <label for="cruise_name">Cruise leader</label><br>
+        <label for="cruise_leader">Cruise leader</label><br>
         <select class="form-select" id="cruiseLeader" name="cruiseLeader" aria-label="Default select example">
-          <option selected>Choose...</option>
+          <option selected>{{ current_cruise_leader }}</option>
           {% for person in personnel %}
             <option>{{person}}</option>
           {% endfor %}
         </select><br>
-        <label for="cruise_name">Co-cruise leader</label><br>
+        <label for="cocruise_leader">Co-cruise leader</label><br>
         <select class="form-select" id="coCruiseLeader" name="coCruiseLeader" aria-label="Default select example">
-          <option selected>Choose...</option>
+          <option selected>{{ current_cocruise_leader }}</option>
           {% for person in personnel %}
             <option>{{person}}</option>
           {% endfor %}
@@ -55,7 +56,9 @@
         type="text"
         class="form-control"
         id="comment"
-        placeholder="Optional comment">
+        placeholder="Optional comment"
+        value="{{ current_cruise_comment }}"
+      />
     </div>
     <p>Cruise number (from cruise logger): <span class="text-primary">{{CRUISE_NUMBER}}</span></p>
     <button type="submit" class="btn btn-primary">Submit</button>

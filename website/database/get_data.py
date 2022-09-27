@@ -25,6 +25,20 @@ def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
     df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where id in {tuple(ids)};', con=conn)
     return df
 
+def get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where id = '{ID}';", con=conn)
+    return df
+
+def get_children(DBNAME, METADATA_CATALOGUE, ids):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    if len(ids) == 1:
+        id = ids[0]
+        df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where parentid = '{id}';", con=conn)
+    else:
+        df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid in {tuple(ids)};', con=conn)
+    return df
+
 def get_personnel_df(DBNAME=False, table='personnel'):
     if DBNAME == False:
         df_personnel = pd.read_csv(f'website/database/{table}.csv')

@@ -26,6 +26,7 @@ def home():
 
     # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
     activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE).reset_index()
+    print(activities_df)
     harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER)
     activities_df['message'] = 'Okay'
 

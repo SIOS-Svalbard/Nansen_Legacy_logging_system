@@ -9,6 +9,7 @@ from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, V
 import requests
 import numpy as np
 from datetime import datetime as dt
+from website.other_functions.other_functions import split_personnel_list, combine_personnel_details
 
 registrations = Blueprint('registrations', __name__)
 
@@ -29,6 +30,14 @@ def cruiseDetails():
     proj_df = get_data(DBNAME, 'projects')
     proj_df.sort_values(by='project', inplace=True)
     projects = list(proj_df['project'])
+
+    cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+
+    current_cruise_name = cruise_details_df['cruise_name'].item()
+    current_cruise_project = cruise_details_df['project'].item()
+    current_cruise_leader =  combine_personnel_details(cruise_details_df['cruise_leader_name'].item(),cruise_details_df['cruise_leader_email'].item())[0]
+    current_cocruise_leader = combine_personnel_details(cruise_details_df['co_cruise_leader_name'].item(),cruise_details_df['co_cruise_leader_email'].item())[0]
+    current_cruise_comment = cruise_details_df['comment'].item()
 
     if request.method == 'POST':
         cruise_leader = request.form.get('cruiseLeader')
@@ -92,7 +101,17 @@ def cruiseDetails():
 
         return redirect(url_for('views.home'))
 
-    return render_template("register/cruiseDetails.html", personnel=personnel, projects=projects, CRUISE_NUMBER=CRUISE_NUMBER)
+    return render_template(
+    "register/cruiseDetails.html",
+    personnel=personnel,
+    projects=projects,
+    CRUISE_NUMBER=CRUISE_NUMBER,
+    current_cruise_name=current_cruise_name,
+    current_cruise_leader=current_cruise_leader,
+    current_cocruise_leader=current_cocruise_leader,
+    current_cruise_project=current_cruise_project,
+    current_cruise_comment=current_cruise_comment,
+    )
 
 @registrations.route('/register/institutions', methods=['GET', 'POST'])
 def institutions():
