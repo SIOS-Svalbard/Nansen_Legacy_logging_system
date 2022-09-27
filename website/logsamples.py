@@ -37,10 +37,6 @@ def edit_activity_form(ID):
     required = list(required_fields_dic.keys())
     recommended = list(recommended_fields_dic.keys())
 
-    #df_metadata_catalogue = get_registered_activities(DBNAME, METADATA_CATALOGUE)
-
-    #df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID]
-
     sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
 
     # Creating new columns from the hstore key/value pairs in the 'other' column
@@ -212,7 +208,7 @@ def edit_activity_form(ID):
 
                 else:
 
-                    form_input['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID, 'history'].iloc[0]
+                    form_input['history'] = sample_metadata_df.loc[sample_metadata_df['id'] == ID, 'history'].iloc[0]
                     form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
                     form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 

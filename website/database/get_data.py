@@ -27,6 +27,8 @@ def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
 
 def get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    if ID == 'addNew':
+        ID = '6818a630-3e44-11ed-bc56-07202a870ce3'
     df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where id = '{ID}';", con=conn)
     return df
 
