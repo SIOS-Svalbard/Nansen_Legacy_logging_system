@@ -4,7 +4,7 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children
+from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -37,12 +37,14 @@ def edit_activity_form(ID):
     required = list(required_fields_dic.keys())
     recommended = list(recommended_fields_dic.keys())
 
-    df_metadata_catalogue = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    #df_metadata_catalogue = get_registered_activities(DBNAME, METADATA_CATALOGUE)
 
-    df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID]
+    #df_activity = df_metadata_catalogue.loc[df_metadata_catalogue['id'] == ID]
+
+    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
 
     # Creating new columns from the hstore key/value pairs in the 'other' column
-    df_activity = df_activity.join(df_activity['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
+    sample_metadata_df = sample_metadata_df.join(sample_metadata_df['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
          .reset_index()
          .pivot(index=['level_0', 'match'], columns=0, values=1)
          .groupby(level=0)
@@ -52,10 +54,10 @@ def edit_activity_form(ID):
 
     other_columns = []
     # Splitting hstore to get column names
-    if len(df_activity) == 1:
+    if len(sample_metadata_df) == 1:
         n = 0
-        if df_activity['other'].item() != None:
-            for a in df_activity['other'].item().split(', '): # Split fields with values from other fields with values
+        if sample_metadata_df['other'].item() != None:
+            for a in sample_metadata_df['other'].item().split(', '): # Split fields with values from other fields with values
                 for b in a.split('=>'): # Split fields from values
                     n = n + 1
                     if (n % 2) != 0: # Only append odd numbers, just the fields not the values
@@ -77,18 +79,18 @@ def edit_activity_form(ID):
                     activity_fields[field['name']]['value'] = ''
             else:
                 if field['name'] in other_columns:
-                    activity_fields[field['name']]['value'] = df_activity[field['name']].item()
+                    activity_fields[field['name']]['value'] = sample_metadata_df[field['name']].item()
                 else:
                     if field['name'] not in ['recordedBy_details', 'pi_details']:
-                        activity_fields[field['name']]['value'] = df_activity[field['name'].lower()].item()
+                        activity_fields[field['name']]['value'] = sample_metadata_df[field['name'].lower()].item()
 
-    if len(df_activity) == 1 and df_activity['pi_name'].item() not in ['', None]:
-        activity_fields['pi_details']['value'] = combine_personnel_details(df_activity['pi_name'].item(),df_activity['pi_email'].item())
+    if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
+        activity_fields['pi_details']['value'] = combine_personnel_details(sample_metadata_df['pi_name'].item(),sample_metadata_df['pi_email'].item())
     else:
         activity_fields['pi_details']['value'] = []
 
-    if len(df_activity) == 1 and df_activity['recordedby_name'].item() not in ['', None]:
-        activity_fields['recordedBy_details']['value'] = combine_personnel_details(df_activity['recordedby_name'].item(),df_activity['recordedby_email'].item())
+    if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
+        activity_fields['recordedBy_details']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
     else:
         activity_fields['recordedBy_details']['value'] = []
 
@@ -248,10 +250,42 @@ def log_samples(ID):
         children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
     else:
         children_list_of_dics = []
+
+    sample_types_df = get_data(DBNAME, 'sample_types')
+    gear_types_df = get_data(DBNAME, 'gear_types')
+
+    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    gearType = sample_metadata_df['geartype'].item()
+
+    recommendedChildGears = find_recommended_child_gears(gearType, gear_types_df)
+    recommendedChildSamples = find_recommended_child_sample_types(gearType, gear_types_df)
+
     return render_template(
     "logSamples.html",
     ID=ID,
+    recommendedChildGears=recommendedChildGears,
+    recommendedChildSamples=recommendedChildSamples,
     children_list_of_dics=children_list_of_dics,
+    sample_types_df=sample_types_df,
     len=len,
     isnan=isnan
     )
+
+def find_recommended_child_gears(gearType, gear_types_df):
+
+    recommended_child_gears = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildgears'].item()
+    if recommended_child_gears == "":
+        recommended_child_gears_list = []
+    else:
+        recommended_child_gears_list = recommended_child_gears.split(', ')
+    return recommended_child_gears_list
+
+def find_recommended_child_sample_types(gearType, gear_types_df):
+
+    recommended_child_samples = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildsamples'].item()
+    if recommended_child_samples == "":
+        recommended_child_samples_list = []
+    else:
+        recommended_child_samples_list = recommended_child_samples.split(', ')
+
+    return recommended_child_samples_list

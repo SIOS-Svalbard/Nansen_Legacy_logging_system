@@ -17,6 +17,7 @@ import psycopg2.extras
 import getpass
 import website.database.fields as fields
 import pandas as pd
+import json
 
 def create_database(DBNAME):
     '''
@@ -67,7 +68,7 @@ def create_database(DBNAME):
 
 def init_institutions(DBNAME, cur):
     cur.execute("CREATE TABLE institutions (id uuid PRIMARY KEY, short_name text, full_name text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/institutions.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/institutions.csv')
     for idx, row in df.iterrows():
         id = row['id']
         short_name = row['short_name']
@@ -77,7 +78,7 @@ def init_institutions(DBNAME, cur):
 
 def init_stations(DBNAME, cur):
     cur.execute("CREATE TABLE stations (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/stations.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/stations.csv')
     for idx, row in df.iterrows():
         id = row['id']
         stationName = row['stationName']
@@ -87,27 +88,43 @@ def init_stations(DBNAME, cur):
         cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
 def init_sample_types(DBNAME, cur):
-    cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/sample_types.csv')
-    for idx, row in df.iterrows():
-        id = row['id']
-        sampleType = row['sampleType']
-        comment = row['comment']
-        cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{id}','{sampleType}','{comment}', CURRENT_TIMESTAMP);")
+    cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
+
+    with open('website/database/dropdown_initial_values/sampleTypes.json', 'r') as f:
+        data = json.load(f)
+
+    for item in data:
+        ID = item['id']
+        sampleType = item['sampleType']
+        comment = item['comment']
+        group = item['group']
+        vocabLabel = item['vocabLabel']
+        vocabURI = item['vocabURI']
+        cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(DBNAME, cur):
-    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/gear_types.csv')
-    for idx, row in df.iterrows():
-        id = row['id']
-        gearType = row['gearType']
-        IMR_name = row['IMR_name']
-        comment = row['comment']
-        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, created) VALUES ('{id}','{gearType}','{IMR_name}','{comment}', CURRENT_TIMESTAMP);")
+    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildGears text, recommendedChildSamples text, created timestamp with time zone)")
+
+    with open('website/database/dropdown_initial_values/gearTypes.json', 'r') as f:
+        data = json.load(f)
+
+    for item in data:
+        ID = item['id']
+        gearType = item['gearType']
+        IMR_name = item['IMR_name']
+        comment = item['comment']
+        group = item['group']
+        vocabLabel = item['vocabLabel']
+        vocabURI = item['vocabURI']
+        recommendedSampleTypes = item['recommendedSampleTypes']
+        recommendedChildGears = item['recommendedChildren']['gearTypes']
+        recommendedChildSamples = item['recommendedChildren']['sampleTypes']
+
+        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildGears, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildGears}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(DBNAME, cur):
     cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/intended_methods.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/intended_methods.csv')
     for idx, row in df.iterrows():
         id = row['id']
         intendedMethod = row['intendedMethod']
@@ -116,7 +133,7 @@ def init_intended_methods(DBNAME, cur):
 
 def init_projects(DBNAME, cur):
     cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/projects.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/projects.csv')
     for idx, row in df.iterrows():
         id = row['id']
         project = row['project']
@@ -125,7 +142,7 @@ def init_projects(DBNAME, cur):
 
 def init_personnel(DBNAME, cur):
     cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/personnel.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/personnel.csv')
     for idx, row in df.iterrows():
         id = row['id']
         first_name = row['first_name']
@@ -137,7 +154,7 @@ def init_personnel(DBNAME, cur):
 
 def init_storage_temperatures(DBNAME, cur):
     cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/storage_temperatures.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/storage_temperatures.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storageTemp']
@@ -146,7 +163,7 @@ def init_storage_temperatures(DBNAME, cur):
 
 def init_filters(DBNAME, cur):
     cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/filters.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/filters.csv')
     for idx, row in df.iterrows():
         id = row['id']
         filter = row['filter']
@@ -155,7 +172,7 @@ def init_filters(DBNAME, cur):
 
 def init_sex(DBNAME, cur):
     cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/sex.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/sex.csv')
     for idx, row in df.iterrows():
         id = row['id']
         sex = row['sex']
@@ -164,7 +181,7 @@ def init_sex(DBNAME, cur):
 
 def init_kingdoms(DBNAME, cur):
     cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
-    df = pd.read_csv('website/database/kingdoms.csv')
+    df = pd.read_csv('website/database/dropdown_initial_values/kingdoms.csv')
     for idx, row in df.iterrows():
         id = row['id']
         kingdom = row['kingdom']

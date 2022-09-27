@@ -1,16 +1,40 @@
-{% extends "base.html" %} {% block title %}Log samples{% endblock %} {% block content
+{% extends "base.html" %} {% block title %}Log children samples or gear{% endblock %} {% block content
 %}
 
 <div class="container">
-  <h1>Log samples</h1>
+  <h1>Log children samples or gear</h1><br>
 
-  <h4>Suggestions</h4>
+  <h4>Suggestions</h4><br>
 
-  <p>Suggestions for this activity: Niskin bottle (image?), L-ADCP master and slave?</p>
+  <div class="container">
+    {% for gear in recommendedChildGears %}
+      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
+        {{ gear }}
+      </button>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+  </div>
+  <br>
+  <div class="container">
+    {% for sample in recommendedChildSamples %}
+      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#exampleModal">
+        {{ sample }}
+      </button>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endfor %}
+  </div>
+  <br><br>
 
-  <h4>Or choose type of sample that you want to log.</h4>
-  <p> Select sampleType from checkboxes in modal, perhaps grouped in categories</p>
+  <h4>Or choose type of sample that you want to log.</h4><br>
 
+</div>
+
+<div class="container">
+  {% include 'chooseSampleType.html' %}<br><br>
+</div>
+
+<div class="container">
+  <h4>Upload children from spreadsheet from template generator</h4>
 </div>
 
 
