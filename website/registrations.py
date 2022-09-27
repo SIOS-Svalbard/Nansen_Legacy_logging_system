@@ -25,7 +25,6 @@ def cruiseDetails():
     df.sort_values(by='last_name', inplace=True)
     df['personnel'] = df['first_name'] + ' ' + df['last_name'] + ' (' + df['email'] + ')'
     personnel = list(df['personnel'])
-    last_names = list(df['last_name'])
 
     proj_df = get_data(DBNAME, 'projects')
     proj_df.sort_values(by='project', inplace=True)
@@ -33,11 +32,19 @@ def cruiseDetails():
 
     cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
 
-    current_cruise_name = cruise_details_df['cruise_name'].item()
-    current_cruise_project = cruise_details_df['project'].item()
-    current_cruise_leader =  combine_personnel_details(cruise_details_df['cruise_leader_name'].item(),cruise_details_df['cruise_leader_email'].item())[0]
-    current_cocruise_leader = combine_personnel_details(cruise_details_df['co_cruise_leader_name'].item(),cruise_details_df['co_cruise_leader_email'].item())[0]
-    current_cruise_comment = cruise_details_df['comment'].item()
+    print('A',cruise_details_df['cruise_name'],'B')
+    if len(cruise_details_df) > 0:
+        current_cruise_name = cruise_details_df['cruise_name'].item()
+        current_cruise_project = cruise_details_df['project'].item()
+        current_cruise_leader =  combine_personnel_details(cruise_details_df['cruise_leader_name'].item(),cruise_details_df['cruise_leader_email'].item())[0]
+        current_cocruise_leader = combine_personnel_details(cruise_details_df['co_cruise_leader_name'].item(),cruise_details_df['co_cruise_leader_email'].item())[0]
+        current_cruise_comment = cruise_details_df['comment'].item()
+    else:
+        current_cruise_name = ''
+        current_cruise_project = ''
+        current_cruise_leader = ''
+        current_cocruise_leader = ''
+        current_cruise_comment = ''
 
     if request.method == 'POST':
         cruise_leader = request.form.get('cruiseLeader')
@@ -45,8 +52,10 @@ def cruiseDetails():
         project = request.form.get('project').capitalize()
         cruise_name = request.form.get('cruiseName').capitalize()
         comment = request.form.get('comment')
-        print('start')
-        print(df['personnel'], cruise_leader)
+        print('BEFORE')
+        print(comment)
+        print('AFTER')
+
         cruise_leader_name = cruise_leader.split(' (')[0]
         cruise_leader_id = df.loc[df['personnel'] == cruise_leader, 'id'].iloc[0]
         cruise_leader_email = df.loc[df['personnel'] == cruise_leader, 'email'].iloc[0]
@@ -60,38 +69,54 @@ def cruiseDetails():
         conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
         cur = conn.cursor()
 
-        cur.execute(f'''INSERT INTO {CRUISE_DETAILS_TABLE}
-        (id,
-        cruise_name,
-        cruise_number,
-        vessel_name,
-        project,
-        cruise_leader_id,
-        cruise_leader_name,
-        cruise_leader_institution,
-        cruise_leader_email,
-        co_cruise_leader_id,
-        co_cruise_leader_name,
-        co_cruise_leader_institution,
-        co_cruise_leader_email,
-        comment,
-        created)
-        VALUES
-        ('{uuid.uuid1()}',
-        '{cruise_name}',
-        '{CRUISE_NUMBER}',
-        '{VESSEL_NAME}',
-        '{project}',
-        '{cruise_leader_id}',
-        '{cruise_leader_name}',
-        '{cruise_leader_institution}',
-        '{cruise_leader_email}',
-        '{co_cruise_leader_id}',
-        '{co_cruise_leader_name}',
-        '{co_cruise_leader_institution}',
-        '{co_cruise_leader_email}',
-        '{comment}',
-        CURRENT_TIMESTAMP);''')
+        if len(cruise_details_df) > 0:
+            cur.execute(f'''UPDATE {CRUISE_DETAILS_TABLE} SET
+            cruise_name = '{cruise_name}',
+            project = '{project}',
+            cruise_leader_id = '{cruise_leader_id}',
+            cruise_leader_name = '{cruise_leader_name}',
+            cruise_leader_institution = '{cruise_leader_institution}',
+            cruise_leader_email = '{cruise_leader_email}',
+            co_cruise_leader_id = '{co_cruise_leader_id}',
+            co_cruise_leader_name = '{co_cruise_leader_name}',
+            co_cruise_leader_institution = '{co_cruise_leader_institution}',
+            co_cruise_leader_email = '{co_cruise_leader_email}',
+            comment = '{comment}';
+            ''')
+
+        else:
+            cur.execute(f'''INSERT INTO {CRUISE_DETAILS_TABLE}
+            (id,
+            cruise_name,
+            cruise_number,
+            vessel_name,
+            project,
+            cruise_leader_id,
+            cruise_leader_name,
+            cruise_leader_institution,
+            cruise_leader_email,
+            co_cruise_leader_id,
+            co_cruise_leader_name,
+            co_cruise_leader_institution,
+            co_cruise_leader_email,
+            comment,
+            created)
+            VALUES
+            ('{uuid.uuid1()}',
+            '{cruise_name}',
+            '{CRUISE_NUMBER}',
+            '{VESSEL_NAME}',
+            '{project}',
+            '{cruise_leader_id}',
+            '{cruise_leader_name}',
+            '{cruise_leader_institution}',
+            '{cruise_leader_email}',
+            '{co_cruise_leader_id}',
+            '{co_cruise_leader_name}',
+            '{co_cruise_leader_institution}',
+            '{co_cruise_leader_email}',
+            '{comment}',
+            CURRENT_TIMESTAMP);''')
 
         conn.commit()
         cur.close()
