@@ -219,6 +219,7 @@ def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_C
                 string_6 = string_6[:-2] + "])"
 
         exe_str = string_1 + string_2 + string_3 + string_4 + string_5 + string_6 + string_7
+        print(exe_str)
         cur.execute(exe_str)
 
         # Removing hstore fields when value deleted when updating the record

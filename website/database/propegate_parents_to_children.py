@@ -1,6 +1,9 @@
 from website.database.get_data import get_metadata_for_list_of_ids
 import website.database.fields as fields
 import numpy as np
+import psycopg2
+import getpass
+import pandas as pd
 
 def copy_from_parent(parentID, col, df_parents, child_value=None, inherit=False):
     if inherit == True:
@@ -30,7 +33,10 @@ def check_whether_to_inherit(parentID, col, df_parents, child_value=None, weak=T
 
 def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
 
-    parentIDs = list(df_children['parentID'])
+    try:
+        parentIDs = list(df_children['parentID'])
+    except:
+        parentIDs = list(df_children['parentid'])
     df_parents = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, parentIDs)
 
     inheritable = []  # For holding inheritable fields
@@ -61,3 +67,46 @@ def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
     df_children.drop('inherit', axis=1, inplace=True)
 
     return df_children
+
+def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
+    '''
+    Return a list of child IDs for parent IDs provided.
+    Children, grandchildren etc are all included in the returned list
+    This is useful for when samples are updated. In this case, the children must also be updated
+    for fields that should be inherited
+
+    Parameters
+    ----------
+    IDs : list
+        List of IDs whose children you want to find
+    DBNAME: str
+        Name of PSQL database that hosts the metadata catalogue
+        and other tables where lists of values for certain fields are registered
+    METADATA_CATALOGUE: str
+        Name of the metadata catalogue table within DBNAME
+
+    Returns
+    -------
+    children_IDs : list
+        List of IDs for all the children, grandchildren etc.
+
+    '''
+
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+
+    moreChildren = True
+    children_IDs = []
+
+    while moreChildren == True:
+        if len(IDs) == 1:
+            df = pd.read_sql(f"SELECT id FROM {METADATA_CATALOGUE} where parentid = '{IDs[0]}';", con=conn)
+        else:
+            df = pd.read_sql(f'SELECT id FROM {METADATA_CATALOGUE} where parentid in {tuple(IDs)};', con=conn)
+        newChildren = df['id'].to_list()
+        newChildren = [p for p in newChildren if p not in IDs]
+        [children_IDs.append(p) for p in newChildren if type(p) == str]
+        IDs = newChildren
+        if len(newChildren) == 0:
+            moreChildren = False
+
+    return children_IDs
