@@ -3,7 +3,7 @@
 <div class="container">
   <h2>Registered personnel:</h2>
   <br>
-  <h4>Need to consider what to do if institution or email changes or people want to be removed</h4>
+
   <table class="table">
     <thead>
       <tr>
@@ -11,6 +11,7 @@
         <th scope="col">Last name</th>
         <th scope="col">Email</th>
         <th scope="col">Institution</th>
+        <th scope="col">OrcID</th>
         <th scope="col">Comment</th>
       </tr>
     </thead>
@@ -21,6 +22,9 @@
         <td>{{last_names[i]}}</td>
         <td>{{emails[i]}}</td>
         <td>{{institutions[i]}}</td>
+        <td>
+          <a href="{{orcids[i]}}">{{orcids[i]}}</a>
+        </td>
         <td>{{comments[i]}}</td>
       </tr>
       {% endfor %}
@@ -54,14 +58,29 @@
         />
       </div>
     </div>
+    <div class="row">
+      <div class="col">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          placeholder="Email">
+      </div>
+      <div class="col">
+        <label for="orcid">OrcID</label>
+        <input
+          type="text"
+          class="form-control"
+          id="orcid"
+          name="orcid"
+          placeholder="https://orcid.org/0000-0002-9746-544X">
+        <small><a href="https://orcid.org/">Get OrcID</a></small>
+      </div>
+    </div>
     <div class="form-group">
-      <label for="email">Email</label>
-      <input
-        type="email"
-        class="form-control"
-        id="email"
-        name="email"
-        placeholder="Email">
+
     </div>
     <div class="row">
       <div class="col">

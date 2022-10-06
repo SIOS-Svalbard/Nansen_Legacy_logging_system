@@ -331,6 +331,7 @@ def personnel():
     first_names = list(df['first_name'])
     last_names = list(df['last_name'])
     emails = list(df['email'])
+    orcids = list(df['orcid'])
     institutions = list(df['institution'])
     comments = list(df['comment'])
 
@@ -338,15 +339,23 @@ def personnel():
     registered_institutions = list(df['full_name'])
 
     if request.method == 'POST':
-        print('\n\nhere01\n\n')
         first_name = request.form.get('first_name').capitalize()
         last_name = request.form.get('last_name').capitalize()
         email = request.form.get('email')
+        orcid = request.form.get('orcid')
+        print(orcid, type(orcid), len(orcid))
         institution = request.form.get('institution')
         comment = request.form.get('comment')
 
-        print(first_name, last_name, email, institution, comment)
-        print('\n\nhere02\n\n')
+        if len(orcid) == 0:
+            check_orcid = True
+        else:
+            if len(orcid) != 37:
+                check_orcid = False
+            elif orcid.startswith('https://orcid.org'):
+                check_orcid = True
+            else:
+                check_orcid = False
 
         if len(first_name) < 2:
             flash('First name must be at least 2 characters long', category='error')
@@ -359,13 +368,15 @@ def personnel():
         elif '@' not in email:
             flash('Email must include an @ symbol', category='error')
         elif len(email) < 6:
-            flash('Email must be at least 6 characters long')
+            flash('Email must be at least 6 characters long', category='error')
         elif institution not in registered_institutions:
-            flash('Must select an institution from the list')
+            flash('Must select an institution from the list', category='error')
+        elif not check_orcid:
+            flash('Invalid ordid', category='error')
         else:
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
-            cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -375,7 +386,7 @@ def personnel():
 
             return redirect(url_for('registrations.personnel'))
 
-    return render_template("register/personnel.html", registered_institutions=registered_institutions, first_names=first_names, last_names = last_names, emails = emails, institutions = institutions, comments=comments, len=len(first_names))
+    return render_template("register/personnel.html", registered_institutions=registered_institutions, first_names=first_names, last_names = last_names, emails = emails, institutions = institutions, orcids=orcids, comments=comments, len=len(first_names))
 
 @registrations.route('/register/sex', methods=['GET', 'POST'])
 def sex():
