@@ -4,11 +4,12 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id
+from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
 from website.configurations.get_configurations import get_fields
-from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
+from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.checker import run as checker
+from website.database.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 import website.database.fields as fields
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
 from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
@@ -215,6 +216,15 @@ def edit_activity_form(ID):
                     update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
 
                     flash('Activity edited!', category='success')
+
+                    children_IDs = find_all_children([ID],DBNAME, METADATA_CATALOGUE)
+                    df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
+                    df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
+                    df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
+                    metadata_df = False
+                    update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
+
+                    flash('Relevant metadata copied to children', category='success')
 
                 return redirect(url_for('views.home'))
 
