@@ -141,16 +141,18 @@ def init_projects(DBNAME, cur):
         cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_personnel(DBNAME, cur):
-    cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, comment text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/personnel.csv')
+
     for idx, row in df.iterrows():
         id = row['id']
         first_name = row['first_name']
         last_name = row['last_name']
         institution = row['institution']
         email = row['email']
+        orcid = row['orcid']
         comment = row['comment']
-        cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, comment, created) VALUES ('{id}', '{first_name}','{last_name}','{institution}','{email}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{id}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_storage_temperatures(DBNAME, cur):
     cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
