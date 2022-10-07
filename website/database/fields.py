@@ -922,10 +922,27 @@ Example: johnd@unis.no | olan@unis.no''',
               'hstore': False,
               'valid': {
                   'validate': 'any',
-                  'input_title': 'Recorded By',
+                  'input_title': 'Recorded By (Email)',
                   'input_message': '''Email of who has recorded/analysed the data.
 Can be a concatenated list, separated by: '|'
 Example: johnd@unis.no | olan@unis.no'''
+              }
+              },
+    {'name': 'recordedBy_orcid',
+              'disp_name': 'Recorded By (OrcID)',
+              'description': '''OrcID(s) of who has recorded/analysed the data.
+Can be a concatenated list, separated by: '|'
+Example: https://orcid.org/0000-0002-9746-544X''',
+              'dwcid': 'http://rs.tdwg.org/dwc/terms/recordedBy',
+              'format': 'text',
+              'grouping': 'Required',
+              'hstore': False,
+              'valid': {
+                  'validate': 'any',
+                  'input_title': 'Recorded By (OrcID)',
+                  'input_message': '''OrcID(s) of who has recorded/analysed the data.
+    Can be a concatenated list, separated by: '|'
+    Example: https://orcid.org/0000-0002-9746-544X'''
               }
               },
     {'name': 'recordedBy_institution',
@@ -1016,6 +1033,20 @@ Example: University Centre in Svalbard | University Centre in Svalbard''',
                   'input_message': '''Main institution of the principal investigator of the data.
 Please include for every PI listed, even if the same.
 Example: University Centre in Svalbard | University Centre in Svalbard'''
+              }
+              },
+    {'name': 'pi_orcid',
+              'disp_name': 'PI OrcID',
+              'description': '''OrcID of the principal investigator(s) of the data.
+Please include for every PI listed. Example: https://orcid.org/0000-0002-9746-544X''',
+              'format': 'text',
+              'grouping': 'Required',
+              'hstore': False,
+              'valid': {
+                  'validate': 'any',
+                  'input_title': 'PI OrcID',
+                  'input_message': '''OrcID of the principal investigator(s) of the data.
+    Please include for every PI listed.  Example: https://orcid.org/0000-0002-9746-544X'''
               }
               },
     {'name': 'pi_details',

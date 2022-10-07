@@ -141,8 +141,8 @@ def edit_activity_form(ID):
         if request.form['submitbutton'] == 'submit':
 
             df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
-            form_input['pi_name'], form_input['pi_email'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
-            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy_details'], df_personnel)
+            form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
+            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_orcid'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy_details'], df_personnel)
 
             for key in ['pi_details', 'recordedBy_details', 'submitbutton']:
                 if key in form_input.keys():
@@ -167,10 +167,10 @@ def edit_activity_form(ID):
 
             if 'pi_details' in required:
                 required.remove('pi_details')
-                required = required + ['pi_name', 'pi_email', 'pi_institution']
+                required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
             if 'recordedBy_details' in required:
                 required.remove('recordedBy_details')
-                required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
+                required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
             good, errors = checker(
                 data=fields_to_check_df,

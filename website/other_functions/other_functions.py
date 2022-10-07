@@ -54,6 +54,7 @@ def split_personnel_list(personnel, df_personnel):
     '''
     personnel_names_list = []
     personnel_emails_list = []
+    personnel_orcids_list = []
     personnel_institutions_list = []
 
     if type(personnel) == str:
@@ -65,17 +66,20 @@ def split_personnel_list(personnel, df_personnel):
             person_last_name = df_personnel.loc[df_personnel['personnel'] == person, 'last_name'].item()
             person_name = person_first_name + ' ' + person_last_name
             person_email = df_personnel.loc[df_personnel['personnel'] == person, 'email'].item()
+            person_orcid = df_personnel.loc[df_personnel['personnel'] == person, 'orcid'].item()
             person_institution = df_personnel.loc[df_personnel['personnel'] == person, 'institution'].item()
 
             personnel_names_list.append(person_name)
             personnel_emails_list.append(person_email)
+            personnel_orcids_list.append(person_orcid)
             personnel_institutions_list.append(person_institution)
 
     personnel_names = " | ".join(personnel_names_list)
     personnel_emails = " | ".join(personnel_emails_list)
+    personnel_orcids = " | ".join(personnel_orcids_list)
     personnel_institutions = " | ".join(personnel_institutions_list)
 
-    return personnel_names, personnel_emails, personnel_institutions
+    return personnel_names, personnel_emails, personnel_orcids, personnel_institutions
 
 def combine_personnel_details(names,emails):
     '''
