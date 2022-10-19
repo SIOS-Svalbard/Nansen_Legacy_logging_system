@@ -22,7 +22,10 @@ def get_registered_activities(DBNAME, METADATA_CATALOGUE):
 
 def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
-    df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where id in {tuple(ids)};', con=conn)
+    if len(ids) > 1:
+        df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where id in {tuple(ids)};', con=conn)
+    else:
+        df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where id = '{ids[0]}';", con=conn)
     return df
 
 def get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID):
@@ -54,3 +57,8 @@ def get_personnel_list(DBNAME=False, table='personnel'):
     df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
     personnel = list(df_personnel['personnel'])
     return personnel
+
+def get_user_setup(DBNAME, setupName):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT setup from user_field_setups where setupName = '{setupName}'", con=conn)
+    return df['setup'][0]

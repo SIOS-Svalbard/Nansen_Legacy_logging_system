@@ -60,6 +60,7 @@ def create_database(DBNAME):
         init_filters(DBNAME, cur)
         init_sex(DBNAME, cur)
         init_kingdoms(DBNAME, cur)
+        init_user_field_setups(DBNAME, cur)
 
         conn.commit()
         cur.close()
@@ -103,7 +104,7 @@ def init_sample_types(DBNAME, cur):
         cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(DBNAME, cur):
-    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildGears text, recommendedChildSamples text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
 
     with open('website/database/dropdown_initial_values/gearTypes.json', 'r') as f:
         data = json.load(f)
@@ -117,10 +118,9 @@ def init_gear_types(DBNAME, cur):
         vocabLabel = item['vocabLabel']
         vocabURI = item['vocabURI']
         recommendedSampleTypes = item['recommendedSampleTypes']
-        recommendedChildGears = item['recommendedChildren']['gearTypes']
         recommendedChildSamples = item['recommendedChildren']['sampleTypes']
 
-        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildGears, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildGears}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(DBNAME, cur):
     cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
@@ -189,6 +189,27 @@ def init_kingdoms(DBNAME, cur):
         kingdom = row['kingdom']
         comment = row['comment']
         cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+
+def init_user_field_setups(DBNAME, cur):
+    cur.execute("CREATE TABLE user_field_setups (setupName text PRIMARY KEY, setup json, created timestamp with time zone)")
+
+    setup = {
+    'parentID': 'same',
+    'sampleType': 'same',
+    'pi_details': 'same',
+    'recordedBy_details': 'same',
+    'id': 'vary',
+    'catalogNumber': 'vary',
+    'samplingProtocolDoc': 'same',
+    'samplingProtocolSection': 'same',
+    'samplingProtocolVersion': 'same',
+    'comments1': 'vary',
+    }
+
+    setup = str(setup).replace('\'','"')
+
+    exe_str = f"INSERT INTO user_field_setups (setupName, setup, created) VALUES ('temporary', '{setup}', CURRENT_TIMESTAMP);"
+    cur.execute(exe_str)
 
 def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
     '''

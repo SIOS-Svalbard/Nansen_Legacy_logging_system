@@ -9,7 +9,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": "Sea water, Melt pond water, Under ice water"
         }
     },
@@ -23,7 +22,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": "Sea water"
         }
     },
@@ -37,7 +35,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -51,7 +48,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -65,7 +61,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -79,7 +74,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -93,7 +87,6 @@
         "group": "UVs",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -107,7 +100,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -121,7 +113,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -135,7 +126,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -149,7 +139,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": "Sea water, Melt pond water, Under ice water"
         }
     },
@@ -163,7 +152,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -177,7 +165,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -191,7 +178,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -205,7 +191,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -219,7 +204,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -233,7 +217,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -247,7 +230,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -261,7 +243,6 @@
         "group": "Air",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -275,8 +256,7 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "Niskin, L-ADCP",
-          "sampleTypes": ""
+          "sampleTypes": "Niskin, L-ADCP"
         }
     },
     {
@@ -289,8 +269,7 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "Niskin, L-ADCP",
-          "sampleTypes": ""
+          "sampleTypes": "Niskin, L-ADCP"
         }
     },
     {
@@ -303,7 +282,6 @@
         "group": "Air",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -317,7 +295,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -331,7 +308,6 @@
         "group": "Air",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -345,7 +321,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -359,7 +334,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -373,7 +347,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -387,7 +360,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -401,7 +373,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -415,7 +386,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -429,7 +399,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -443,7 +412,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -457,7 +425,6 @@
         "group": "Air",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -471,7 +438,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -485,7 +451,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -499,7 +464,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -513,7 +477,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -527,7 +490,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -541,7 +503,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -555,7 +516,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -569,7 +529,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -583,7 +542,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -597,7 +555,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -611,7 +568,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -625,7 +581,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -639,7 +594,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": "Sea water, Under ice water"
         }
     },
@@ -653,7 +607,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -667,7 +620,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -681,7 +633,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -695,7 +646,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -709,7 +659,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -723,7 +672,6 @@
         "group": "UVs",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -737,7 +685,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -751,7 +698,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": "Sea water"
         }
     },
@@ -765,7 +711,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -779,7 +724,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -793,7 +737,6 @@
         "group": "Benthos",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -807,7 +750,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -821,7 +763,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -835,7 +776,6 @@
         "group": "Snow and Ice",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -849,7 +789,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -863,7 +802,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -877,7 +815,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -891,7 +828,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -905,7 +841,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -919,7 +854,6 @@
         "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -933,7 +867,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -947,7 +880,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -961,7 +893,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -975,7 +906,6 @@
         "group": "Echo Sounders",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -989,7 +919,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1003,7 +932,6 @@
         "group": "UVs",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1017,7 +945,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1031,7 +958,6 @@
         "group": "Water",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1045,7 +971,6 @@
         "group": "Air",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1059,7 +984,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1073,7 +997,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1087,7 +1010,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1101,7 +1023,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     },
@@ -1115,7 +1036,6 @@
         "group": "Not grouped",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
-          "gearTypes": "",
           "sampleTypes": ""
         }
     }

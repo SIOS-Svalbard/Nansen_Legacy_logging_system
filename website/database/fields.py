@@ -722,7 +722,7 @@ Positive numbers for increasing depth.''',
                         }
                         },
     {'name': 'maximumDepthInMeters',
-                        'disp_name': 'Maximum depth(m)',
+                        'disp_name': 'Maximum depth (m)',
                         'description': '''The maximum depth sampled in meters.
 0 m is the surface.
 Positive numbers for increasing depth.

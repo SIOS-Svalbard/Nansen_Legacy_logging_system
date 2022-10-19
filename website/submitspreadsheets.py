@@ -99,7 +99,7 @@ def submit_spreadsheet():
 
                 if 'pi_details' in required:
                     required.remove('pi_details')
-                    required = required + ['pi_name', 'pi_email', 'pi_corcid', 'pi_institution']
+                    required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
                 if 'recordedBy_details' in required:
                     required.remove('recordedBy_details')
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']

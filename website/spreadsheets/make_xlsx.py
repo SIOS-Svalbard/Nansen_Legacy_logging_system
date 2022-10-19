@@ -15,12 +15,56 @@ import website.database.metadata_fields as metadata_fields
 import os
 from argparse import Namespace
 from website.database.get_data import get_data, get_personnel_list
+import numpy as np
 
 DEBUG = 1
 
 DEFAULT_FONT = 'Calibri'
 DEFAULT_SIZE = 10
 
+def split_personnel_df(df, col):
+    '''
+    Use to split personnel columns (pi_details, recordedBy_details) into separate columns
+    Number of columns based on maximum number of personnel logged
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Pandas Dataframe of metadata including personnel column
+    col : string
+        Name of personnel column to split
+
+    Returns
+    -------
+    df : pandas dataframe
+        Pandas Dataframe of metadata including personnel column
+    max_n_people : int
+        Maximum number of people
+
+    '''
+    # Find maximum number of personnel
+    max_n_people = 1
+    for idx, row in df.iterrows():
+        n_people = len(row[col].split(' | '))
+        if n_people > max_n_people:
+            max_n_people = n_people
+
+    # If all cells are empty, i.e. if there are no personnel logged
+    # Then printing 3 blank columns
+    if df[col].replace(r'^\s*$', np.nan, regex=True).isna().all():
+        max_n_people = 3
+
+    # Create a column for each personnel
+    for n in range(max_n_people):
+        df[col+str(n)] = ''
+
+    # Divide personnel into separate columns
+    for idx, row in df.iterrows():
+        pis = row[col].split(' | ')
+        for n, pi in enumerate(pis):
+            df[col+str(n)][idx] = pi
+
+    return df, max_n_people
 
 class Variable_sheet(object):
     """
@@ -136,7 +180,10 @@ def derive_content(mfield, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CA
     elif 'derive_from_table' in mfield.keys():
         if mfield['derive_from_table'] == 'cruise_details':
             df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
-            content = df[mfield['name']][0]
+            try:
+                content = df[mfield['name']][0]
+            except:
+                content = ''
         else:
             content = ''
 
@@ -470,7 +517,6 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
 
         if 'default' in mfield.keys():
             content = mfield['default']
-            print(content, type(content))
         elif 'derive_from' in mfield.keys():
             content = derive_content(mfield, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
         else:
@@ -670,7 +716,10 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
         if field['name'] in fields_list:
 
             if field['name'] in ['pi_details','recordedBy_details']:
-                duplication = 3 # 3 copies of these columns
+                if type(data) == pd.core.frame.DataFrame:
+                    data, duplication = split_personnel_df(data, field['name'])
+                else:
+                    duplication = 3 # 3 copies of these columns
             else:
                 duplication = 1 # One copy of all other columns
 
@@ -753,18 +802,38 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                 ii = ii + 1
                 duplication = duplication - 1
 
-    # Write optional data to data sheet
     if type(data) == pd.core.frame.DataFrame:
-        for col_num, field in enumerate(data):
-            try:
-                if field in ['eventDate', 'start_date', 'end_date']:
-                    data_sheet.write_column(start_row,col_num,list(data[field]), date_format)
-                elif field in ['eventTime', 'start_time', 'end_time']:
-                    data_sheet.write_column(start_row,col_num,list(data[field]), time_format)
+        ii = 0 # loop over columns
+
+        for field in fields.fields:
+            if field['name'] in fields_list:
+                if field['name'] in ['pi_details','recordedBy_details']:
+                    if type(data) == pd.core.frame.DataFrame:
+                        data, duplication = split_personnel_df(data, field['name'])
+                    else:
+                        duplication = 3 # 3 copies of these columns
                 else:
-                    data_sheet.write_column(start_row,col_num,list(data[field]))
-            except:
-                pass
+                    duplication = 1 # One copy of all other columns
+
+                tot_duplicates = duplication
+
+                while duplication > 0:
+
+                    if field['name'] in data.columns:
+                        print(1,field['name'])
+                        if field['name'] in ['eventDate', 'start_date', 'end_date']:
+                            data_sheet.write_column(start_row,ii,list(data[field['name']]), date_format)
+                        elif field['name'] in ['eventTime', 'start_time', 'end_time']:
+                            data_sheet.write_column(start_row,ii,list(data[field['name']]), time_format)
+                        elif field['name'] in ['pi_details','recordedBy_details']:
+                            print(2,field['name'])
+                            n = tot_duplicates - duplication
+                            data_sheet.write_column(start_row,ii,list(data[field['name']+str(n)]), time_format)
+                        else:
+                            data_sheet.write_column(start_row,ii,list(data[field['name']]))
+
+                    ii = ii + 1
+                    duplication = duplication - 1
 
     # Add header, done after the other to get correct format
     data_sheet.write(0, 0, '', header_format)

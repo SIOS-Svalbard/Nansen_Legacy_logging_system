@@ -21,14 +21,14 @@ from math import isnan
 
 logsamples = Blueprint('logsamples', __name__)
 
-@logsamples.route('/editActivity/<ID>', methods=['GET'])
+@logsamples.route('/editActivity/id=<ID>', methods=['GET'])
 def edit_activity_page(ID):
     return render_template(
     "addActivity.html",
     ID=ID
     )
 
-@logsamples.route('/editActivity/form/<ID>', methods=['GET', 'POST'])
+@logsamples.route('/editActivity/form/id=<ID>', methods=['GET', 'POST'])
 def edit_activity_form(ID):
 
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
@@ -248,7 +248,7 @@ def edit_activity_form(ID):
     isnan=isnan
     )
 
-@logsamples.route('/logSamples/<ID>', methods=['GET', 'POST'])
+@logsamples.route('/logSamples/parentid=<ID>', methods=['GET', 'POST'])
 def log_samples(ID):
     # Get children
     if ID != 'addNew':
@@ -263,13 +263,11 @@ def log_samples(ID):
     sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
     gearType = sample_metadata_df['geartype'].item()
 
-    recommendedChildGears = find_recommended_child_gears(gearType, gear_types_df)
     recommendedChildSamples = find_recommended_child_sample_types(gearType, gear_types_df)
 
     return render_template(
     "logSamples.html",
     ID=ID,
-    recommendedChildGears=recommendedChildGears,
     recommendedChildSamples=recommendedChildSamples,
     children_list_of_dics=children_list_of_dics,
     sample_types_df=sample_types_df,

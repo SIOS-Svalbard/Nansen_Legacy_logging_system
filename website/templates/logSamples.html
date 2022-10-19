@@ -7,19 +7,13 @@
   <h4>Suggestions</h4><br>
 
   <div class="container">
-    {% for gear in recommendedChildGears %}
-      <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
-        {{ gear }}
-      </button>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    {% endfor %}
-  </div>
-  <br>
-  <div class="container">
     {% for sample in recommendedChildSamples %}
-      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#exampleModal">
+      <a
+        class="btn btn-primary"
+        href="/logSamples/parentid={{ ID }}/chooseSampleFields/sampletype={{ sample }}"
+        role="button">
         {{ sample }}
-      </button>
+      </a>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endfor %}
   </div>

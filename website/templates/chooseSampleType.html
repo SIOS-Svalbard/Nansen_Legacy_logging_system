@@ -18,7 +18,7 @@
          {% for idx, row in sample_types_df.iterrows() %}
            <a
              class="btn btn-primary"
-             href="/editActivity/form/{{row_}}"
+             href="/logSamples/parentid={{ ID }}/chooseSampleFields/sampletype={{ row['sampletype'] }}"
              role="button">
              {{ row['sampletype'] }}
            </a>
