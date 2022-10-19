@@ -142,13 +142,13 @@ def missing_metadata():
         fields_to_submit = list(set(fields_to_submit))
 
         if 'pi_details' in fields_to_submit:
-            df_to_submit[['pi_name','pi_email','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
             fields_to_submit.remove('pi_details')
-            fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_institution']
+            fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
         if 'recordedBy_details' in fields_to_submit:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
+            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
             fields_to_submit.remove('recordedBy_details')
-            fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
+            fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
         for col in df_to_submit.columns:
             if col not in fields_to_submit and col != 'id':

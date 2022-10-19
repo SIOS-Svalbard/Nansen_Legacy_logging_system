@@ -25,7 +25,7 @@
           {% if field == 'id' %}
             <a
               class="btn btn-primary"
-              href="/editActivity/form/{{value['values'][row_num]}}"
+              href="/editActivity/form/id={{value['values'][row_num]}}"
               role="button">
               View/edit
             </a>
@@ -33,7 +33,7 @@
           <td>
             <a
               class="btn btn-warning"
-              href="/logSamples/{{value['values'][row_num]}}"
+              href="/logSamples/parentid={{value['values'][row_num]}}"
               role="button">
               Log samples
             </a>

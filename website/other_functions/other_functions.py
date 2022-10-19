@@ -6,7 +6,7 @@ Created on Tue May 03 08:56:15 2022
 @author: lukem
 """
 
-from math import sin, cos, sqrt, atan2, radians
+from math import sin, cos, sqrt, atan2, radians, isnan
 
 def distanceCoordinates(lat1,lon1,lat2, lon2):
     '''
@@ -60,6 +60,9 @@ def split_personnel_list(personnel, df_personnel):
     if type(personnel) == str:
         personnel = [personnel]
 
+    if type(personnel) == float:
+        personnel = []
+
     for person in personnel:
         if person != 'Choose...' and person != '' and type(person) == str:
             person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()
@@ -74,10 +77,16 @@ def split_personnel_list(personnel, df_personnel):
             personnel_orcids_list.append(person_orcid)
             personnel_institutions_list.append(person_institution)
 
-    personnel_names = " | ".join(personnel_names_list)
-    personnel_emails = " | ".join(personnel_emails_list)
-    personnel_orcids = " | ".join(personnel_orcids_list)
-    personnel_institutions = " | ".join(personnel_institutions_list)
+    if type(personnel) == float:
+        personnel_names = ''
+        personnel_emails = ''
+        personnel_orcids = ''
+        personnel_institutions = ''
+    else:
+        personnel_names = " | ".join(personnel_names_list)
+        personnel_emails = " | ".join(personnel_emails_list)
+        personnel_orcids = " | ".join(personnel_orcids_list)
+        personnel_institutions = " | ".join(personnel_institutions_list)
 
     return personnel_names, personnel_emails, personnel_orcids, personnel_institutions
 

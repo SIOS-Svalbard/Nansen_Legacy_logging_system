@@ -42,9 +42,9 @@
       </div>
     </div>
     <div class=col-7 offset-1">
-      <div class="row">
+      <!--<div class="row">
         <img src="..." class="img-fluid border border-dark" alt="Map of cruise path and stations">
-      </div>
+      </div>-->
     </div>
   </div>
 
@@ -58,7 +58,7 @@
     {% if missing %}
     <a class="btn btn-danger btn-lg" href="/missingMetadata" role="button">Register missing metadata</a>
     {% endif %}
-    <a class="btn btn-secondary btn-lg" href="/editActivity/addNew" role="button">Add/Edit activities</a>
+    <a class="btn btn-secondary btn-lg" href="/editActivity/id=addNew" role="button">Add/Edit activities</a>
   </div>
 
   {% if num_activities == 0 %}
@@ -91,13 +91,13 @@
             <td>
               <a
                 class="btn btn-primary"
-                href="/editActivity/form/{{row_}}"
+                href="/editActivity/form/id={{row_}}"
                 role="button">
                 View/Edit
               </a>
             </td>
             <td>
-              <a class="btn btn-warning" href="/logSamples/{{row_}}" role="button">Log samples</a>
+              <a class="btn btn-warning" href="/logSamples/parentid={{row_}}" role="button">Log samples</a>
             </td>
           {% elif col == 'message' %}
             <td>
@@ -115,7 +115,7 @@
         {% endfor %}
       </tbody>
     </table>
-    <a class="btn btn-secondary btn-lg btn-block" href="/editActivity/addNew" role="button">Add/Edit activities</a>
+    <a class="btn btn-secondary btn-lg btn-block" href="/editActivity/id=addNew" role="button">Add/Edit activities</a>
   {% endif %}
 
 </div>

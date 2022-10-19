@@ -139,7 +139,7 @@ def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CAT
         if n != 0:
             string_4 = string_4[:-2] + "'"
 
-        if metadata_df != False:
+        if isinstance(metadata_df, pd.DataFrame):
             # METADATA INTO METADATA HSTORE
             n = 0
             for metadata_field in metadata_fields.metadata_fields:
@@ -202,7 +202,7 @@ def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_C
             string_4 = string_4[:-2] + "])"
 
         # METADATA HSTORE FIELDS
-        if metadata_df != False:
+        if isinstance(metadata_df, pd.DataFrame):
             n = 0
             for metadata_field in metadata_fields.metadata_fields:
                 if metadata_field['name'] in metadata_df.columns and metadata_df[metadata_field['name']].item() != 'NULL':

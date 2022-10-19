@@ -1,0 +1,31 @@
+<tr>
+  <td>
+    {{field['disp_name']}}
+    <img
+      src="{{ url_for('static', filename='images/info.png')}}"
+      alt="..."
+      height="20"
+      title="{{ field['description'] }}"
+    >
+  </td>
+  <td class="text-center">
+    {% if key not in ['id', 'catalogNumber'] %}
+    <input
+      class="form-check-input"
+      type="checkbox"
+      name="{{ key }}"
+      id="{{ key }}"
+      value="same"
+      {% if 'same' in field['checked'] %}checked{% endif %}>
+    {% endif %}
+  </td>
+  <td class="text-center">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      name="{{ key }}"
+      id="{{ key }}"
+      value="vary"
+      {% if 'vary' in field['checked'] %}checked{% endif %}>
+  </td>
+</tr>

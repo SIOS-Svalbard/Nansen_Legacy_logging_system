@@ -64,6 +64,14 @@
         "vocabURI": ""
     },
     {
+        "id": "7c32dd16-bfe1-11ec-9d64-0242ac120002",
+        "sampleType": "L-ADCP",
+        "comment": "",
+        "group": "Gear",
+        "vocabLabel": "",
+        "vocabURI": ""
+    },
+    {
         "id": "ff6b7874-bfe5-11ec-9d64-0242ac120002",
         "sampleType": "Macrofauna",
         "comment": "",
@@ -150,6 +158,14 @@
         "group": "",
         "vocabLabel": "",
         "vocabURI": ""
+    },
+    {
+        "id": "7c32ed6a-bfe1-11ec-9d64-0242ac120002",
+        "sampleType": "Niskin",
+        "comment": "",
+        "group": "Gear",
+        "vocabLabel": "Niskin bottle",
+        "vocabURI": "http://vocab.nerc.ac.uk/collection/L22/current/TOOL0412/"
     },
     {
         "id": "ff6b94bc-bfe5-11ec-9d64-0242ac120002",
