@@ -64,6 +64,14 @@
         "vocabURI": ""
     },
     {
+        "id": "ff6b967e-bfe5-11ec-9d64-0242ac120002",
+        "sampleType": "Image",
+        "comment": "",
+        "group": "Media",
+        "vocabLabel": "",
+        "vocabURI": ""
+    },
+    {
         "id": "7c32dd16-bfe1-11ec-9d64-0242ac120002",
         "sampleType": "L-ADCP",
         "comment": "",
@@ -100,6 +108,14 @@
         "sampleType": "Meiofauna",
         "comment": "",
         "group": "Organism",
+        "vocabLabel": "",
+        "vocabURI": ""
+    },
+    {
+        "id": "ff6b847c-bfe5-11ec-9d64-0242ac120002",
+        "sampleType": "Melt pond",
+        "comment": "Used to log an entire meltpond that was sampled",
+        "group": "Water, Ice and Snow",
         "vocabLabel": "",
         "vocabURI": ""
     },
@@ -172,14 +188,6 @@
         "sampleType": "Piston core section",
         "comment": "Piston core section",
         "group": "",
-        "vocabLabel": "",
-        "vocabURI": ""
-    },
-    {
-        "id": "ff6b967e-bfe5-11ec-9d64-0242ac120002",
-        "sampleType": "Image",
-        "comment": "",
-        "group": "Media",
         "vocabLabel": "",
         "vocabURI": ""
     },
