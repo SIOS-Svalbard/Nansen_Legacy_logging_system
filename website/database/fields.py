@@ -1548,7 +1548,7 @@ Integer >= 0''',
                       'input_message': 'The analysis the sea ice core is intended for'
                   }
                   },
-    {'name': 'seaIceCoreLengthInMeters',
+    {'name': 'seaIceCoreLengthInCentimeters',
                             'disp_name': 'Sea Ice Core Length (cm)',
                             'description': '''Sea ice core length in decimal centimeters.
 Float number larger than 0 ''',
@@ -1567,7 +1567,7 @@ Float number larger than 0 ''',
                                 'error_message': 'Float > 0'
                             }
                             },
-    {'name': 'seaIceThicknessInMeters',
+    {'name': 'seaIceThicknessInCentimeters',
                            'disp_name': 'Sea Ice Thickness (cm)',
                            'description': '''Sea ice thickness in decimal centimeters.
 Float number larger than 0 ''',
@@ -1586,7 +1586,7 @@ Float number larger than 0 ''',
                                'error_message': 'Float > 0'
                            }
                            },
-    {'name': 'seaIceFreeboardInMeters',
+    {'name': 'seaIceFreeboardInCentimeters',
                            'disp_name': 'Sea Ice Freeboard (cm)',
                            'description': '''The height of the sea ice surface relative to the adjacent sea in decimal centimeters.
 Float number larger than 0 ''',
