@@ -662,10 +662,22 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     good = True
     errors = []
 
+    recordedBy_field_count = 0
+    pi_field_count = 0
+
     for req in required:
         if req not in data.columns:
             good = False
-            errors.append(f'Required field "{req}" is missing')
+            if req in ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']:
+                if pi_field_count == 0:
+                    errors.append(f'Required field "pi_details" is missing')
+                    pi_field_count = pi_field_count + 1
+            elif req in ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']:
+                if recordedBy_field_count == 0:
+                    errors.append(f'Required field "recordedBy_details" is missing')
+                    recordedBy_field_count = recordedBy_field_count + 1
+            else:
+                errors.append(f'Required field "{req}" is missing')
 
     # INHERIT BEFORE CHECKER SO COLUMNS MUST BE THERE REGARDLESS OF WHETHER THERE IS A PARENTID
     unknown_columns = []

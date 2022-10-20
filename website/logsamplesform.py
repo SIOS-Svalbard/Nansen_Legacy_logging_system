@@ -74,6 +74,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         val['requirements'] = 'recommended'
     for key, val in added_fields_dic.items():
         val['requirements'] = 'optional'
+
     setup_fields_dic = {**required_fields_dic, **recommended_fields_dic, **added_fields_dic}
     all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 
@@ -87,6 +88,23 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         gearType = sampleType
     else:
         gearType = None
+
+    for key, val in setup_fields_dic.items():
+
+        if userSetup[key] == 'same':
+            if key == 'sampleType':
+                val['values'] = sampleType
+            elif key == 'gearType':
+                val['values'] = gearType
+            else:
+                val['values'] = ''
+        elif userSetup[key] == 'vary':
+            if key == 'sampleType':
+                val['values'] = [sampleType] * int(num_samples)
+            elif key == 'gearType':
+                val['values'] = [gearType] * int(num_samples)
+            else:
+                val['values'] = [None] * int(num_samples)
 
     parent_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, parentID)
     parent_details = {}
@@ -103,6 +121,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     'minimumDepthInMeters',
     'maximumDepthInMeters'
     ]
+
     for parent_field in parent_fields:
         parent_details[parent_field] = all_fields_dic[parent_field]
         parent_details[parent_field]['value'] = parent_df[parent_field.lower()][0]
@@ -110,6 +129,44 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     if request.method == 'POST':
 
         form_input = request.form.to_dict(flat=False)
+
+        df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+
+        cols = userSetup.keys()
+
+        # Initialising dataframe
+        df_to_submit = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
+
+        df_to_submit['parentID'] = parentID
+        fields_to_submit = []
+        rows = list(range(int(num_samples)))
+
+        for key, value in form_input.items():
+
+            if '|' not in key and key not in ['submit','labelType', 'movefieldtovary', 'movefieldtosame']:
+                fields_to_submit.append(key)
+                if key in ['pi_details','recordedBy_details']:
+                    df_to_submit[key] = ' | '.join(value)
+                    setup_fields_dic[key]['values'] = ' | '.join(value)
+                else:
+                    df_to_submit[key] = value[0]
+                    setup_fields_dic[key]['values'] = value[0]
+
+            if '|' in key and value != ['']:
+                field, row = key.split('|')
+                fields_to_submit.append(field)
+                row = int(row)
+
+                if row in rows:
+                    if len(value) == 1 and field not in ['pi_details', 'recordedBy_details']:
+                        df_to_submit[field][row] = value[0]
+                        setup_fields_dic[field]['values'][row] = value[0]
+                    elif field in ['pi_details','recordedBy_details']:
+                        df_to_submit[field][row] = value
+                        setup_fields_dic[field]['values'][row] = value
+                    elif len(value) == 0:
+                        df_to_submit[field][row] = ''
+                        setup_fields_dic[field]['values'][row] = ''
 
         if 'movefieldtovary' in form_input.keys():
             fieldtovary = form_input['movefieldtovary'][0]
@@ -151,37 +208,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
             if form_input['submit'] != ['printLabels']:
                 form_input.pop('labelType')
-
-            df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
-
-            cols = userSetup.keys()
-
-            # Initialising dataframe
-            df_to_submit = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
-
-            df_to_submit['parentID'] = parentID
-            fields_to_submit = []
-            rows = list(range(int(num_samples)))
-
-            for key, value in form_input.items():
-                if '|' not in key and key != 'submit':
-                    fields_to_submit.append(key)
-                    if key in ['pi_details','recordedBy_details']:
-                        df_to_submit[key] = ' | '.join(value)
-                    else:
-                        df_to_submit[key] = value[0]
-
-                if '|' in key and value != ['']:
-                    field, row = key.split('|')
-                    fields_to_submit.append(field)
-                    row = int(row)
-                    if row in rows:
-                        if len(value) == 1 and field not in ['pi_details', 'recordedBy_details']:
-                            df_to_submit[field][row] = value[0]
-                        elif field in ['pi_details','recordedBy_details']:
-                            df_to_submit[field][row] = value
-                        elif len(value) == 0:
-                            df_to_submit[field][row] = ''
 
             if form_input['submit'] == ['submitForm']:
 

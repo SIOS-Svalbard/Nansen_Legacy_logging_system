@@ -44,19 +44,26 @@
             {% if field in ['recordedBy_details', 'pi_details'] %}
               <select multiple class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
                 {% for person in value['source'] %}
-                  <option>{{person}}</option>
+                  {% if person in value['values'] %}
+                    <option selected="selected">{{person}}</option>
+                  {% else %}
+                    <option>{{person}}</option>
+                  {% endif %}
                 {% endfor %}
               </select>
             {% else %}
               <select class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
                 <option selected="selected">
-                  {% if field == 'sampleType' %}
+                  {{ value['values'] }}
+                  <!--{% if value[values] != [] %}
+                    {{ value[values] }}
+                  {% elif field == 'sampleType' %}
                     {{ sampleType }}
                   {% elif field == 'gearType' %}
                     {{ gearType }}
                   {% else %}
                     None
-                  {% endif %}
+                  {% endif %}-->
                 </option>
                 {% for option in value['source'] %}
                   <option>{{option}}</option>
@@ -65,28 +72,28 @@
             {% endif %}
 
           {% elif value['format'] == 'date' %}
-            <input type="date" class="form-control" id="{{ field }}" name="{{ field }}">
+            <input type="date" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
 
           {% elif value['format'] == 'time' %}
-            <input type="time" class="form-control" id="{{ field }}" name="{{ field }}">
+            <input type="time" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
             <button type="button" onclick="document.getElementById('{{ field }}').value = ''">Remove time</button>
 
           {% elif value['format'] == 'double precision' %}
             {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-            <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
             {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
-            <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
             {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
-            <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
             {% else %}
-            <input type="number" step=0.0001 class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="number" step=0.0001 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
             {% endif %}
 
           {% elif value['format'] == 'int' %}
-            <input type="number" step=1 class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="number" step=1 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
 
           {% else %}
-            <input type="text" class="form-control" name="{{ field }}" id="{{ field }}">
+            <input type="text" class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
 
           {% endif %}
         </div>
