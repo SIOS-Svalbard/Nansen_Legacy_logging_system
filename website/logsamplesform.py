@@ -104,7 +104,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             elif key == 'gearType':
                 val['values'] = [gearType] * int(num_samples)
             else:
-                val['values'] = [None] * int(num_samples)
+                val['values'] = [''] * int(num_samples)
 
     parent_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, parentID)
     parent_details = {}
@@ -162,7 +162,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         df_to_submit[field][row] = value[0]
                         setup_fields_dic[field]['values'][row] = value[0]
                     elif field in ['pi_details','recordedBy_details']:
-                        df_to_submit[field][row] = value
+                        df_to_submit[field][row] = ' | '.join(value)
                         setup_fields_dic[field]['values'][row] = value
                     elif len(value) == 0:
                         df_to_submit[field][row] = ''
@@ -409,6 +409,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             #except:
                             #    flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
+    for key, val in setup_fields_dic.items():
+        print('\n\n',key,'\n',val,'\n')
     return render_template(
     "logSamplesForm.html",
     parentID=parentID,

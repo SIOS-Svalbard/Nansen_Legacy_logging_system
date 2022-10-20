@@ -37,10 +37,10 @@ def missing_metadata():
     check_for_missing = [c.lower() for c in check_for_missing]
     if 'pi_details' in check_for_missing:
         check_for_missing.remove('pi_details')
-        check_for_missing = check_for_missing + ['pi_name', 'pi_email', 'pi_institution']
+        check_for_missing = check_for_missing + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
     if 'recordedby_details' in check_for_missing:
         check_for_missing.remove('recordedby_details')
-        check_for_missing = check_for_missing + ['recordedby_name', 'recordedby_email', 'recordedby_institution']
+        check_for_missing = check_for_missing + ['recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']
 
     activities_df['bool'] = activities_df[check_for_missing].isna().any(axis = 1)
     activities_df = activities_df.loc[activities_df['bool'] == True]
@@ -91,10 +91,10 @@ def missing_metadata():
 
         if 'pi_details' in required:
             required.remove('pi_details')
-            required = required + ['pi_name', 'pi_email', 'pi_institution']
+            required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
         if 'recordedBy_details' in required:
             required.remove('recordedBy_details')
-            required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
+            required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
         fields_to_submit = []
 
@@ -108,10 +108,10 @@ def missing_metadata():
 
             for key, val in form_input.items():
                 if key == 'bulkrecordedby':
-                    df_to_submit['recordedBy_details'] = val
+                    df_to_submit['recordedBy_details'] = ' | '.join(val)
                     fields_to_submit.append('recordedBy_details')
                 elif key == 'bulkpidetails':
-                    df_to_submit['pi_details'] = val
+                    df_to_submit['pi_details'] = ' | '.join(val)
                     fields_to_submit.append('pi_details')
 
         else:
@@ -129,7 +129,7 @@ def missing_metadata():
                         if len(value) == 1 and key not in ['pi_details', 'recordedBy_details']:
                             df_to_submit[field][row] = value[0]
                         elif key in ['pi_details','recordedBy_details']:
-                            df_to_submit[field][row] = value
+                            df_to_submit[field][row] = ' | '.join(value)
                         elif len(value) == 0:
                             df_to_submit[field][row] = ''
 

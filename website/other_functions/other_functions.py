@@ -58,7 +58,10 @@ def split_personnel_list(personnel, df_personnel):
     personnel_institutions_list = []
 
     if type(personnel) == str:
-        personnel = [personnel]
+        if '|' in personnel:
+            personnel = personnel.split(' | ')
+        else:
+            personnel = [personnel]
 
     if type(personnel) == float:
         personnel = []

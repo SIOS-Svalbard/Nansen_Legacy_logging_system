@@ -120,9 +120,9 @@ def submit_spreadsheet():
                 else:
 
                     for field in fields.fields:
-                        if field['name'] in required or field['name'] in recommended:
+                        if field['name'] in data_df.columns:
                             if field['format'] in ['int', 'double precision', 'time', 'date']:
-                                data_df[field['name']] = data_df[field['name']].replace([''], 'NULL')
+                                data_df[field['name']] = data_df[field['name']].replace('', 'NULL')
                                 data_df[field['name']].fillna('NULL', inplace=True)
                             elif field['name'] == 'id':
                                 data_df[field['name']].fillna('', inplace=True)

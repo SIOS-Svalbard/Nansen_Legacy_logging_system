@@ -218,13 +218,14 @@ def edit_activity_form(ID):
                     flash('Activity edited!', category='success')
 
                     children_IDs = find_all_children([ID],DBNAME, METADATA_CATALOGUE)
-                    df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
-                    df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
-                    df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
-                    metadata_df = False
-                    update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
+                    if len(children_IDs) > 0:
+                        df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
+                        df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
+                        df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
+                        metadata_df = False
+                        update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                    flash('Relevant metadata copied to children', category='success')
+                        flash('Relevant metadata copied to children', category='success')
 
                 return redirect(url_for('views.home'))
 

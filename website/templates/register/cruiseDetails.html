@@ -12,12 +12,13 @@
         name="cruiseName"
         placeholder="Full name of cruise"
         value="{{ current_cruise_name }}"
+        required
       />
     </div>
     <div class="row">
       <div class="col">
         <label for="cruise_project">Project</label><br>
-        <select class="form-select" id="project" name="project" aria-label="Default select example">
+        <select class="form-select" id="project" name="project" aria-label="Default select example" required>
           <option selected>{{ current_cruise_project }}</option>
           {% for project in projects %}
             <option>{{project}}</option>
@@ -31,7 +32,7 @@
     <div class="row">
       <div class="col">
         <label for="cruise_leader">Cruise leader</label><br>
-        <select class="form-select" id="cruiseLeader" name="cruiseLeader" aria-label="Default select example">
+        <select class="form-select" id="cruiseLeader" name="cruiseLeader" aria-label="Default select example" required>
           <option selected>{{ current_cruise_leader }}</option>
           {% for person in personnel %}
             <option>{{person}}</option>

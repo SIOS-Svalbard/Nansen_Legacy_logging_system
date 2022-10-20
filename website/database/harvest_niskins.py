@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import re
 import uuid
+import math
 from website.configurations.get_configurations import get_fields
 from website.database.get_data import get_registered_activities, get_all_ids
 from website.database.propegate_parents_to_children import propegate_parents_to_children
@@ -130,8 +131,8 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
     df_cruise = pd.DataFrame(columns=columns)
     df_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)
     registered_statids = list(set(df_activities['statid']))
+    registered_statids = [int(statid) for statid in registered_statids if math.isnan(statid) == False ]
     registered_statids = [str(r).zfill(4) for r in registered_statids]
-
     registered_ids = get_all_ids(DBNAME, METADATA_CATALOGUE)
 
     for ctd_file in sorted(os.listdir(BTL_FILES_FOLDER)):
@@ -148,7 +149,7 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
     if len(df_cruise) > 0:
 
         df_cruise['gearType'] = 'Niskin'
-        df_cruise['sampleType'] = 'Niskin Bottle'
+        df_cruise['sampleType'] = 'Niskin'
         df_cruise['eventID'] = df_cruise['id']
 
         for col in ['recordedBy_details', 'pi_details']:

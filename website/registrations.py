@@ -47,24 +47,29 @@ def cruiseDetails():
         current_cruise_comment = ''
 
     if request.method == 'POST':
-        cruise_leader = request.form.get('cruiseLeader')
-        co_cruise_leader = request.form.get('coCruiseLeader')
-        project = request.form.get('project').capitalize()
-        cruise_name = request.form.get('cruiseName').capitalize()
-        comment = request.form.get('comment')
-        print('BEFORE')
-        print(comment)
-        print('AFTER')
 
+        cruise_leader = request.form.get('cruiseLeader')
         cruise_leader_name = cruise_leader.split(' (')[0]
-        cruise_leader_id = df.loc[df['personnel'] == cruise_leader, 'id'].iloc[0]
+        cruise_leader_orcid = df.loc[df['personnel'] == cruise_leader, 'orcid'].iloc[0]
         cruise_leader_email = df.loc[df['personnel'] == cruise_leader, 'email'].iloc[0]
         cruise_leader_institution = df.loc[df['personnel'] == cruise_leader, 'institution'].iloc[0]
 
-        co_cruise_leader_name = co_cruise_leader.split(' (')[0]
-        co_cruise_leader_id = df.loc[df['personnel'] == co_cruise_leader, 'id'].iloc[0]
-        co_cruise_leader_email = df.loc[df['personnel'] == co_cruise_leader, 'email'].iloc[0]
-        co_cruise_leader_institution = df.loc[df['personnel'] == co_cruise_leader, 'institution'].iloc[0]
+        try:
+            co_cruise_leader = request.form.get('coCruiseLeader')
+            co_cruise_leader_name = co_cruise_leader.split(' (')[0]
+            co_cruise_leader_orcid = df.loc[df['personnel'] == co_cruise_leader, 'orcid'].iloc[0]
+            co_cruise_leader_email = df.loc[df['personnel'] == co_cruise_leader, 'email'].iloc[0]
+            co_cruise_leader_institution = df.loc[df['personnel'] == co_cruise_leader, 'institution'].iloc[0]
+        except:
+            co_cruise_leader = ''
+            co_cruise_leader_name = ''
+            co_cruise_leader_orcid = ''
+            co_cruise_leader_email = ''
+            co_cruise_leader_institution = ''
+
+        project = request.form.get('project').capitalize()
+        cruise_name = request.form.get('cruiseName').capitalize()
+        comment = request.form.get('comment')
 
         conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
         cur = conn.cursor()
@@ -73,11 +78,11 @@ def cruiseDetails():
             cur.execute(f'''UPDATE {CRUISE_DETAILS_TABLE} SET
             cruise_name = '{cruise_name}',
             project = '{project}',
-            cruise_leader_id = '{cruise_leader_id}',
+            cruise_leader_orcid = '{cruise_leader_orcid}',
             cruise_leader_name = '{cruise_leader_name}',
             cruise_leader_institution = '{cruise_leader_institution}',
             cruise_leader_email = '{cruise_leader_email}',
-            co_cruise_leader_id = '{co_cruise_leader_id}',
+            co_cruise_leader_orcid = '{co_cruise_leader_orcid}',
             co_cruise_leader_name = '{co_cruise_leader_name}',
             co_cruise_leader_institution = '{co_cruise_leader_institution}',
             co_cruise_leader_email = '{co_cruise_leader_email}',
@@ -91,11 +96,11 @@ def cruiseDetails():
             cruise_number,
             vessel_name,
             project,
-            cruise_leader_id,
+            cruise_leader_orcid,
             cruise_leader_name,
             cruise_leader_institution,
             cruise_leader_email,
-            co_cruise_leader_id,
+            co_cruise_leader_orcid,
             co_cruise_leader_name,
             co_cruise_leader_institution,
             co_cruise_leader_email,
@@ -107,11 +112,11 @@ def cruiseDetails():
             '{CRUISE_NUMBER}',
             '{VESSEL_NAME}',
             '{project}',
-            '{cruise_leader_id}',
+            '{cruise_leader_orcid}',
             '{cruise_leader_name}',
             '{cruise_leader_institution}',
             '{cruise_leader_email}',
-            '{co_cruise_leader_id}',
+            '{co_cruise_leader_orcid}',
             '{co_cruise_leader_name}',
             '{co_cruise_leader_institution}',
             '{co_cruise_leader_email}',

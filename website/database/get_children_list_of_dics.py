@@ -30,12 +30,10 @@ def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
 
     for sampleType in sampleTypes:
 
-        if sampleType == 'Niskin Bottle':
-            configuration = 'niskin'
-        else:
-            configuration = 'default'
-
-        children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=configuration, DBNAME=DBNAME)
+        try:
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=sampleType, DBNAME=DBNAME)
+        except:
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration='default', DBNAME=DBNAME)
         if 'id' in children_required_fields_dic.keys():
             pass
         elif 'id' in children_recommended_fields_dic.keys():
@@ -49,6 +47,14 @@ def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
 
         sampleType_df['pi_details'] = sampleType_df.apply(lambda row : combine_personnel_details(row['pi_name'], row['pi_email']), axis=1)
         sampleType_df['recordedby_details'] = sampleType_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
+
+        # Could be useful to display hstore fields later
+        keys_to_remove = [] # Fields that are in hstore in PSQL metadata catalogue table
+        for key, val in children_required_fields_dic.items():
+            if key not in sampleType_df.columns:
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            del children_required_fields_dic[key]
 
         # Writing values to dictionary
         for key, val in children_required_fields_dic.items():
