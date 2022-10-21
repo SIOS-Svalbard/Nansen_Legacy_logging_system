@@ -1,4 +1,5 @@
 from website.database.get_data import get_children
+from website.database.expand_hstore import expand_hstore
 from website.configurations.get_configurations import get_fields
 from website.other_functions.other_functions import combine_personnel_details
 
@@ -48,17 +49,14 @@ def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
         sampleType_df['pi_details'] = sampleType_df.apply(lambda row : combine_personnel_details(row['pi_name'], row['pi_email']), axis=1)
         sampleType_df['recordedby_details'] = sampleType_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
 
-        # Could be useful to display hstore fields later
-        keys_to_remove = [] # Fields that are in hstore in PSQL metadata catalogue table
-        for key, val in children_required_fields_dic.items():
-            if key not in sampleType_df.columns:
-                keys_to_remove.append(key)
-        for key in keys_to_remove:
-            del children_required_fields_dic[key]
+        sampleType_df = expand_hstore(sampleType_df)
 
         # Writing values to dictionary
         for key, val in children_required_fields_dic.items():
-            val['values'] = sampleType_df[key.lower()].values.tolist()
+            try:
+                val['values'] = sampleType_df[key.lower()].values.tolist()
+            except:
+                val['values'] = sampleType_df[key].values.tolist()
 
         children_samples_list_of_dics.append(children_required_fields_dic)
 

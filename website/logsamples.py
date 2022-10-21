@@ -141,8 +141,14 @@ def edit_activity_form(ID):
         if request.form['submitbutton'] == 'submit':
 
             df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
-            form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
-            form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_orcid'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy_details'], df_personnel)
+            if 'pi_details' in form_input.keys():
+                form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
+            else:
+                form_input['pi_name'] = form_input['pi_email'] = form_input['pi_orcid'] = form_input['pi_institution'] = ''
+            if 'recordedBy_details' in form_input.keys():
+                form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_orcid'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy_details'], df_personnel)
+            else:
+                form_input['recordedBy_name'] = form_input['recordedBy_email'] = form_input['recordedBy_orcid'] = form_input['recordedBy_institution'] = ''
 
             for key in ['pi_details', 'recordedBy_details', 'submitbutton']:
                 if key in form_input.keys():
