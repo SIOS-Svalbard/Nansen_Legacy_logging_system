@@ -394,23 +394,21 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 if field['format'] == 'time' and field['name'] in df_to_submit.columns:
                                     df_to_submit[field['name']] = df_to_submit[field['name']].astype('object')
                                     df_to_submit[field['name']].fillna('NULL', inplace=True)
-                            #try:
+                            try:
 
-                            df_to_submit['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-                            df_to_submit['source'] = "Record uploaded from spreadsheet, filename " + f.filename
+                                df_to_submit['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                                df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                                df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
+                                df_to_submit['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                            insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                                insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
 
-                            flash('Data from file uploaded successfully!', category='success')
-                            return redirect(f'/logSamples/parentid={parentID}')
+                                flash('Data from file uploaded successfully!', category='success')
+                                return redirect(f'/logSamples/parentid={parentID}')
 
-                            #except:
-                            #    flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+                            except:
+                                flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
-    for key, val in setup_fields_dic.items():
-        print('\n\n',key,'\n',val,'\n')
     return render_template(
     "logSamplesForm.html",
     parentID=parentID,

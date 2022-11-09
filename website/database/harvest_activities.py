@@ -102,7 +102,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
     Returns single dataframe that includes details of all the activities
     '''
 
-    #Pull data from IMR API in json format. URL should match IMR API host.
+    # Pull data from IMR API in json format. URL should match IMR API host.
     try:
         url = "http://"+TOKTLOGGER+"/api/activities/inCurrentCruise?format=json"
         response = requests.get(url)

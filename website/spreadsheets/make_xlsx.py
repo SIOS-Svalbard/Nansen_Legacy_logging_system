@@ -149,10 +149,10 @@ def make_dict_of_fields():
         field_dict[field['name']] = new
     return field_dict
 
-def derive_content(mfield, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
+def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False):
     '''
     Derives values for the metadata sheet
-    based on metadata catalogue or cruise details table
+    based on dataframe for data sheet or cruise details table
 
     Parameters
     ----------
@@ -161,9 +161,9 @@ def derive_content(mfield, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CA
     DBNAME: string
         Name of the database where the metadata catalogue is hosted
         Default: False, for when template generate used independent of the database
-    METADATA_CATALOGUE: string
-        Name of the table of the metadata catalogue for the cruise
-        Default: False, for when template generate used independent of the database
+    data: pandas dataframe
+        Pandas dataframe of data to be written in data sheet
+        Default: False, for when template generated without data
     CRUISE_DETAILS_TABLE: string
         Name of the table of the cruise details for the cruise
         Default: False, for when template generate used independent of the database
@@ -173,12 +173,32 @@ def derive_content(mfield, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CA
     Content of the field to be printed on the metadata sheet upon creation
     '''
 
+    if 'derive_from' in mfield.keys() and type(data) == pd.core.frame.DataFrame and 'derive_from table' not in mfield.keys() and 'derive_by' in mfield.keys():
 
-    if DBNAME == False:
+        if 'derive_by' == 'min':
+            content = min(data[mfield['derive_from']])
+        elif 'derive_by' == 'max':
+            content = max(data[mfield['derive_from']])
+        elif 'derive_by' == 'up/down':
+            if 'maximumDepthInMeters' in data.columns and 'maximumElevationInMeters' in data.columns:
+                content = ''
+            elif 'maximumDepthInMeters' in data.columns:
+                content = 'down'
+            elif 'maximumElevationInMeters' in data.columns:
+                content = 'up'
+            else:
+                content = ''
+        elif 'derive_by' == 'concat':
+            content = '' # WORK OUT A SOLUTION FOR THIS
+        elif 'derive_by' == 'vocab':
+            content = '' # WORK OUT A SOLUTION FOR THIS
+
+    elif DBNAME == False:
         content = ''
 
     elif 'derive_from_table' in mfield.keys():
         if mfield['derive_from_table'] == 'cruise_details':
+            print('DBNAME',DBNAME)
             df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
             try:
                 content = df[mfield['name']][0]
@@ -518,7 +538,7 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
         if 'default' in mfield.keys():
             content = mfield['default']
         elif 'derive_from' in mfield.keys():
-            content = derive_content(mfield, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
+            content = derive_content(mfield, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE)
         else:
             content = ''
 
@@ -820,13 +840,11 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                 while duplication > 0:
 
                     if field['name'] in data.columns:
-                        print(1,field['name'])
                         if field['name'] in ['eventDate', 'start_date', 'end_date']:
                             data_sheet.write_column(start_row,ii,list(data[field['name']]), date_format)
                         elif field['name'] in ['eventTime', 'start_time', 'end_time']:
                             data_sheet.write_column(start_row,ii,list(data[field['name']]), time_format)
                         elif field['name'] in ['pi_details','recordedBy_details']:
-                            print(2,field['name'])
                             n = tot_duplicates - duplication
                             data_sheet.write_column(start_row,ii,list(data[field['name']+str(n)]), time_format)
                         else:
