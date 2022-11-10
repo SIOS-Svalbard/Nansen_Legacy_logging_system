@@ -102,13 +102,16 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
     Returns single dataframe that includes details of all the activities
     '''
 
-    #Pull data from IMR API in json format. URL should match IMR API host.
-    try:
-        url = "http://"+TOKTLOGGER+"/api/activities/inCurrentCruise?format=json"
-        response = requests.get(url)
-        json_activities = response.json()
-    except:
-        print("\nCould not connect to the Toktlogger\n")
+    # Pull data from IMR API in json format. URL should match IMR API host.
+    if TOKTLOGGER != False:
+        try:
+            url = "http://"+TOKTLOGGER+"/api/activities/inCurrentCruise?format=json"
+            response = requests.get(url)
+            json_activities = response.json()
+        except:
+            print("\nCould not connect to the Toktlogger\n")
+            json_activities = []
+    else:
         json_activities = []
 
     registered_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)['id'].values

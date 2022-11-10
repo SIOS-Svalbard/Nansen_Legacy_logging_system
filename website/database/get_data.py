@@ -62,3 +62,23 @@ def get_user_setup(DBNAME, setupName):
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     df = pd.read_sql(f"SELECT setup from user_field_setups where setupName = '{setupName}'", con=conn)
     return df['setup'][0]
+
+def get_samples_for_pi(DBNAME, METADATA_CATALOGUE, pi_email):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where position ('{pi_email}' IN pi_email) <> 0;", con=conn)
+    return df
+
+def get_samples_for_recordedby(DBNAME, METADATA_CATALOGUE, recordedby_email):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where position ('{recordedby_email}' IN recordedby_email) <> 0;", con=conn)
+    return df
+
+def get_samples_for_personnel(DBNAME, METADATA_CATALOGUE, personnel_email):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where position ('{personnel_email}' IN recordedby_email) <> 0 or position ('{personnel_email}' IN pi_email) <> 0;", con=conn)
+    return df
+
+def get_samples_for_sampletype(DBNAME, METADATA_CATALOGUE, sampletype):
+    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where sampletype = '{sampletype}'", con=conn)
+    return df

@@ -18,7 +18,6 @@ def get_fields(configuration, DBNAME=False):
     setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
     for setup in setups:
-        print(setup['name'], configuration)
         if setup['name'] == configuration:
             required_fields = setup['fields']['required']
             recommended_fields = setup['fields']['recommended']
