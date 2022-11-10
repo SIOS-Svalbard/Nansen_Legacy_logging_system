@@ -16,6 +16,7 @@ import os
 from argparse import Namespace
 from website.database.get_data import get_data, get_personnel_list
 import numpy as np
+from datetime import datetime
 
 DEBUG = 1
 
@@ -119,36 +120,6 @@ class Variable_sheet(object):
         self.current_column = self.current_column + 1
         return ref
 
-
-def make_dict_of_fields():
-    """
-    Makes a dictionary of the possible fields.
-    Does this by reading the fields list from the fields.py library
-    Returns
-    ---------
-    field_dict : dict
-        Dictionary of the possible fields
-        Contains a Field object under each name
-    """
-
-    field_dict = {}
-    for field in fields.fields:
-        field['name'] = field['name']
-        new = Field(field['name'], field['disp_name'])
-        if 'valid' in field:
-            new.set_validation(field['valid'])
-        if 'cell_format' in field:
-            new.set_cell_format(field['cell_format'])
-        if 'width' in field:
-            new.set_width(field['width'])
-        else:
-            new.set_width(len(field['disp_name']))
-        if 'long_list' in field:
-            new.set_long_list(field['long_list'])
-
-        field_dict[field['name']] = new
-    return field_dict
-
 def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False):
     '''
     Derives values for the metadata sheet
@@ -173,13 +144,48 @@ def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False)
     Content of the field to be printed on the metadata sheet upon creation
     '''
 
-    if 'derive_from' in mfield.keys() and type(data) == pd.core.frame.DataFrame and 'derive_from table' not in mfield.keys() and 'derive_by' in mfield.keys():
+    if 'derive_from' in mfield.keys() and type(data) == pd.core.frame.DataFrame and 'derive_from_table' not in mfield.keys() and 'derive_by' in mfield.keys():
+        if mfield['name'] == 'geospatial_vertical_min':
+            if 'minimumDepthInMeters' in data.columns and 'minimumElevationInMeters' in data.columns:
+                content = ''
+            elif 'minimumDepthInMeters' in data.columns:
+                data['minimumDepthInMeters'].replace('',np.nan,inplace=True)
+                content = np.nanmin(data['minimumDepthInMeters'])
+            elif 'minimumElevationInMeters' in data.columns:
+                data['minimumElevationInMeters'].replace('',np.nan,inplace=True)
+                content = np.nanmin(data['minimumElevationInMeters'])
+            else:
+                content = ''
+        elif mfield['name'] == 'geospatial_vertical_max':
+            if 'maximumDepthInMeters' in data.columns and 'maximumElevationInMeters' in data.columns:
+                content = ''
+            elif 'maximumDepthInMeters' in data.columns:
+                data['maximumDepthInMeters'].replace('',np.nan,inplace=True)
+                content = np.nanmax(data['maximumDepthInMeters'])
+            elif 'maxnimumElevationInMeters' in data.columns:
+                data['maximumElevationInMeters'].replace('',np.nan,inplace=True)
+                content = np.nanmax(data['maximumElevationInMeters'])
+            else:
+                content = ''
 
-        if 'derive_by' == 'min':
-            content = min(data[mfield['derive_from']])
-        elif 'derive_by' == 'max':
-            content = max(data[mfield['derive_from']])
-        elif 'derive_by' == 'up/down':
+        elif mfield['name'] == 'time_coverage_start':
+            data['eventDateTime'] = data['eventDate'].astype(str)+'T'+data['eventTime'].astype(str)+'Z'
+            data['eventDateTime'].replace('TZ','9999',inplace=True)
+            content = str(np.nanmin(data['eventDateTime']))
+        elif mfield['name'] == 'time_coverage_end':
+            data['eventDateTime'] = data['eventDate'].astype(str)+'T'+data['eventTime'].astype(str)+'Z'
+            data['endDateTime'] = data['endDate'].astype(str)+'T'+data['endTime'].astype(str)+'Z'
+            data['eventDateTime'].replace('TZ','0000',inplace=True)
+            data['endDateTime'].replace('TZ','0000',inplace=True)
+            content = str(np.nanmax(data[['eventDateTime','endDateTime']]))
+
+        elif mfield['derive_by'] == 'min':
+            data[mfield['derive_from']].replace('',np.nan,inplace=True)
+            content = np.nanmin(data[mfield['derive_from']])
+        elif mfield['derive_by'] == 'max':
+            data[mfield['derive_from']].replace('',np.nan,inplace=True)
+            content = np.nanmax(data[mfield['derive_from']])
+        elif mfield['derive_by'] == 'up/down':
             if 'maximumDepthInMeters' in data.columns and 'maximumElevationInMeters' in data.columns:
                 content = ''
             elif 'maximumDepthInMeters' in data.columns:
@@ -188,17 +194,54 @@ def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False)
                 content = 'up'
             else:
                 content = ''
-        elif 'derive_by' == 'concat':
-            content = '' # WORK OUT A SOLUTION FOR THIS
-        elif 'derive_by' == 'vocab':
-            content = '' # WORK OUT A SOLUTION FOR THIS
+        elif mfield['derive_by'] == 'concat':
+            if type(mfield['derive_from']) == list:
+                lst = []
+                for ii in mfield['derive_from']:
+                    lst = lst + list(data[ii])
+
+                unique_lst = list(set(lst)) # Only need unique values
+
+                for ii in unique_lst:
+                    if ' | ' in ii:
+                        # Splitting cells with multiple values separated by pipe, appending to list, removing original
+                        unique_lst = unique_lst + ii.split(' | ')
+                        unique_lst.remove(ii)
+
+                unique_lst = list(set(unique_lst)) # Checking still unique after splitting
+
+                content = ' | '.join(unique_lst)
+            else:
+                if mfield['name'] in ['instrument', 'instrument_vocabulary']:
+                    gears = list(set(data[mfield['derive_from']]))
+                    gears_df = get_data(DBNAME, 'gear_types')
+
+                    if mfield['name'] == 'instrument':
+                        instruments = []
+                        for gear in gears:
+                            vocabLabel = gears_df.loc[gears_df['geartype'] == gear, 'vocablabel'].item()
+                            if vocabLabel == '':
+                                instruments.append(gear)
+                            else:
+                                instruments.append(vocabLabel)
+                        content = ' | '.join(instruments)
+
+
+                    elif mfield['name'] == 'instrument_vocabulary':
+                        instrument_vocabs = []
+                        for gear in gears:
+                            vocabURI = gears_df.loc[gears_df['geartype'] == gear, 'vocaburi'].item()
+                            instrument_vocabs.append(vocabURI)
+                        content = ' | '.join(instrument_vocabs)
+
+                else:
+                    content = ' | '.join(list(set(data[mfield['derive_from']])))
 
     elif DBNAME == False:
         content = ''
 
     elif 'derive_from_table' in mfield.keys():
         if mfield['derive_from_table'] == 'cruise_details':
-            print('DBNAME',DBNAME)
             df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
             try:
                 content = df[mfield['name']][0]
@@ -300,7 +343,7 @@ def write_readme(args, workbook):
     sheet.write(1, 0, "README", header_format)
     sheet.set_row(1, 30)
 
-def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
+def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
     """
     Adds a metadata sheet to workbook
     Parameters
@@ -309,8 +352,10 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
         The input arguments
     workbook : xlsxwriter Workbook
         The workbook for the metadata sheet
+    data: pandas.core.frame.DataFrame
+        Optional parameter. Option to derive metadata from the data dataframe for the metadata dataframe.
     metadata_df: pandas.core.frame.DataFrame
-        Optional parameter. Option to add metadata from a dataframe to the 'metadata' sheet.
+        Optional parameter. Option to add metadata from an existing dataframe to the 'metadata' sheet.
     DBNAME: string
         Name of the database where the metadata catalogue is hosted
         Default: False, for when template generate used independent of the database
@@ -538,7 +583,7 @@ def write_metadata(args, workbook, metadata_df, DBNAME=False, CRUISE_DETAILS_TAB
         if 'default' in mfield.keys():
             content = mfield['default']
         elif 'derive_from' in mfield.keys():
-            content = derive_content(mfield, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE)
+            content = derive_content(mfield, data=data, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE)
         else:
             content = ''
 
@@ -680,7 +725,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
     workbook.formats[0].set_font_size(DEFAULT_SIZE)
 
     if metadata:
-        write_metadata(args, workbook, metadata_df, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
+        write_metadata(args, workbook, data, metadata_df, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
 
     # Create sheet for data
     data_sheet = workbook.add_worksheet('Data')
@@ -840,6 +885,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                 while duplication > 0:
 
                     if field['name'] in data.columns:
+                        data[field['name']].fillna('',inplace=True)
                         if field['name'] in ['eventDate', 'start_date', 'end_date']:
                             data_sheet.write_column(start_row,ii,list(data[field['name']]), date_format)
                         elif field['name'] in ['eventTime', 'start_time', 'end_time']:

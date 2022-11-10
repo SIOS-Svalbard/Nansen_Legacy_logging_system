@@ -83,6 +83,9 @@ def export_data():
         required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
         required = list(required_fields_dic.keys())
 
+        df_to_export.replace('nan', np.nan, inplace=True)
+        df_to_export.replace('NULL', np.nan, inplace=True)
+
         for field in fields.fields:
             # Column names come out of PSQL all lower case. Changing to make field names.
             if field['name'].lower() in df_to_export.columns and field['name'].lower() != field['name']:
@@ -105,13 +108,6 @@ def export_data():
         write_file(filepath, df_to_export.columns, metadata=True, conversions=True, data=df_to_export, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
         return send_file(filepath, as_attachment=True)
-
-
-
-
-
-
-
 
     return render_template(
     "exportData.html",

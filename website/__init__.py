@@ -4,39 +4,42 @@ from website.database.init_db import run as init_db
 import requests
 import numpy as np
 
-TOKTLOGGER = '172.16.0.147' # VM of toktlogger at UNIS on my laptop"
-VESSEL_NAME = 'Kronprins Haakon'
-url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
+# TOKTLOGGER = '172.16.0.147' # IP of VM of toktlogger"
+# url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
+TOKTLOGGER = False # Commented out if there is a TOKTLOGGER
+url = False
 DBNAME = 'lfnl_db'
 BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
 
-CRUISE_NUMBER = '87654321'
-VESSEL_NAME = 'Kronprins Haakon'
+CRUISE_NUMBER = '87654321' # Default value for testing purposes if no TOKTLOGGER
+VESSEL_NAME = 'Kronprins Haakon' # Default value for testing purposes if no TOKTLOGGER
 
-try:
-    response = requests.get(url)
-    json_cruise = response.json()
+if TOKTLOGGER != False:
+    try:
+        response = requests.get(url)
+        json_cruise = response.json()
 
-    CRUISE_NUMBER = json_cruise['cruiseNumber']
-    VESSEL_NAME = json_cruise['vesselName']
+        CRUISE_NUMBER = json_cruise['cruiseNumber']
+        VESSEL_NAME = json_cruise['vesselName']
 
-except:
-    print('\nCould not connect to the Toktlogger\n')
-    print('Please provide details to initialise the database for cruise.')
-    print('These details will be used to name the tables in the PSQL database')
+    except:
+        TOKTLOGGER = False
+        print('\nCould not connect to the Toktlogger\n')
+        print('Please provide details to initialise the database for cruise.')
+        print('These details will be used to name the tables in the PSQL database')
 
-    '''
-    Need to find a better way to manage when Toktlogger offline.
-    This current solution will prompt the user to input details below each time
-    this script runs.
-    A new table for the metadata catalogue will be created every time a different
-    cruise number is given.
-    Old activities and samples will disappear from the GUI - stored in different
-    tables in the database
-    Need to find a way of storing cruise number once given, to use every time
-    for the remainder of the current cruise only.
-    '''
-    CRUISE_NUMBER = input("CRUISE NUMBER > ")
+        '''
+        Need to find a better way to manage when Toktlogger offline.
+        This current solution will prompt the user to input details below each time
+        this script runs.
+        A new table for the metadata catalogue will be created every time a different
+        cruise number is given.
+        Old activities and samples will disappear from the GUI - stored in different
+        tables in the database
+        Need to find a way of storing cruise number once given, to use every time
+        for the remainder of the current cruise only.
+        '''
+        CRUISE_NUMBER = input("CRUISE NUMBER > ")
 
 METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
 CRUISE_DETAILS_TABLE = 'cruise_details_'+str(CRUISE_NUMBER)

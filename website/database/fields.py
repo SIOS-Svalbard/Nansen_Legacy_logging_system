@@ -288,7 +288,7 @@ This is in addition to the ID'''
     # ==============================================================================
     {'name': 'eventDate',
              'disp_name': 'Event Date (UTC)',
-             'description': 'Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10T09:46:24Z',
+             'description': 'Start date that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10',
              'inherit': True,
              'format': 'date',
              'grouping': 'Required',
@@ -301,7 +301,7 @@ This is in addition to the ID'''
                  'minimum': dt.date(2000, 1, 1),
                  'maximum': '=TODAY()+2',
                  'input_title': 'Event Date',
-                 'input_message': '''Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
+                 'input_message': '''Start date that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 2022-04-10''',
                  'error_title': 'Error',
                  'error_message': 'Not a valid date [2000-01-01, today + 2]'
              },
@@ -310,8 +310,8 @@ This is in addition to the ID'''
              }
              },
     {'name': 'eventTime',
-             'disp_name': 'Time (UTC)',
-             'description': 'Timestamp that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z',
+             'disp_name': 'Event Time (UTC)',
+             'description': 'Start time that the data were collected at. Should be in ISO8601 format, in UTC time, e.g. 09:46:24Z',
              'inherit': True,
              'format': 'time',
              'grouping': 'Required',
