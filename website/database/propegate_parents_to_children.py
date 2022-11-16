@@ -31,13 +31,13 @@ def check_whether_to_inherit(parentID, col, df_parents, child_value=None, weak=T
             else:
                 return True
 
-def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
+def propegate_parents_to_children(df_children,DBNAME, CRUISE_NUMBER):
 
     try:
         parentIDs = list(df_children['parentID'])
     except:
         parentIDs = list(df_children['parentid'])
-    df_parents = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, parentIDs)
+    df_parents = get_metadata_for_list_of_ids(DBNAME, CRUISE_NUMBER, parentIDs)
 
     inheritable = []  # For holding inheritable fields
     weak = []  # For holding weak inheritance
@@ -68,7 +68,7 @@ def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
 
     return df_children
 
-def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
+def find_all_children(IDs,DBNAME, CRUISE_NUMBER):
     '''
     Return a list of child IDs for parent IDs provided.
     Children, grandchildren etc are all included in the returned list
@@ -82,8 +82,8 @@ def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
     DBNAME: str
         Name of PSQL database that hosts the metadata catalogue
         and other tables where lists of values for certain fields are registered
-    METADATA_CATALOGUE: str
-        Name of the metadata catalogue table within DBNAME
+    CRUISE_NUMBER: str
+        Cruise number, used in some PSQL table names
 
     Returns
     -------
@@ -99,9 +99,9 @@ def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
 
     while moreChildren == True:
         if len(IDs) == 1:
-            df = pd.read_sql(f"SELECT id FROM {METADATA_CATALOGUE} where parentid = '{IDs[0]}';", con=conn)
+            df = pd.read_sql(f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';", con=conn)
         else:
-            df = pd.read_sql(f'SELECT id FROM {METADATA_CATALOGUE} where parentid in {tuple(IDs)};', con=conn)
+            df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};', con=conn)
         newChildren = df['id'].to_list()
         newChildren = [p for p in newChildren if p not in IDs]
         [children_IDs.append(p) for p in newChildren if type(p) == str]

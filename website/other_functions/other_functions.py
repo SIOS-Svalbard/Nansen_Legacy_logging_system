@@ -116,6 +116,6 @@ def combine_personnel_details(names,emails):
         emails_list = emails.split(' | ')
         personnel = [f"{name} ({email})" for (name, email) in zip(names_list, emails_list)]
     except:
-        personnel = []
+        personnel = [None]
 
     return personnel

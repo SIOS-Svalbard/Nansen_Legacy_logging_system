@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import getpass
 import uuid
-from website.database.get_data import get_data, get_user_setup, get_metadata_for_id, get_personnel_df
+from website.database.get_data import get_data, get_cruise, get_user_setup, get_metadata_for_id, get_personnel_df
 from website.database.propegate_parents_to_children import propegate_parents_to_children
 from website.database.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -12,7 +12,7 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -27,6 +27,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     '''
     Generate template html page code
     '''
+
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
     setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
     config = 'default'
@@ -34,11 +38,13 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         if setup['name'] == sampleType:
             config = sampleType
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+    all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
+
     required = list(required_fields_dic.keys())
     added_fields_dic = {}
 
-    userSetup = get_user_setup(DBNAME, current_setup) # json of setup
+    userSetup = get_user_setup(DBNAME, CRUISE_NUMBER, current_setup) # json of setup
 
     # adding data for fields in setup to dictionaries to be displayed through HTML
     for key, val in userSetup.items():
@@ -76,7 +82,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         val['requirements'] = 'optional'
 
     setup_fields_dic = {**required_fields_dic, **recommended_fields_dic, **added_fields_dic}
-    all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 
     if len(added_fields_dic) > 0:
         added_fields_bool = True
@@ -106,7 +111,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             else:
                 val['values'] = [''] * int(num_samples)
 
-    parent_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, parentID)
+    parent_df = get_metadata_for_id(DBNAME, CRUISE_NUMBER, parentID)
     parent_details = {}
 
     parent_fields = [
@@ -130,7 +135,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
         form_input = request.form.to_dict(flat=False)
 
-        df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+        df_personnel = get_personnel_df(DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
 
         cols = userSetup.keys()
 
@@ -239,11 +244,14 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                 metadata_df = False
 
+                if 'id' not in df_to_submit.columns:
+                    df_to_submit['id'] = [str(uuid.uuid1()) for ii in range(len(df_to_submit))]
+
                 good, errors = checker(
                     data=df_to_submit,
                     required=required,
                     DBNAME=DBNAME,
-                    METADATA_CATALOGUE=METADATA_CATALOGUE,
+                    CRUISE_NUMBER=CRUISE_NUMBER,
                     new=True
                     )
 
@@ -253,7 +261,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                 else:
 
-                    df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                    df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, CRUISE_NUMBER)
 
                     for field in fields.fields:
                         if field['name'] in df_to_submit.columns:
@@ -274,7 +282,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form")
                     df_to_submit['source'] = "Record uploaded from GUI form"
 
-                    insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                    insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, CRUISE_NUMBER)
 
                     flash('Data from file uploaded successfully!', category='success')
 
@@ -285,7 +293,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
                 df_to_submit.fillna('', inplace=True)
-                write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+                write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
 
                 return send_file(filepath, as_attachment=True)
 
@@ -365,7 +373,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             metadata=metadata_df,
                             required=required,
                             DBNAME=DBNAME,
-                            METADATA_CATALOGUE=METADATA_CATALOGUE,
+                            CRUISE_NUMBER=CRUISE_NUMBER,
                             new=new,
                             firstrow=4
                             )
@@ -375,7 +383,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 flash(error, category='error')
                         else:
 
-                            df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                            df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, CRUISE_NUMBER)
                             # How should I assign eventids if using spreadsheets?
 
                             # Write to function? Used multiple times
@@ -401,7 +409,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
                                 df_to_submit['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                                insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                                insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, CRUISE_NUMBER)
 
                                 flash('Data from file uploaded successfully!', category='success')
                                 return redirect(f'/logSamples/parentid={parentID}')

@@ -14,7 +14,7 @@ import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
 import os
 from argparse import Namespace
-from website.database.get_data import get_data, get_personnel_list
+from website.database.get_data import get_data, get_personnel_list, get_cruise
 import numpy as np
 from datetime import datetime
 
@@ -120,7 +120,7 @@ class Variable_sheet(object):
         self.current_column = self.current_column + 1
         return ref
 
-def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False):
+def derive_content(mfield, data=False, DBNAME=False):
     '''
     Derives values for the metadata sheet
     based on dataframe for data sheet or cruise details table
@@ -135,9 +135,6 @@ def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False)
     data: pandas dataframe
         Pandas dataframe of data to be written in data sheet
         Default: False, for when template generated without data
-    CRUISE_DETAILS_TABLE: string
-        Name of the table of the cruise details for the cruise
-        Default: False, for when template generate used independent of the database
 
     Returns
     ----------
@@ -242,7 +239,7 @@ def derive_content(mfield, data=False, DBNAME=False, CRUISE_DETAILS_TABLE=False)
 
     elif 'derive_from_table' in mfield.keys():
         if mfield['derive_from_table'] == 'cruise_details':
-            df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+            df = get_cruise(DBNAME)
             try:
                 content = df[mfield['name']][0]
             except:
@@ -343,7 +340,7 @@ def write_readme(args, workbook):
     sheet.write(1, 0, "README", header_format)
     sheet.set_row(1, 30)
 
-def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
+def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_NUMBER=False):
     """
     Adds a metadata sheet to workbook
     Parameters
@@ -359,11 +356,8 @@ def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_DETAI
     DBNAME: string
         Name of the database where the metadata catalogue is hosted
         Default: False, for when template generate used independent of the database
-    METADATA_CATALOGUE: string
-        Name of the table of the metadata catalogue for the cruise
-        Default: False, for when template generate used independent of the database
-    CRUISE_DETAILS_TABLE: string
-        Name of the table of the cruise details for the cruise
+    CRUISE_NUMBER: string
+        Cruise number
         Default: False, for when template generate used independent of the database
     """
 
@@ -583,7 +577,7 @@ def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_DETAI
         if 'default' in mfield.keys():
             content = mfield['default']
         elif 'derive_from' in mfield.keys():
-            content = derive_content(mfield, data=data, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE)
+            content = derive_content(mfield, data=data, DBNAME=DBNAME)
         else:
             content = ''
 
@@ -687,7 +681,7 @@ def write_metadata(args, workbook, data, metadata_df, DBNAME=False, CRUISE_DETAI
     # Freeze the rows at the top
     sheet.freeze_panes(6, 1)
 
-def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
+def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME, CRUISE_NUMBER=False):
     """
     Writes the xlsx file based on the wanted fields
     Parameters
@@ -709,11 +703,8 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
     DBNAME: string
         Name of the database where the metadata catalogue is hosted
         Default: False, for when template generate used independent of the database
-    METADATA_CATALOGUE: string
-        Name of the table of the metadata catalogue for the cruise
-        Default: False, for when template generate used independent of the database
-    CRUISE_DETAILS_TABLE: string
-        Name of the table of the cruise details for the cruise
+    CRUISE_NUMBER: string
+        Cruise number
         Default: False, for when template generate used independent of the database
     """
 
@@ -725,7 +716,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
     workbook.formats[0].set_font_size(DEFAULT_SIZE)
 
     if metadata:
-        write_metadata(args, workbook, data, metadata_df, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
+        write_metadata(args, workbook, data, metadata_df, DBNAME, CRUISE_NUMBER)
 
     # Create sheet for data
     data_sheet = workbook.add_worksheet('Data')
@@ -826,10 +817,13 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
                         if DBNAME == False:
                             df = pd.read_csv(f'website/database/{table}.csv')
                         else:
-                            df = get_data(DBNAME, table)
+                            try:
+                                df = get_data(DBNAME, table)
+                            except:
+                                df = get_data(DBNAME, table+'_'+CRUISE_NUMBER)
 
                         if field['name'] in ['pi_details', 'recordedBy_details']:
-                            lst_values = get_personnel_list(DBNAME=DBNAME, table='personnel')
+                            lst_values = get_personnel_list(DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
                         else:
                             lst_values = list(df[field['name'].lower()])
 
@@ -921,7 +915,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAM
 
     workbook.close()
 
-def write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=False, CRUISE_DETAILS_TABLE=False, METADATA_CATALOGUE=False):
+def write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=False, CRUISE_NUMBER=False):
     """
     Method for calling from other python programs
     Parameters
@@ -945,11 +939,8 @@ def write_file(filepath, fields_list, metadata=True, conversions=True, data=Fals
     DBNAME: string
         Name of the database where the metadata catalogue is hosted
         Default: False, for when template generate used independent of the database
-    METADATA_CATALOGUE: string
-        Name of the table of the metadata catalogue for the cruise
-        Default: False, for when template generate used independent of the database
-    CRUISE_DETAILS_TABLE: string
-        Name of the table of the cruise details for the cruise
+    CRUISE_NUMBER: string
+        Cruise number
         Default: False, for when template generate used independent of the database
     """
     args = Namespace()
@@ -957,4 +948,4 @@ def write_file(filepath, fields_list, metadata=True, conversions=True, data=Fals
     args.dir = os.path.dirname(filepath)
     args.filepath = filepath
 
-    make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME, CRUISE_DETAILS_TABLE, METADATA_CATALOGUE)
+    make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DBNAME, CRUISE_NUMBER)

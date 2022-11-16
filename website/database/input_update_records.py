@@ -5,12 +5,12 @@ import pandas as pd
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
 
-def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
+def insert_into_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER):
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     cur = conn.cursor()
 
-    string_1 = f'INSERT INTO {METADATA_CATALOGUE} ('
+    string_1 = f'INSERT INTO metadata_catalogue_{CRUISE_NUMBER} ('
     string_2 = ''
     string_3 = ') VALUES ('
     string_4 = ''
@@ -49,12 +49,12 @@ def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID):
+def update_record_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER, ID):
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     cur = conn.cursor()
 
-    string_1 = f'UPDATE {METADATA_CATALOGUE} SET '
+    string_1 = f'UPDATE metadata_catalogue_{CRUISE_NUMBER} SET '
     string_2 = ''
     string_3 = ''
     string_4 = ''
@@ -101,14 +101,14 @@ def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
     cur.close()
     conn.close()
 
-def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, CRUISE_NUMBER):
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():
 
-        string_1 = f'INSERT INTO {METADATA_CATALOGUE} ('
+        string_1 = f'INSERT INTO metadata_catalogue_{CRUISE_NUMBER} ('
         string_2 = ''
         string_3 = ') VALUES ('
         string_4 = ''
@@ -161,13 +161,13 @@ def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CAT
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, CRUISE_NUMBER):
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():
-        string_1 = f'UPDATE {METADATA_CATALOGUE} SET '
+        string_1 = f'UPDATE metadata_catalogue_{CRUISE_NUMBER} SET '
         string_2 = ''
         string_3 = ''
         string_4 = ''

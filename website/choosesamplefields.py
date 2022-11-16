@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import getpass
 import uuid
-from website.database.get_data import get_data, get_user_setup
+from website.database.get_data import get_data, get_cruise, get_user_setup
 from website.database.propegate_parents_to_children import propegate_parents_to_children
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -12,7 +12,7 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -27,6 +27,9 @@ def choose_sample_fields(parentID,sampleType):
     '''
     Generate template html page code
     '''
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
     setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
     config = 'default'
@@ -34,7 +37,7 @@ def choose_sample_fields(parentID,sampleType):
         if setup['name'] == sampleType:
             config = sampleType
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, CRUISE_NUMBER=CRUISE_NUMBER, DBNAME=DBNAME)
     all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 
     most_likely_same_for_all_samples = [
@@ -153,7 +156,7 @@ def choose_sample_fields(parentID,sampleType):
                 setupName = form_input['setupName'][0]
 
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
-            df = pd.read_sql(f'SELECT setupName FROM user_field_setups;', con=conn)
+            df = pd.read_sql(f'SELECT setupName FROM user_field_setups_{CRUISE_NUMBER};', con=conn)
             existing_user_setups = df['setupname'].tolist()
 
             if setupName in existing_user_setups and setupName != 'temporary':
@@ -205,9 +208,9 @@ def choose_sample_fields(parentID,sampleType):
                 cur = conn.cursor()
 
                 if setupName == 'temporary':
-                    exe_str = f"UPDATE user_field_setups SET setup = '{setup}', created = CURRENT_TIMESTAMP WHERE setupName = '{setupName}';"
+                    exe_str = f"UPDATE user_field_setups_{CRUISE_NUMBER} SET setup = '{setup}', created = CURRENT_TIMESTAMP WHERE setupName = '{setupName}';"
                 else:
-                    exe_str = f"INSERT INTO user_field_setups (setupName, setup, created) VALUES ('{setupName}', '{setup}', CURRENT_TIMESTAMP);"
+                    exe_str = f"INSERT INTO user_field_setups_{CRUISE_NUMBER} (setupName, setup, created) VALUES ('{setupName}', '{setup}', CURRENT_TIMESTAMP);"
 
                 cur.execute(exe_str)
                 conn.commit()
@@ -232,7 +235,7 @@ def choose_sample_fields(parentID,sampleType):
         added_fields_bool = False
 
     conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
-    df = pd.read_sql(f"SELECT setupName FROM user_field_setups WHERE setupName != 'temporary';", con=conn)
+    df = pd.read_sql(f"SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName != 'temporary';", con=conn)
     existing_user_setups = sorted(df['setupname'].tolist())
 
 

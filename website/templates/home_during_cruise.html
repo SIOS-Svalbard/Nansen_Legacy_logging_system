@@ -1,0 +1,126 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+
+<div class="container">
+  <div class="row">
+    <div class="col-4">
+
+      {% if cruise_name != False %}
+      <div class="row">
+        <strong>Cruise name:&nbsp; </strong><span class="text-primary">{{ cruise_name }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise number:&nbsp; </strong><span class="text-primary">{{ CRUISE_NUMBER }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise leader:&nbsp; </strong><span class="text-primary">{{ cruise_leader_name }}</span>
+      </div>
+      <div class="row">
+        <strong>Co-cruise leader:&nbsp; </strong><span class="text-primary">{{ co_cruise_leader_name }}</span>
+      </div>
+      <div class="row">
+        <span>&nbsp;</span>
+      </div>
+      {% else %}
+      <div class="row">
+        <strong>Cruise name: </strong>
+      </div>
+      <div class="row">
+        <strong>Cruise number:&nbsp; </strong><span class="text-primary">{{ CRUISE_NUMBER }}</span>
+      </div>
+      <div class="row">
+        <strong>Cruise leader: </strong>
+      </div>
+      <div class="row">
+        <strong>Co-cruise leader: </strong>
+      </div>
+      <div class="row">
+        <span class="text-danger">Cruise details not registered</span>
+      </div>
+      {% endif %}
+      <div class="row">
+        <a class="btn btn-success" href="/register/cruiseDetails" role="button">Update cruise details</a>
+      </div>
+    </div>
+    <div class=col-5 offset-1">
+      <!--<div class="row">
+        <img src="..." class="img-fluid border border-dark" alt="Map of cruise path and stations">
+      </div>-->
+    </div>
+    <div class="col-3 float-right">
+      {% include 'end_cruise.html' %}
+    </div>
+  </div>
+
+  <br>
+  <!--Table of most recent activities-->
+  <div class="float-left">
+    <h3>Most recent activities: </h3>
+    <br>
+  </div>
+  <div class="float-right">
+    {% if missing %}
+    <a class="btn btn-danger btn-lg" href="/missingMetadata" role="button">Register missing metadata</a>
+    {% endif %}
+    <a class="btn btn-secondary btn-lg" href="/editActivity/id=addNew" role="button">Add/Edit activities</a>
+  </div>
+
+  {% if num_activities == 0 %}
+    <br><br><br>
+    <p><strong>No activities have been registered yet.</strong></p>
+    <p>If you believe this is a mistake, check that the activities are logged in the Toktlogger
+    by visiting <a href="http://{{TOKTLOGGER}}">http://{{TOKTLOGGER}}</a></p>
+    <p>If activities are listed in the Toktlogger but not here, please contact the instrument crew.</p>
+  {% else %}
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Station</th>
+          <th scope="col">Start date (UTC)</th>
+          <th scope="col">Start time (UTC)</th>
+          <th scope="col">Latitude (start)</th>
+          <th scope="col">Longitude (start)</th>
+          <th scope="col">Gear Type</th>
+          <th scope="col">PI</th>
+          <th scope="col">Message</th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in row_data %}
+        <tr>
+          {% for col, row_ in zip(column_names, row) %}
+          {% if col == link_column %}
+            <td>
+              <a
+                class="btn btn-primary"
+                href="/editActivity/form/id={{row_}}"
+                role="button">
+                View/Edit
+              </a>
+            </td>
+            <td>
+              <a class="btn btn-warning" href="/logSamples/parentid={{row_}}" role="button">Log samples</a>
+            </td>
+          {% elif col == 'message' %}
+            <td>
+            {% if row_ == 'Okay' %}
+              <strong class="text-success">{{ row_ }}</strong>
+            {% else %}
+              <strong class="text-danger">{{ row_ }}</strong>
+            {% endif %}
+            </td>
+          {% else %}
+            <td>{{ row_ }}</td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-secondary btn-lg btn-block" href="/editActivity/id=addNew" role="button">Add/Edit activities</a>
+  {% endif %}
+
+</div>
+{% endblock %}

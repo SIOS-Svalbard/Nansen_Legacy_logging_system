@@ -13,13 +13,15 @@ from website.database.input_update_records import insert_into_metadata_catalogue
 # from website.database.checker import run as checker
 # from flask import flash
 
-def get_fields_lists(DBNAME):
+def get_fields_lists(DBNAME, CRUISE_NUMBER):
     '''
     Returns the fields required
     Parameters
     ----------
     DBNAME: string
         Name of the database that includes the metadata catalogue
+    CRUISE_NUMBER: string
+        Cruise number
     Returns
     ----------
     columns: list
@@ -28,7 +30,7 @@ def get_fields_lists(DBNAME):
         List of fields that are required to be logged. A subset of columns
 
     '''
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
     niskin_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
     columns = list(niskin_fields.keys())
     required = list(required_fields_dic.keys())
@@ -113,7 +115,7 @@ def find_parentID(statID, df_activities):
     return df_tmp.loc[df_tmp['geartype'] == 'CTD w/bottles', 'id'].item()
 
 
-def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
+def harvest_niskins(DBNAME, CRUISE_NUMBER, BTL_FILES_FOLDER):
     '''
     Read data from Niskin files into a single pandas dataframe
     This dataframe can be used to create a sample log.
@@ -121,19 +123,21 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
     -------
     DBNAME: string
         Name of the PSQL database that includes the metadata catalogue
-    METADATA_CATALOGUE: string
-        Name of the table for the metadata catalogue within the PSQL database
+    CRUISE_NUMBER: string
+        Cruise number
     BTL_FILES_FOLDER: string
         Filepath to where the .btl files (for Niskin bottles) are stored
     '''
 
-    columns, required = get_fields_lists(DBNAME)
+    METADATA_CATALOGUE = 'metadata_catalogue_'+CRUISE_NUMBER
+
+    columns, required = get_fields_lists(DBNAME, CRUISE_NUMBER)
     df_cruise = pd.DataFrame(columns=columns)
-    df_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    df_activities = get_registered_activities(DBNAME, CRUISE_NUMBER)
     registered_statids = list(set(df_activities['statid']))
     registered_statids = [int(statid) for statid in registered_statids if math.isnan(statid) == False ]
     registered_statids = [str(r).zfill(4) for r in registered_statids]
-    registered_ids = get_all_ids(DBNAME, METADATA_CATALOGUE)
+    registered_ids = get_all_ids(DBNAME, CRUISE_NUMBER)
 
     for ctd_file in sorted(os.listdir(BTL_FILES_FOLDER)):
         if ctd_file.endswith('.btl'):

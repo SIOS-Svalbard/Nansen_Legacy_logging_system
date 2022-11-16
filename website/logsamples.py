@@ -4,7 +4,7 @@ import psycopg2.extras
 import getpass
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
+from website.database.get_data import get_data, get_cruise, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -12,7 +12,7 @@ from website.database.checker import run as checker
 from website.database.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 import website.database.fields as fields
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DBNAME, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -31,14 +31,17 @@ def edit_activity_page(ID):
 @logsamples.route('/editActivity/form/id=<ID>', methods=['GET', 'POST'])
 def edit_activity_form(ID):
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
 
     activity_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
 
     required = list(required_fields_dic.keys())
     recommended = list(recommended_fields_dic.keys())
 
-    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    sample_metadata_df = get_metadata_for_id(DBNAME, CRUISE_NUMBER, ID)
 
     # Creating new columns from the hstore key/value pairs in the 'other' column
     sample_metadata_df = sample_metadata_df.join(sample_metadata_df['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
@@ -94,7 +97,7 @@ def edit_activity_form(ID):
     # Get children
     if ID != 'addNew':
         ids = [ID]
-        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        children_list_of_dics = get_children_list_of_dics(DBNAME, CRUISE_NUMBER, ids)
     else:
         children_list_of_dics = []
 
@@ -140,7 +143,7 @@ def edit_activity_form(ID):
 
         if request.form['submitbutton'] == 'submit':
 
-            df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+            df_personnel = get_personnel_df(DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
             if 'pi_details' in form_input.keys():
                 form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
             else:
@@ -182,7 +185,7 @@ def edit_activity_form(ID):
                 data=fields_to_check_df,
                 required=required,
                 DBNAME=DBNAME,
-                METADATA_CATALOGUE=METADATA_CATALOGUE,
+                CRUISE_NUMBER=CRUISE_NUMBER,
                 new=new,
                 old_id=ID
                 )
@@ -209,7 +212,7 @@ def edit_activity_form(ID):
                     form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
                     form_input['source'] = "Record created manually from add activity page"
 
-                    insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+                    insert_into_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER)
 
                     flash('Activity registered!', category='success')
 
@@ -219,17 +222,17 @@ def edit_activity_form(ID):
                     form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
                     form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-                    update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
+                    update_record_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER, ID)
 
                     flash('Activity edited!', category='success')
 
-                    children_IDs = find_all_children([ID],DBNAME, METADATA_CATALOGUE)
+                    children_IDs = find_all_children([ID],DBNAME, CRUISE_NUMBER)
                     if len(children_IDs) > 0:
                         df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
                         df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
                         df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
                         metadata_df = False
-                        update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
+                        update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, CRUISE_NUMBER)
 
                         flash('Relevant metadata copied to children', category='success')
 
@@ -257,17 +260,21 @@ def edit_activity_form(ID):
 
 @logsamples.route('/logSamples/parentid=<ID>', methods=['GET', 'POST'])
 def log_samples(ID):
+
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
     # Get children
     if ID != 'addNew':
         ids = [ID]
-        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        children_list_of_dics = get_children_list_of_dics(DBNAME, CRUISE_NUMBER, ids)
     else:
         children_list_of_dics = []
 
     sample_types_df = get_data(DBNAME, 'sample_types')
     gear_types_df = get_data(DBNAME, 'gear_types')
 
-    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    sample_metadata_df = get_metadata_for_id(DBNAME, CRUISE_NUMBER, ID)
     gearType = sample_metadata_df['geartype'].item()
 
     recommendedChildSamples = find_recommended_child_sample_types(gearType, gear_types_df)
@@ -284,7 +291,13 @@ def log_samples(ID):
 
 def find_recommended_child_gears(gearType, gear_types_df):
 
-    recommended_child_gears = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildgears'].item()
+    series = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildgears']
+
+    if len(series) == 0:
+        recommended_child_gears = ""
+    else:
+        recommended_child_gears = series.item()
+
     if recommended_child_gears == "":
         recommended_child_gears_list = []
     else:
@@ -293,7 +306,12 @@ def find_recommended_child_gears(gearType, gear_types_df):
 
 def find_recommended_child_sample_types(gearType, gear_types_df):
 
-    recommended_child_samples = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildsamples'].item()
+    series = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildsamples']
+    if len(series) == 0:
+        recommended_child_samples = ""
+    else:
+        recommended_child_samples = series.item()
+    
     if recommended_child_samples == "":
         recommended_child_samples_list = []
     else:

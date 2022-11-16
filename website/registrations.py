@@ -3,9 +3,9 @@ import psycopg2
 import psycopg2.extras
 import getpass
 import uuid
-from website.database.get_data import get_data
+from website.database.get_data import get_data, get_cruise
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -21,7 +21,10 @@ def register():
 @registrations.route('/register/cruiseDetails', methods=['GET', 'POST'])
 def cruiseDetails():
 
-    df = get_data(DBNAME, 'personnel')
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
+    df = get_data(DBNAME, 'personnel_'+CRUISE_NUMBER)
     df.sort_values(by='last_name', inplace=True)
     df['personnel'] = df['first_name'] + ' ' + df['last_name'] + ' (' + df['email'] + ')'
     personnel = list(df['personnel'])
@@ -30,9 +33,6 @@ def cruiseDetails():
     proj_df.sort_values(by='project', inplace=True)
     projects = list(proj_df['project'])
 
-    cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
-
-    print('A',cruise_details_df['cruise_name'],'B')
     if len(cruise_details_df) > 0:
         current_cruise_name = cruise_details_df['cruise_name'].item()
         current_cruise_project = cruise_details_df['project'].item()
@@ -74,60 +74,26 @@ def cruiseDetails():
         conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
         cur = conn.cursor()
 
-        if len(cruise_details_df) > 0:
-            cur.execute(f'''UPDATE {CRUISE_DETAILS_TABLE} SET
-            cruise_name = '{cruise_name}',
-            project = '{project}',
-            cruise_leader_orcid = '{cruise_leader_orcid}',
-            cruise_leader_name = '{cruise_leader_name}',
-            cruise_leader_institution = '{cruise_leader_institution}',
-            cruise_leader_email = '{cruise_leader_email}',
-            co_cruise_leader_orcid = '{co_cruise_leader_orcid}',
-            co_cruise_leader_name = '{co_cruise_leader_name}',
-            co_cruise_leader_institution = '{co_cruise_leader_institution}',
-            co_cruise_leader_email = '{co_cruise_leader_email}',
-            comment = '{comment}';
-            ''')
-
-        else:
-            cur.execute(f'''INSERT INTO {CRUISE_DETAILS_TABLE}
-            (id,
-            cruise_name,
-            cruise_number,
-            vessel_name,
-            project,
-            cruise_leader_orcid,
-            cruise_leader_name,
-            cruise_leader_institution,
-            cruise_leader_email,
-            co_cruise_leader_orcid,
-            co_cruise_leader_name,
-            co_cruise_leader_institution,
-            co_cruise_leader_email,
-            comment,
-            created)
-            VALUES
-            ('{uuid.uuid1()}',
-            '{cruise_name}',
-            '{CRUISE_NUMBER}',
-            '{VESSEL_NAME}',
-            '{project}',
-            '{cruise_leader_orcid}',
-            '{cruise_leader_name}',
-            '{cruise_leader_institution}',
-            '{cruise_leader_email}',
-            '{co_cruise_leader_orcid}',
-            '{co_cruise_leader_name}',
-            '{co_cruise_leader_institution}',
-            '{co_cruise_leader_email}',
-            '{comment}',
-            CURRENT_TIMESTAMP);''')
+        cur.execute(f'''UPDATE cruises SET
+        cruise_name = '{cruise_name}',
+        project = '{project}',
+        cruise_leader_orcid = '{cruise_leader_orcid}',
+        cruise_leader_name = '{cruise_leader_name}',
+        cruise_leader_institution = '{cruise_leader_institution}',
+        cruise_leader_email = '{cruise_leader_email}',
+        co_cruise_leader_orcid = '{co_cruise_leader_orcid}',
+        co_cruise_leader_name = '{co_cruise_leader_name}',
+        co_cruise_leader_institution = '{co_cruise_leader_institution}',
+        co_cruise_leader_email = '{co_cruise_leader_email}',
+        comment = '{comment}'
+        WHERE cruise_number = '{CRUISE_NUMBER}';
+        ''')
 
         conn.commit()
         cur.close()
         conn.close()
 
-        flash('Cruise details registered!', category='success')
+        flash('Cruise details edited!', category='success')
 
         return redirect(url_for('views.home'))
 
@@ -284,7 +250,10 @@ def intendedMethods():
 @registrations.route('/register/stations', methods=['GET', 'POST'])
 def stations():
 
-    df = get_data(DBNAME, 'stations')
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
+    df = get_data(DBNAME, 'stations_'+CRUISE_NUMBER)
     df.sort_values(by='stationname', inplace=True)
     stationNames = list(df['stationname'])
     decimalLatitudes = list(df['decimallatitude'])
@@ -316,7 +285,7 @@ def stations():
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -331,7 +300,10 @@ def stations():
 @registrations.route('/register/personnel', methods=['GET', 'POST'])
 def personnel():
 
-    df = get_data(DBNAME, 'personnel')
+    cruise_details_df = get_cruise(DBNAME)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
+    df = get_data(DBNAME, 'personnel_'+CRUISE_NUMBER)
     df.sort_values(by='last_name', inplace=True)
     first_names = list(df['first_name'])
     last_names = list(df['last_name'])
@@ -381,7 +353,7 @@ def personnel():
         else:
             conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
             cur = conn.cursor()
-            cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()

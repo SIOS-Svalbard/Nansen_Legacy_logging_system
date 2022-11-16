@@ -12,7 +12,7 @@ import website.database.metadata_fields as metadata_fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt

@@ -55,15 +55,6 @@
               <select class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
                 <option selected="selected">
                   {{ value['values'] }}
-                  <!--{% if value[values] != [] %}
-                    {{ value[values] }}
-                  {% elif field == 'sampleType' %}
-                    {{ sampleType }}
-                  {% elif field == 'gearType' %}
-                    {{ gearType }}
-                  {% else %}
-                    None
-                  {% endif %}-->
                 </option>
                 {% for option in value['source'] %}
                   <option>{{option}}</option>

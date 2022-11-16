@@ -1,51 +1,38 @@
 from flask import Flask
 import uuid
 from website.database.init_db import run as init_db
+from website.database.init_cruise_tables import run as init_cruise_tables
+from website.database.get_data import get_cruise
 import requests
 import numpy as np
+import pandas as pd
 
-# TOKTLOGGER = '172.16.0.147' # IP of VM of toktlogger"
-# url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
-TOKTLOGGER = False # Commented out if there is a TOKTLOGGER
-url = False
+#TOKTLOGGER = '172.16.0.147' # IP of VM of toktlogger"
+TOKTLOGGER = 'toktlogger-sars.hi.no'
+url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
+#TOKTLOGGER = False # Commented out if there is a TOKTLOGGER
+#url = False
 DBNAME = 'lfnl_db'
 BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
 
-CRUISE_NUMBER = '87654321' # Default value for testing purposes if no TOKTLOGGER
-VESSEL_NAME = 'Kronprins Haakon' # Default value for testing purposes if no TOKTLOGGER
-
-if TOKTLOGGER != False:
-    try:
-        response = requests.get(url)
-        json_cruise = response.json()
-
-        CRUISE_NUMBER = json_cruise['cruiseNumber']
-        VESSEL_NAME = json_cruise['vesselName']
-
-    except:
-        TOKTLOGGER = False
-        print('\nCould not connect to the Toktlogger\n')
-        print('Please provide details to initialise the database for cruise.')
-        print('These details will be used to name the tables in the PSQL database')
-
-        '''
-        Need to find a better way to manage when Toktlogger offline.
-        This current solution will prompt the user to input details below each time
-        this script runs.
-        A new table for the metadata catalogue will be created every time a different
-        cruise number is given.
-        Old activities and samples will disappear from the GUI - stored in different
-        tables in the database
-        Need to find a way of storing cruise number once given, to use every time
-        for the remainder of the current cruise only.
-        '''
-        CRUISE_NUMBER = input("CRUISE NUMBER > ")
-
-METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
-CRUISE_DETAILS_TABLE = 'cruise_details_'+str(CRUISE_NUMBER)
-
 # Initialising the database
-init_db(DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)
+init_db(DBNAME)
+
+#CRUISE_NUMBER = '87654321' # Default value for testing purposes if no TOKTLOGGER
+#VESSEL_NAME = 'Kronprins Haakon' # Default value for testing purposes if no TOKTLOGGER
+
+# GET CRUISE DETAILS, RETURNS FALSE IF NO CRUISE
+cruise_details_df = get_cruise(DBNAME)
+
+if isinstance(cruise_details_df, pd.DataFrame):
+    CRUISE_NUMBER = cruise_details_df['cruise_number'].item()
+    VESSEL_NAME = cruise_details_df['vessel_name'].item()
+    METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
+    init_cruise_tables(DBNAME, CRUISE_NUMBER, VESSEL_NAME)
+else:
+    CRUISE_NUMBER = False
+    VESSEL_NAME = False
+    METADATA_CATALOGUE = False
 
 def create_app():
     app = Flask(__name__)

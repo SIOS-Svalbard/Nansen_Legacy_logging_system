@@ -50,17 +50,15 @@ def create_database(DBNAME):
 
         # Creating tables and adding some values
         init_institutions(DBNAME, cur)
-        init_stations(DBNAME, cur)
         init_sample_types(DBNAME, cur)
         init_gear_types(DBNAME, cur)
         init_intended_methods(DBNAME, cur)
         init_projects(DBNAME, cur)
-        init_personnel(DBNAME, cur)
         init_storage_temperatures(DBNAME, cur)
         init_filters(DBNAME, cur)
         init_sex(DBNAME, cur)
         init_kingdoms(DBNAME, cur)
-        init_user_field_setups(DBNAME, cur)
+        init_cruises(DBNAME, cur)
 
         conn.commit()
         cur.close()
@@ -76,17 +74,6 @@ def init_institutions(DBNAME, cur):
         full_name = row['full_name']
         comment = row['comment']
         cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
-
-def init_stations(DBNAME, cur):
-    cur.execute("CREATE TABLE stations (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/dropdown_initial_values/stations.csv')
-    for idx, row in df.iterrows():
-        id = row['id']
-        stationName = row['stationName']
-        decimalLongitude = row['decimalLongitude']
-        decimalLatitude = row['decimalLatitude']
-        comment = row['comment']
-        cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
 def init_sample_types(DBNAME, cur):
     cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
@@ -140,20 +127,6 @@ def init_projects(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_personnel(DBNAME, cur):
-    cur.execute("CREATE TABLE personnel (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/database/dropdown_initial_values/personnel.csv')
-
-    for idx, row in df.iterrows():
-        id = row['id']
-        first_name = row['first_name']
-        last_name = row['last_name']
-        institution = row['institution']
-        email = row['email']
-        orcid = row['orcid']
-        comment = row['comment']
-        cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{id}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
-
 def init_storage_temperatures(DBNAME, cur):
     cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/storage_temperatures.csv')
@@ -190,59 +163,11 @@ def init_kingdoms(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_user_field_setups(DBNAME, cur):
-    cur.execute("CREATE TABLE user_field_setups (setupName text PRIMARY KEY, setup json, created timestamp with time zone)")
-
-    setup = {
-    'parentID': 'same',
-    'sampleType': 'same',
-    'pi_details': 'same',
-    'recordedBy_details': 'same',
-    'id': 'vary',
-    'catalogNumber': 'vary',
-    'samplingProtocolDoc': 'same',
-    'samplingProtocolSection': 'same',
-    'samplingProtocolVersion': 'same',
-    'comments1': 'vary',
-    }
-
-    setup = str(setup).replace('\'','"')
-
-    exe_str = f"INSERT INTO user_field_setups (setupName, setup, created) VALUES ('temporary', '{setup}', CURRENT_TIMESTAMP);"
-    cur.execute(exe_str)
-
-def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
+def init_cruises(DBNAME, cur):
     '''
-    Creating the metadata catalogue table within the database to be used for the cruise.
-
-    Creating a table to log the cruise details used for the cruise.
-
-    New tables will be created for each cruise, but within the same database.
-
-    DBNAME: string
-        Name of the database within which the tables will be created
-    METADATA_CATALOGUE: string
-        Name of the table to be created for the metadata catalogue
-    CRUISE_DETAILS_TABLE: string
-        Name of the table to be created for the cruise details
+    Creating a table to log the cruise details used for each cruise.
     '''
-
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
-    cur = conn.cursor()
-
-    cur.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
-
-    exe_str = f"CREATE TABLE IF NOT EXISTS {METADATA_CATALOGUE} (id uuid PRIMARY KEY, "
-
-    for field in fields.fields:
-        if field['hstore'] == False and field['name'] != 'id':
-            exe_str = exe_str + field['name'] + " " + field['format'] + ", "
-
-    exe_str = exe_str + "other hstore, metadata hstore)"
-
-    cur.execute(exe_str)
-
-    cur.execute(f'''CREATE TABLE IF NOT EXISTS {CRUISE_DETAILS_TABLE} (id uuid PRIMARY KEY,
+    cur.execute(f'''CREATE TABLE IF NOT EXISTS cruises (id uuid PRIMARY KEY,
     cruise_name text,
     cruise_number integer,
     vessel_name text,
@@ -255,13 +180,17 @@ def create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
     co_cruise_leader_name text,
     co_cruise_leader_institution text,
     co_cruise_leader_email text,
+    current boolean,
     comment text,
     created timestamp with time zone)''')
 
-    conn.commit()
-    cur.close()
-    conn.close()
+def run(DBNAME):
+    '''
+    Creating the database and tables.
 
-def run(DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE):
+    DBNAME: string
+        Name of the database within which the tables will be createde
+
+    '''
     create_database(DBNAME)
-    create_cruise_tables(DBNAME, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)
+    #init_metadata_catalogue(DBNAME, METADATA_CATALOGUE)

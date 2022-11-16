@@ -1,0 +1,53 @@
+
+<form method="POST" enctype = "multipart/form-data">
+  <!-- Button trigger modal for starting cruise -->
+  <button type="button" class="btn btn-lg btn-block btn-success" data-toggle="modal" data-target="#startCruise">
+    Start cruise
+  </button>
+  <!-- Modal -->
+  <div class="modal fade" id="startCruise" tabindex="-1" role="dialog" aria-labelledby="startCruiseLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            {% if toktlogger_on %}
+            <p class="text-primary">Details pulled from Toktlogger for current cruise</p>
+            {% endif %}
+            <label for="cruiseName">Cruise number</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cruiseNumber"
+              name="cruiseNumber"
+              placeholder="Cruise number"
+              value="{{cruise_number_toktlogger}}"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="vesselName">Vessel name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="vesselName"
+              name="vesselName"
+              placeholder="Vessel name"
+              value="{{vessel_name_toktlogger}}"
+              required
+            />
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success" name="submit" value="startCruise">Start cruise</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
