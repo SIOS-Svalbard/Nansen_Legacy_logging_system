@@ -9,11 +9,13 @@ from website.database.propegate_parents_to_children import propegate_parents_to_
 import website.database.fields as fields
 from datetime import datetime as dt
 from website.database.input_update_records import insert_into_metadata_catalogue_df
+from website import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER, TMP_FILES_FOLDER
 
 # from website.database.checker import run as checker
 # from flask import flash
 
-def get_fields_lists(DBNAME):
+#def get_fields_lists(DBNAME):
+def get_fields_lists(DB):
     '''
     Returns the fields required
     Parameters
@@ -28,7 +30,8 @@ def get_fields_lists(DBNAME):
         List of fields that are required to be logged. A subset of columns
 
     '''
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB)
     niskin_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
     columns = list(niskin_fields.keys())
     required = list(required_fields_dic.keys())
@@ -61,10 +64,12 @@ def pull_columns(df_ctd,ctd_file, METADATA_CATALOGUE, BTL_FILES_FOLDER, register
     with open(BTL_FILES_FOLDER + ctd_file, 'r') as f:
         n = 0 # counter of lines in new temporary file
         try:
-            os.remove('/tmp/'+ctd_file)
+            #os.remove('/tmp/'+ctd_file)
+            os.remove(f"{TMP_FILES_FOLDER}{os.sep}"+ctd_file)
         except OSError:
             pass
-        with open('/tmp/'+ctd_file, 'a') as tmpfile:
+        #with open('/tmp/'+ctd_file, 'a') as tmpfile:
+        with open(f"{TMP_FILES_FOLDER}{os.sep}"+ctd_file, 'a') as tmpfile:
             for line in f: # Iterate over lines
                 if not line.startswith('*') and not line.startswith('#'): # Ignore header rows
                     if 'sdev' not in line and 'Position' not in line:
@@ -76,7 +81,8 @@ def pull_columns(df_ctd,ctd_file, METADATA_CATALOGUE, BTL_FILES_FOLDER, register
                         tmpfile.write(line+'\n')
                     n += 1
 
-    data = pd.read_csv('/tmp/'+ctd_file, delimiter=',', usecols=['Bottle', 'PrDM'])
+    #data = pd.read_csv('/tmp/'+ctd_file, delimiter=',', usecols=['Bottle', 'PrDM'])
+    data = pd.read_csv(f"{TMP_FILES_FOLDER}{os.sep}"+ctd_file, delimiter=',', usecols=['Bottle', 'PrDM'])
 
     df_ctd['bottleNumber'] = data['Bottle']
     df_ctd['minimumDepthInMeters'] = df_ctd['maximumDepthInMeters'] = data['PrDM']
@@ -113,7 +119,8 @@ def find_parentID(statID, df_activities):
     return df_tmp.loc[df_tmp['geartype'] == 'CTD w/bottles', 'id'].item()
 
 
-def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
+#def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
+def harvest_niskins(DB, METADATA_CATALOGUE, BTL_FILES_FOLDER):
     '''
     Read data from Niskin files into a single pandas dataframe
     This dataframe can be used to create a sample log.
@@ -127,13 +134,20 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
         Filepath to where the .btl files (for Niskin bottles) are stored
     '''
 
-    columns, required = get_fields_lists(DBNAME)
+    #columns, required = get_fields_lists(DBNAME)
+    columns, required = get_fields_lists(DB)
     df_cruise = pd.DataFrame(columns=columns)
-    df_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    #df_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    df_activities = get_registered_activities(DB, METADATA_CATALOGUE)
     registered_statids = list(set(df_activities['statid']))
+
+    print(f"==========\n\nregistered_statids:{registered_statids}\n\n==========")
+
+
     registered_statids = [int(statid) for statid in registered_statids if math.isnan(statid) == False ]
     registered_statids = [str(r).zfill(4) for r in registered_statids]
-    registered_ids = get_all_ids(DBNAME, METADATA_CATALOGUE)
+    #registered_ids = get_all_ids(DBNAME, METADATA_CATALOGUE)
+    registered_ids = get_all_ids(DB, METADATA_CATALOGUE)
 
     for ctd_file in sorted(os.listdir(BTL_FILES_FOLDER)):
         if ctd_file.endswith('.btl'):
@@ -147,7 +161,6 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
 
     # Only proceed if unregistered Niskin bottles. Registered bottles removed in pull_columns
     if len(df_cruise) > 0:
-
         df_cruise['gearType'] = 'Niskin'
         df_cruise['sampleType'] = 'Niskin'
         df_cruise['eventID'] = df_cruise['id']
@@ -155,7 +168,8 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
         for col in ['recordedBy_details', 'pi_details']:
             df_cruise.drop(col, axis=1, inplace=True)
 
-        df_cruise = propegate_parents_to_children(df_cruise, DBNAME, METADATA_CATALOGUE)
+        #df_cruise = propegate_parents_to_children(df_cruise, DBNAME, METADATA_CATALOGUE)
+        df_cruise = propegate_parents_to_children(df_cruise, DB, METADATA_CATALOGUE)
 
         for field in fields.fields:
             if field['name'] in df_cruise.columns:
@@ -182,12 +196,12 @@ def harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER):
         #         flash(error, category='error')
         # else:
 
-
         df_cruise['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
         df_cruise['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
         df_cruise['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created from metadata in btl files")
         df_cruise['source'] = "Record created from metadata in btl files"
 
-        insert_into_metadata_catalogue_df(df_cruise, metadata_df=False, DBNAME=DBNAME, METADATA_CATALOGUE=METADATA_CATALOGUE)
+        #insert_into_metadata_catalogue_df(df_cruise, metadata_df=False, DBNAME=DBNAME, METADATA_CATALOGUE=METADATA_CATALOGUE)
+        insert_into_metadata_catalogue_df(df_cruise, metadata_df=False, DB=DB, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
         # flash('Niskin bottle metadata harvested', category='success')

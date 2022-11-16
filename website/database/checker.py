@@ -19,7 +19,8 @@ import website.database.metadata_fields as metadata_fields
 from website.other_functions.other_functions import split_personnel_list
 import uuid
 
-def make_valid_dict(DBNAME):
+#def make_valid_dict(DBNAME):
+def make_valid_dict(DB):
     """
     Makes a dictionary of the possible fields with their validation.
     Does this by reading the fields list from the fields.py library.
@@ -39,9 +40,11 @@ def make_valid_dict(DBNAME):
     field_dict = {}
     for field in fields.fields:
         if field['name'] not in ['recordedBy_details', 'pi_details']:
-            new = Checker(DBNAME, name=field['name'], disp_name=field['disp_name'])
+            #new = Checker(DBNAME, name=field['name'], disp_name=field['disp_name'])
+            new = Checker(DB, name=field['name'], disp_name=field['disp_name'])
             if 'valid' in field:
-                new.set_validation(DBNAME, field['valid'])
+                #new.set_validation(DBNAME, field['valid'])
+                new.set_validation(DB, field['valid'])
             if 'inherit' in field:
                 new.inherit = field['inherit']
             if 'units' in field:
@@ -50,7 +53,8 @@ def make_valid_dict(DBNAME):
 
     return field_dict
 
-def make_valid_dict_metadata(DBNAME):
+#def make_valid_dict_metadata(DBNAME):
+def make_valid_dict_metadata(DB):
     """
     Makes a dictionary of the possible metadata fields with their validation.
     Does this by reading the metadata fields list from the metadata_fields.py library.
@@ -70,9 +74,11 @@ def make_valid_dict_metadata(DBNAME):
     metadata_field_dict = {}
     for metadata_field in metadata_fields.metadata_fields:
         if metadata_field['name'] not in ['recordedBy_details', 'pi_details']:
-            new = Checker(DBNAME, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
+            #new = Checker(DBNAME, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
+            new = Checker(DB, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
             if 'valid' in metadata_field:
-                new.set_validation(DBNAME, metadata_field['valid'])
+                #new.set_validation(DBNAME, metadata_field['valid'])
+                new.set_validation(DB, metadata_field['valid'])
             if 'inherit' in metadata_field:
                 new.inherit = metadata_field['inherit']
             if 'units' in metadata_field:
@@ -281,7 +287,8 @@ class Checker(Field):
     Object for holding the specification of a cell, and the validation of it
     Inherits from Field"""
 
-    def __init__(self, DBNAME, inherit=False, units=None, *args, **kwargs):
+    #def __init__(self, DBNAME, inherit=False, units=None, *args, **kwargs):
+    def __init__(self, DB, inherit=False, units=None, *args, **kwargs):
         """
         Initialising the object
         Parameters
@@ -296,14 +303,16 @@ class Checker(Field):
         """
         Field.__init__(self, *args, **kwargs)
         if self.validation != {}:
-            self.validator = self.get_validator(DBNAME, self.validation)
+            #self.validator = self.get_validator(DBNAME, self.validation)
+            self.validator = self.get_validator(DB, self.validation)
         else:
             self.validator = lambda x: True
 
         self.inherit = inherit
         self.units = units
 
-    def set_validation(self, DBNAME, validation):
+    #def set_validation(self, DBNAME, validation):
+    def set_validation(self, DB, validation):
         """
         Method for setting the validation by reading the dictionary
         and converting it using the
@@ -315,9 +324,11 @@ class Checker(Field):
         """
 
         Field.set_validation(self, validation)
-        self.validator = self.get_validator(DBNAME, self.validation)
+        #self.validator = self.get_validator(DBNAME, self.validation)
+        self.validator = self.get_validator(DB, self.validation)
 
-    def get_validator(self, DBNAME, validation=None):
+    #def get_validator(self, DBNAME, validation=None):
+    def get_validator(self, DB, validation=None):
         """
         Checks a parameter according to the defined validation
         Parameters
@@ -337,12 +348,14 @@ class Checker(Field):
         validate = validation['validate']
         if validate == 'any':
             return Evaluator(validation, func=lambda self, x: isinstance(str(x), str))
-        elif validate == 'list' and DBNAME != False:
+        #elif validate == 'list' and DBNAME != False:
+        elif validate == 'list' and DB:
             if type(validation['source']) == list:
                 lst = validation['source']
             else:
                 table = validation['source']
-                df = get_data(DBNAME, table)
+                #df = get_data(DBNAME, table)
+                df = get_data(DB, table)
                 lst = df[self.name.lower()].values
             return Evaluator(lst, func=lambda self, x: str(x) in self.validation)
 
@@ -871,7 +884,8 @@ def check_meta(metadata, metadata_checker_list):
 
     return good, errors
 
-def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
+#def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
+def run(data, metadata=None, required=[], DB=None, METADATA_CATALOGUE=None, new=True, firstrow=0, old_id=False):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -917,12 +931,15 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
         String specifying where the errors were found
     """
 
-    checker_list = make_valid_dict(DBNAME)
+    #checker_list = make_valid_dict(DBNAME)
+    checker_list = make_valid_dict(DB)
 
     data = clean(data)
 
-    if DBNAME != False and METADATA_CATALOGUE != False:
-        df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+    #if DBNAME != False and METADATA_CATALOGUE != False:
+    if DB and METADATA_CATALOGUE:
+        #df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+        df_metadata_catalogue = get_data(DB, METADATA_CATALOGUE)
         registered_ids = df_metadata_catalogue['id'].values
     else:
         registered_ids = []
@@ -933,7 +950,8 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
     g = True
     e = []
     if type(metadata) == pd.core.frame.DataFrame:
-        metadata_checker_list = make_valid_dict_metadata(DBNAME)
+        #metadata_checker_list = make_valid_dict_metadata(DBNAME)
+        metadata_checker_list = make_valid_dict_metadata(DB)
         g, e = check_meta(metadata, metadata_checker_list)
 
     good = good and g

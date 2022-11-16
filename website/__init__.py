@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 import uuid
 from website.database.init_db import run as init_db
@@ -8,8 +9,12 @@ TOKTLOGGER = '172.16.1.90' # VM of toktlogger at UNIS on my laptop"
 VESSEL_NAME = 'Kronprins Haakon'
 url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
 DBNAME = 'lfnl_db'
-BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
 
+#BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
+BTL_FILES_FOLDER = f"C:{os.sep}Vitaly_dir{os.sep}HI_docs{os.sep}Nansen_Legacy{os.sep}data{os.sep}2021708{os.sep}"
+TMP_FILES_FOLDER = f"C:{os.sep}Vitaly_dir{os.sep}tmp"
+
+DB = {"host": "localhost", "dbname": '', "user": '', "password": ''}
 try:
     response = requests.get(url)
     json_cruise = response.json()
@@ -34,12 +39,18 @@ except:
     for the remainder of the current cruise only.
     '''
     CRUISE_NUMBER = input("CRUISE NUMBER > ")
+    DB["dbname"] = input("DB name > ")
+    DB["user"] = input("DB user > ")
+    DB["password"] = input("DB password > ")
+
+print(f"CRUISE_NUMBER:{CRUISE_NUMBER}, DB:{DB}")
 
 METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
 CRUISE_DETAILS_TABLE = 'cruise_details_'+str(CRUISE_NUMBER)
 
 # Initialising the database
-init_db(DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)
+#init_db(DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)
+init_db(DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE)
 
 def create_app():
     app = Flask(__name__)

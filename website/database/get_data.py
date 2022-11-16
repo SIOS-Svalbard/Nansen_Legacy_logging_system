@@ -3,40 +3,52 @@ import psycopg2.extras
 import getpass
 import pandas as pd
 
-def get_data(DBNAME, table):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_data(DBNAME, table):
+def get_data(DB, table):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     df = pd.read_sql(f'SELECT * FROM {table}', con=conn)
     if "comment" in list(df.columns):
         df["comment"].loc[df["comment"] == "nan"] = ""
     return df
 
-def get_all_ids(DBNAME, METADATA_CATALOGUE):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_all_ids(DBNAME, METADATA_CATALOGUE):
+def get_all_ids(DB, METADATA_CATALOGUE):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     df = pd.read_sql(f'SELECT id FROM {METADATA_CATALOGUE};', con=conn)
     return df['id'].tolist()
 
-def get_registered_activities(DBNAME, METADATA_CATALOGUE):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_registered_activities(DBNAME, METADATA_CATALOGUE):
+def get_registered_activities(DB, METADATA_CATALOGUE):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid is NULL;', con=conn)
     return df
 
-def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, ids):
+def get_metadata_for_list_of_ids(DB, METADATA_CATALOGUE, ids):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     if len(ids) > 1:
         df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where id in {tuple(ids)};', con=conn)
     else:
         df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where id = '{ids[0]}';", con=conn)
     return df
 
-def get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID):
+def get_metadata_for_id(DB, METADATA_CATALOGUE, ID):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     if ID == 'addNew':
         ID = '6818a630-3e44-11ed-bc56-07202a870ce3'
     df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where id = '{ID}';", con=conn)
     return df
 
-def get_children(DBNAME, METADATA_CATALOGUE, ids):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_children(DBNAME, METADATA_CATALOGUE, ids):
+def get_children(DB, METADATA_CATALOGUE, ids):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     if len(ids) == 1:
         id = ids[0]
         df = pd.read_sql(f"SELECT * FROM {METADATA_CATALOGUE} where parentid = '{id}';", con=conn)
@@ -44,21 +56,28 @@ def get_children(DBNAME, METADATA_CATALOGUE, ids):
         df = pd.read_sql(f'SELECT * FROM {METADATA_CATALOGUE} where parentid in {tuple(ids)};', con=conn)
     return df
 
-def get_personnel_df(DBNAME=False, table='personnel'):
-    if DBNAME == False:
+#def get_personnel_df(DBNAME=False, table='personnel'):
+def get_personnel_df(DB=None, table='personnel'):
+    #if DBNAME == False:
+    if not DB:
         df_personnel = pd.read_csv(f'website/database/{table}.csv')
     else:
-        df_personnel = get_data(DBNAME, table)
+        #df_personnel = get_data(DBNAME, table)
+        df_personnel = get_data(DB, table)
     df_personnel.sort_values(by='last_name', inplace=True)
     df_personnel['personnel'] = df_personnel['first_name'] + ' ' + df_personnel['last_name'] + ' (' + df_personnel['email'] + ')'
     return df_personnel
 
-def get_personnel_list(DBNAME=False, table='personnel'):
-    df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+#def get_personnel_list(DBNAME=False, table='personnel'):
+def get_personnel_list(DB=False, table='personnel'):
+    #df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+    df_personnel = get_personnel_df(DB=DB, table='personnel')
     personnel = list(df_personnel['personnel'])
     return personnel
 
-def get_user_setup(DBNAME, setupName):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+#def get_user_setup(DBNAME, setupName):
+def get_user_setup(DB, setupName):
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     df = pd.read_sql(f"SELECT setup from user_field_setups where setupName = '{setupName}'", con=conn)
     return df['setup'][0]

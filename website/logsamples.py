@@ -12,7 +12,8 @@ from website.database.checker import run as checker
 from website.database.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 import website.database.fields as fields
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -31,14 +32,16 @@ def edit_activity_page(ID):
 @logsamples.route('/editActivity/form/id=<ID>', methods=['GET', 'POST'])
 def edit_activity_form(ID):
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB)
 
     activity_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
 
     required = list(required_fields_dic.keys())
     recommended = list(recommended_fields_dic.keys())
 
-    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    #sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    sample_metadata_df = get_metadata_for_id(DB, METADATA_CATALOGUE, ID)
 
     # Creating new columns from the hstore key/value pairs in the 'other' column
     sample_metadata_df = sample_metadata_df.join(sample_metadata_df['other'].str.extractall(r'\"(.+?)\"=>\"(.+?)\"')
@@ -94,7 +97,8 @@ def edit_activity_form(ID):
     # Get children
     if ID != 'addNew':
         ids = [ID]
-        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        #children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        children_list_of_dics = get_children_list_of_dics(DB, METADATA_CATALOGUE, ids)
     else:
         children_list_of_dics = []
 
@@ -140,7 +144,8 @@ def edit_activity_form(ID):
 
         if request.form['submitbutton'] == 'submit':
 
-            df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+            #df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+            df_personnel = get_personnel_df(DB=DB, table='personnel')
             if 'pi_details' in form_input.keys():
                 form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
             else:
@@ -181,7 +186,8 @@ def edit_activity_form(ID):
             good, errors = checker(
                 data=fields_to_check_df,
                 required=required,
-                DBNAME=DBNAME,
+                #DBNAME=DBNAME,
+                DB=DB,
                 METADATA_CATALOGUE=METADATA_CATALOGUE,
                 new=new,
                 old_id=ID
@@ -209,7 +215,8 @@ def edit_activity_form(ID):
                     form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
                     form_input['source'] = "Record created manually from add activity page"
 
-                    insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+                    #insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE)
+                    insert_into_metadata_catalogue(form_input, DB, METADATA_CATALOGUE)
 
                     flash('Activity registered!', category='success')
 
@@ -219,17 +226,22 @@ def edit_activity_form(ID):
                     form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
                     form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-                    update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
+                    #update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
+                    update_record_metadata_catalogue(form_input, DB, METADATA_CATALOGUE, ID)
 
                     flash('Activity edited!', category='success')
 
-                    children_IDs = find_all_children([ID],DBNAME, METADATA_CATALOGUE)
+                    #children_IDs = find_all_children([ID],DBNAME, METADATA_CATALOGUE)
+                    children_IDs = find_all_children([ID],DB, METADATA_CATALOGUE)
                     if len(children_IDs) > 0:
-                        df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
-                        df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
+                        #df_children = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, children_IDs)
+                        df_children = get_metadata_for_list_of_ids(DB, METADATA_CATALOGUE, children_IDs)
+                        #df_children = propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE)
+                        df_children = propegate_parents_to_children(df_children,DB, METADATA_CATALOGUE)
                         df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
                         metadata_df = False
-                        update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
+                        #update_record_metadata_catalogue_df(df_children, metadata_df, DBNAME, METADATA_CATALOGUE)
+                        update_record_metadata_catalogue_df(df_children, metadata_df, DB, METADATA_CATALOGUE)
 
                         flash('Relevant metadata copied to children', category='success')
 
@@ -260,14 +272,18 @@ def log_samples(ID):
     # Get children
     if ID != 'addNew':
         ids = [ID]
-        children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        #children_list_of_dics = get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids)
+        children_list_of_dics = get_children_list_of_dics(DB, METADATA_CATALOGUE, ids)
     else:
         children_list_of_dics = []
 
-    sample_types_df = get_data(DBNAME, 'sample_types')
-    gear_types_df = get_data(DBNAME, 'gear_types')
+    #sample_types_df = get_data(DBNAME, 'sample_types')
+    sample_types_df = get_data(DB, 'sample_types')
+    #gear_types_df = get_data(DBNAME, 'gear_types')
+    gear_types_df = get_data(DB, 'gear_types')
 
-    sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    #sample_metadata_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, ID)
+    sample_metadata_df = get_metadata_for_id(DB, METADATA_CATALOGUE, ID)
     gearType = sample_metadata_df['geartype'].item()
 
     recommendedChildSamples = find_recommended_child_sample_types(gearType, gear_types_df)

@@ -5,9 +5,11 @@ import pandas as pd
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
 
-def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
+#def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
+def insert_into_metadata_catalogue(form_input, DB, METADATA_CATALOGUE):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     cur = conn.cursor()
 
     string_1 = f'INSERT INTO {METADATA_CATALOGUE} ('
@@ -49,9 +51,11 @@ def insert_into_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE):
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID):
+#def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID):
+def update_record_metadata_catalogue(form_input, DB, METADATA_CATALOGUE, ID):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     cur = conn.cursor()
 
     string_1 = f'UPDATE {METADATA_CATALOGUE} SET '
@@ -101,9 +105,11 @@ def update_record_metadata_catalogue(form_input, DBNAME, METADATA_CATALOGUE, ID)
     cur.close()
     conn.close()
 
-def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+#def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+def insert_into_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():
@@ -161,9 +167,11 @@ def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CAT
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+#def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE):
+def update_record_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():

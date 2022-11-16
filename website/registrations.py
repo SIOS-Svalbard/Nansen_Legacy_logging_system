@@ -5,7 +5,8 @@ import getpass
 import uuid
 from website.database.get_data import get_data
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, TMP_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -21,16 +22,19 @@ def register():
 @registrations.route('/register/cruiseDetails', methods=['GET', 'POST'])
 def cruiseDetails():
 
-    df = get_data(DBNAME, 'personnel')
+    #df = get_data(DBNAME, 'personnel')
+    df = get_data(DB, 'personnel')
     df.sort_values(by='last_name', inplace=True)
     df['personnel'] = df['first_name'] + ' ' + df['last_name'] + ' (' + df['email'] + ')'
     personnel = list(df['personnel'])
 
-    proj_df = get_data(DBNAME, 'projects')
+    #proj_df = get_data(DBNAME, 'projects')
+    proj_df = get_data(DB, 'projects')
     proj_df.sort_values(by='project', inplace=True)
     projects = list(proj_df['project'])
 
-    cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    #cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    cruise_details_df = get_data(DB, CRUISE_DETAILS_TABLE)
 
     print('A',cruise_details_df['cruise_name'],'B')
     if len(cruise_details_df) > 0:
@@ -71,7 +75,8 @@ def cruiseDetails():
         cruise_name = request.form.get('cruiseName').capitalize()
         comment = request.form.get('comment')
 
-        conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+        #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+        conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
         cur = conn.cursor()
 
         if len(cruise_details_df) > 0:
@@ -146,7 +151,8 @@ def cruiseDetails():
 @registrations.route('/register/institutions', methods=['GET', 'POST'])
 def institutions():
 
-    df = get_data(DBNAME, 'institutions')
+    #df = get_data(DBNAME, 'institutions')
+    df = get_data(DB, 'institutions')
     df.sort_values(by='full_name', inplace=True)
     short_names = list(df['short_name'])
     full_names = list(df['full_name'])
@@ -167,7 +173,8 @@ def institutions():
         elif len(institutionShort) > 10:
             flash('Institution short name must be shorter than 10 characters', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{uuid.uuid1()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
@@ -185,7 +192,8 @@ def institutions():
 @registrations.route('/register/sampleTypes', methods=['GET', 'POST'])
 def sampleTypes():
 
-    df = get_data(DBNAME, 'sample_types')
+    #df = get_data(DBNAME, 'sample_types')
+    df = get_data(DB, 'sample_types')
     df.sort_values(by='sampletype', inplace=True)
     sample_types = list(df['sampletype'])
     comments = list(df['comment'])
@@ -200,7 +208,8 @@ def sampleTypes():
         elif len(sample_type) < 3:
             flash('Sample type must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
@@ -218,7 +227,8 @@ def sampleTypes():
 @registrations.route('/register/gearTypes', methods=['GET', 'POST'])
 def gearTypes():
 
-    df = get_data(DBNAME, 'gear_types')
+    #df = get_data(DBNAME, 'gear_types')
+    df = get_data(DB, 'gear_types')
     df.sort_values(by='geartype', inplace=True)
     gear_types = list(df['geartype'])
     comments = list(df['comment'])
@@ -233,7 +243,8 @@ def gearTypes():
         elif len(gear_type) < 3:
             flash('Gear type must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
@@ -251,7 +262,8 @@ def gearTypes():
 @registrations.route('/register/intendedMethods', methods=['GET', 'POST'])
 def intendedMethods():
 
-    df = get_data(DBNAME, 'intended_methods')
+    #df = get_data(DBNAME, 'intended_methods')
+    df = get_data(DB, 'intended_methods')
     df.sort_values(by='intendedmethod', inplace=True)
     intended_methods = list(df['intendedmethod'])
     comments = list(df['comment'])
@@ -266,7 +278,8 @@ def intendedMethods():
         elif len(intended_method) < 3:
             flash('Intended method must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
@@ -284,7 +297,8 @@ def intendedMethods():
 @registrations.route('/register/stations', methods=['GET', 'POST'])
 def stations():
 
-    df = get_data(DBNAME, 'stations')
+    #df = get_data(DBNAME, 'stations')
+    df = get_data(DB, 'stations')
     df.sort_values(by='stationname', inplace=True)
     stationNames = list(df['stationname'])
     decimalLatitudes = list(df['decimallatitude'])
@@ -313,7 +327,8 @@ def stations():
         elif decimalLongitude < -180:
             flash('Longitude must be a between -180 and 180', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO stations (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
@@ -331,7 +346,8 @@ def stations():
 @registrations.route('/register/personnel', methods=['GET', 'POST'])
 def personnel():
 
-    df = get_data(DBNAME, 'personnel')
+    #df = get_data(DBNAME, 'personnel')
+    df = get_data(DB, 'personnel')
     df.sort_values(by='last_name', inplace=True)
     first_names = list(df['first_name'])
     last_names = list(df['last_name'])
@@ -340,7 +356,8 @@ def personnel():
     institutions = list(df['institution'])
     comments = list(df['comment'])
 
-    df = get_data(DBNAME, 'institutions')
+    #df = get_data(DBNAME, 'institutions')
+    df = get_data(DB, 'institutions')
     registered_institutions = list(df['full_name'])
 
     if request.method == 'POST':
@@ -379,7 +396,8 @@ def personnel():
         elif not check_orcid:
             flash('Invalid ordid', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
             cur.execute(f"INSERT INTO personnel (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
@@ -396,7 +414,8 @@ def personnel():
 @registrations.route('/register/sex', methods=['GET', 'POST'])
 def sex():
 
-    df = get_data(DBNAME, 'sex')
+    #df = get_data(DBNAME, 'sex')
+    df = get_data(DB, 'sex')
     #df.sort_values(by='sex', inplace=True)
     sexes = list(df['sex'])
     comments = list(df['comment'])
@@ -411,7 +430,8 @@ def sex():
         elif len(sex) < 1:
             flash('Sex must be at least 1 character long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{uuid.uuid1()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
@@ -429,7 +449,8 @@ def sex():
 @registrations.route('/register/kingdoms', methods=['GET', 'POST'])
 def kingdoms():
 
-    df = get_data(DBNAME, 'kingdoms')
+    #df = get_data(DBNAME, 'kingdoms')
+    df = get_data(DB, 'kingdoms')
     df.sort_values(by='kingdom', inplace=True)
     kingdoms = list(df['kingdom'])
     comments = list(df['comment'])
@@ -444,7 +465,8 @@ def kingdoms():
         elif len(kingdom) < 3:
             flash('Kingdom name must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid1()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
@@ -462,7 +484,8 @@ def kingdoms():
 @registrations.route('/register/filters', methods=['GET', 'POST'])
 def filters():
 
-    df = get_data(DBNAME, 'filters')
+    #df = get_data(DBNAME, 'filters')
+    df = get_data(DB, 'filters')
     df.sort_values(by='filter', inplace=True)
     filters = list(df['filter'])
     comments = list(df['comment'])
@@ -477,7 +500,8 @@ def filters():
         elif len(filter) < 2:
             flash('Filter name must be at least 2 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid1()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
@@ -495,7 +519,8 @@ def filters():
 @registrations.route('/register/projects', methods=['GET', 'POST'])
 def registeredprojects():
 
-    df = get_data(DBNAME, 'projects')
+    #df = get_data(DBNAME, 'projects')
+    df = get_data(DB, 'projects')
     df.sort_values(by='project', inplace=True)
     projects = list(df['project'])
     comments = list(df['comment'])
@@ -510,7 +535,8 @@ def registeredprojects():
         elif len(project) < 7:
             flash('Project name must be at least 7 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{uuid.uuid1()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
@@ -528,7 +554,8 @@ def registeredprojects():
 @registrations.route('/register/storageTemps', methods=['GET', 'POST'])
 def storageTemps():
 
-    df = get_data(DBNAME, 'storage_temperatures')
+    #df = get_data(DBNAME, 'storage_temperatures')
+    df = get_data(DB, 'storage_temperatures')
     df.sort_values(by='storagetemp', inplace=True)
     storageTemps = list(df['storagetemp'])
     comments = list(df['comment'])
@@ -543,7 +570,8 @@ def storageTemps():
         elif len(storageTemp) < 1:
             flash('Storage temperature must be at least 1 character long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")

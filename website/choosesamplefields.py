@@ -12,7 +12,8 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER,TMP_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -34,7 +35,8 @@ def choose_sample_fields(parentID,sampleType):
         if setup['name'] == sampleType:
             config = sampleType
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB)
     all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 
     most_likely_same_for_all_samples = [
@@ -102,16 +104,19 @@ def choose_sample_fields(parentID,sampleType):
 
             fields_list = list(set(list(required_fields_dic.keys()) + list(data_df.columns)))
 
-            filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
+            #filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
+            filepath = f"{TMP_FILES_FOLDER}{os.sep}{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx"
 
-            write_file(filepath, fields_list, metadata=True, conversions=True, data=data_df, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+            #write_file(filepath, fields_list, metadata=True, conversions=True, data=data_df, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+            write_file(filepath, fields_list, metadata=True, conversions=True, data=data_df, metadata_df=False, DB=DB, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
             return send_file(filepath, as_attachment=True)
 
         elif form_input['submitbutton'] == ['loadSetup']:
 
             current_setup = form_input['userSetup'][0]
-            userSetup = get_user_setup(DBNAME, current_setup) # json of setup
+            #userSetup = get_user_setup(DBNAME, current_setup) # json of setup
+            userSetup = get_user_setup(DB, current_setup) # json of setup
 
             # adding data for fields in setup to dictionaries to be displayed through HTML
             for key, val in userSetup.items():
@@ -136,9 +141,7 @@ def choose_sample_fields(parentID,sampleType):
             for key, val in recommended_fields_dic.items():
                 if key not in userSetup.keys():
                     val['checked'] = ['']
-
         else:
-
             good = True
             errors = []
 
@@ -152,7 +155,8 @@ def choose_sample_fields(parentID,sampleType):
             else:
                 setupName = form_input['setupName'][0]
 
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             df = pd.read_sql(f'SELECT setupName FROM user_field_setups;', con=conn)
             existing_user_setups = df['setupname'].tolist()
 
@@ -198,10 +202,9 @@ def choose_sample_fields(parentID,sampleType):
             if good == False:
                 for error in errors:
                     flash(error, category='error')
-
             else:
-
-                conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+                #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+                conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
                 cur = conn.cursor()
 
                 if setupName == 'temporary':
@@ -231,22 +234,22 @@ def choose_sample_fields(parentID,sampleType):
     else:
         added_fields_bool = False
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     df = pd.read_sql(f"SELECT setupName FROM user_field_setups WHERE setupName != 'temporary';", con=conn)
     existing_user_setups = sorted(df['setupname'].tolist())
 
-
     return render_template(
-    "chooseSampleFields.html",
-    parentID=parentID,
-    sampleType=sampleType,
-    required_fields_dic = required_fields_dic,
-    recommended_fields_dic = recommended_fields_dic,
-    extra_fields_dic = extra_fields_dic,
-    groups = groups,
-    added_fields_dic = added_fields_dic,
-    added_fields_bool = added_fields_bool,
-    num_samples = num_samples,
-    existing_user_setups = existing_user_setups,
-    current_setup = current_setup
-    )
+                            "chooseSampleFields.html",
+                            parentID=parentID,
+                            sampleType=sampleType,
+                            required_fields_dic = required_fields_dic,
+                            recommended_fields_dic = recommended_fields_dic,
+                            extra_fields_dic = extra_fields_dic,
+                            groups = groups,
+                            added_fields_dic = added_fields_dic,
+                            added_fields_bool = added_fields_bool,
+                            num_samples = num_samples,
+                            existing_user_setups = existing_user_setups,
+                            current_setup = current_setup
+                            )

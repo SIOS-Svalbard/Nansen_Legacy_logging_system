@@ -6,7 +6,8 @@ import uuid
 from website.database.get_data import get_data
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.harvest_niskins import harvest_niskins
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -16,7 +17,8 @@ views = Blueprint('views', __name__)
 @views.route('/', methods=['GET'])
 def home():
 
-    cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    #cruise_details_df = get_data(DBNAME, CRUISE_DETAILS_TABLE)
+    cruise_details_df = get_data(DB, CRUISE_DETAILS_TABLE)
     if len(cruise_details_df) > 0:
         cruise_leader_name = cruise_details_df['cruise_leader_name'].values[-1]
         co_cruise_leader_name = cruise_details_df['co_cruise_leader_name'].values[-1]
@@ -25,8 +27,10 @@ def home():
         cruise_leader_name = co_cruise_leader_name = cruise_name = False
 
     # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
-    activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE).reset_index()
-    harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER)
+    #activities_df = harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE).reset_index()
+    activities_df = harvest_activities(TOKTLOGGER, DB, METADATA_CATALOGUE).reset_index()
+    #harvest_niskins(DBNAME, METADATA_CATALOGUE, BTL_FILES_FOLDER)
+    harvest_niskins(DB, METADATA_CATALOGUE, BTL_FILES_FOLDER)
     activities_df['message'] = 'Okay'
 
     # Get this from configuration file

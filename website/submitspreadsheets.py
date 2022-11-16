@@ -12,7 +12,8 @@ import website.database.metadata_fields as metadata_fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, TMP_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -27,15 +28,13 @@ def submit_spreadsheet():
     Generate template html page code
     '''
     if request.method == 'POST':
-
         f = request.files['file']
 
         if f.filename == '':
             flash('No file selected', category='error')
-
         else:
-
-            filepath = '/tmp/'+f.filename
+            #filepath = '/tmp/'+f.filename
+            filepath = f"{TMP_FILES_FOLDER}{os.sep}{f.filename}"
             f.save(filepath)
 
             errors = []
@@ -66,14 +65,14 @@ def submit_spreadsheet():
             if warnings != []:
                 for warning in warnings:
                     flash(warning, category='warning')
-
             else:
                 if request.form['submitbutton'] == 'new':
                     new = True
                 elif request.form['submitbutton'] == 'update':
                     new = False
 
-                required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+                #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+                required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB)
                 required = list(required_fields_dic.keys())
                 recommended = list(recommended_fields_dic.keys())
 
@@ -89,7 +88,8 @@ def submit_spreadsheet():
                 data_df['pi_details'] = data_df[pi_cols].values.tolist()
                 data_df['recordedBy_details'] = data_df[recordedBy_cols].values.tolist()
 
-                df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+                #df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+                df_personnel = get_personnel_df(DB=DB, table='personnel')
                 data_df[['pi_name','pi_email','pi_orcid', 'pi_institution']] = data_df.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                 data_df[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = data_df.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
 
@@ -105,20 +105,20 @@ def submit_spreadsheet():
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 good, errors = checker(
-                    data=data_df,
-                    metadata=metadata_df,
-                    required=required,
-                    DBNAME=DBNAME,
-                    METADATA_CATALOGUE=METADATA_CATALOGUE,
-                    new=new,
-                    firstrow=4
-                    )
+                                        data=data_df,
+                                        metadata=metadata_df,
+                                        required=required,
+                                        #DBNAME=DBNAME,
+                                        DB=DB,
+                                        METADATA_CATALOGUE=METADATA_CATALOGUE,
+                                        new=new,
+                                        firstrow=4
+                                        )
 
                 if good == False:
                     for error in errors:
                         flash(error, category='error')
                 else:
-
                     for field in fields.fields:
                         if field['name'] in data_df.columns:
                             if field['format'] in ['int', 'double precision', 'time', 'date']:
@@ -140,36 +140,33 @@ def submit_spreadsheet():
                         pass
 
                     try:
-
                         if new == True:
-
                             data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                             data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                             data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
                             data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                            insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            #insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            insert_into_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE)
 
                             flash('Data from file uploaded successfully!', category='success')
-
                         else:
-
-                            df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+                            #df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
+                            df_metadata_catalogue = get_data(DB, METADATA_CATALOGUE)
                             ids = list(data_df['id'])
                             data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
                             data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ New version submitted from spreadsheet, source filename " + f.filename)
                             data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                            update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            #update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            update_record_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE)
 
                             [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
-
                             flash('Data from file updated successfully!', category='success')
 
                             return redirect(url_for('views.home'))
-
                     except:
                         flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     return render_template(
-    "submitSpreadsheet.html"
-    )
+                            "submitSpreadsheet.html"
+                            )

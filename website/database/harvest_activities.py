@@ -95,7 +95,8 @@ def get_bottom_depth(start_datetime, TOKTLOGGER):
 
     return bottomdepthinmeters
 
-def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
+#def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
+def harvest_activities(TOKTLOGGER, DB, METADATA_CATALOGUE):
     '''
     Provide IP or DNS of toktlogger to access IMR API
 
@@ -111,7 +112,8 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
         print("\nCould not connect to the Toktlogger\n")
         json_activities = []
 
-    registered_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)['id'].values
+    #registered_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)['id'].values
+    registered_activities = get_registered_activities(DB, METADATA_CATALOGUE)['id'].values
 
     to_remove = [] # indexes of activities that are already registered don't need to be registered again. Creating a list of those, removing after for loop.
 
@@ -121,15 +123,16 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
 
     new_activities = [val for idx, val in enumerate(json_activities) if idx not in to_remove]
 
-    new_activities = list(map( lambda x: flattenjson( x, "__" ), new_activities ))
+    new_activities = list(map(lambda x: flattenjson(x, "__" ), new_activities))
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
     cur = conn.cursor()
 
-    gear_df = get_data(DBNAME, 'gear_types')
+    #gear_df = get_data(DBNAME, 'gear_types')
+    gear_df = get_data(DB, 'gear_types')
 
     for idx, activity in enumerate(new_activities):
-
         # WHAT ABOUT NONE VALUES FOR EXAMPLE IN LATITUDE AND LONGITUDE
         # Do I need to add modified field here too? What about recordedBy? Cruise name + project name if exists, otherwise NULL. Need to update all samples once cruise details are logged
         start_datetime = dt.strptime(activity['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -205,7 +208,8 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
 
     conn.commit()
 
-    activities_df = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    #activities_df = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    activities_df = get_registered_activities(DB, METADATA_CATALOGUE)
 
     cur.close()
     conn.close()

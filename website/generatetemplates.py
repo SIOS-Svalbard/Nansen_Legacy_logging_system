@@ -11,7 +11,8 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, TMP_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -25,7 +26,8 @@ def generate_template():
     '''
     Generate template html page code
     '''
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB)
 
     added_fields_dic = {}
     if request.method == 'POST':
@@ -48,9 +50,11 @@ def generate_template():
                 if val == ['on']:
                     fields_list = fields_list + [field]
 
-            filepath = '/tmp/generated_template.xlsx'
+            #filepath = '/tmp/generated_template.xlsx'
+            filepath = f"{TMP_FILES_FOLDER}{os.sep}generated_template.xlsx"
 
-            write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+            #write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+            write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DB=DB, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
             return send_file(filepath, as_attachment=True)
 

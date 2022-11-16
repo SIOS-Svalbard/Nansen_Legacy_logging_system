@@ -31,13 +31,15 @@ def check_whether_to_inherit(parentID, col, df_parents, child_value=None, weak=T
             else:
                 return True
 
-def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
+#def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
+def propegate_parents_to_children(df_children,DB, METADATA_CATALOGUE):
 
     try:
         parentIDs = list(df_children['parentID'])
     except:
         parentIDs = list(df_children['parentid'])
-    df_parents = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, parentIDs)
+    #df_parents = get_metadata_for_list_of_ids(DBNAME, METADATA_CATALOGUE, parentIDs)
+    df_parents = get_metadata_for_list_of_ids(DB, METADATA_CATALOGUE, parentIDs)
 
     inheritable = []  # For holding inheritable fields
     weak = []  # For holding weak inheritance
@@ -68,7 +70,8 @@ def propegate_parents_to_children(df_children,DBNAME, METADATA_CATALOGUE):
 
     return df_children
 
-def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
+#def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
+def find_all_children(IDs,DB, METADATA_CATALOGUE):
     '''
     Return a list of child IDs for parent IDs provided.
     Children, grandchildren etc are all included in the returned list
@@ -92,7 +95,8 @@ def find_all_children(IDs,DBNAME, METADATA_CATALOGUE):
 
     '''
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
 
     moreChildren = True
     children_IDs = []

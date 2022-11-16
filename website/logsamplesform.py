@@ -12,7 +12,8 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+#from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, CRUISE_DETAILS_TABLE, VESSEL_NAME, TOKTLOGGER, TMP_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -34,11 +35,13 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         if setup['name'] == sampleType:
             config = sampleType
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB)
     required = list(required_fields_dic.keys())
     added_fields_dic = {}
 
-    userSetup = get_user_setup(DBNAME, current_setup) # json of setup
+    #userSetup = get_user_setup(DBNAME, current_setup) # json of setup
+    userSetup = get_user_setup(DB, current_setup) # json of setup
 
     # adding data for fields in setup to dictionaries to be displayed through HTML
     for key, val in userSetup.items():
@@ -90,7 +93,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         gearType = None
 
     for key, val in setup_fields_dic.items():
-
         if userSetup[key] == 'same':
             if key == 'sampleType':
                 val['values'] = sampleType
@@ -106,34 +108,33 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             else:
                 val['values'] = [''] * int(num_samples)
 
-    parent_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, parentID)
+    #parent_df = get_metadata_for_id(DBNAME, METADATA_CATALOGUE, parentID)
+    parent_df = get_metadata_for_id(DB, METADATA_CATALOGUE, parentID)
     parent_details = {}
 
     parent_fields = [
-    'id',
-    'gearType',
-    'sampleType',
-    'stationName',
-    'decimalLatitude',
-    'decimalLongitude',
-    'eventDate',
-    'eventTime',
-    'minimumDepthInMeters',
-    'maximumDepthInMeters'
-    ]
+                    'id',
+                    'gearType',
+                    'sampleType',
+                    'stationName',
+                    'decimalLatitude',
+                    'decimalLongitude',
+                    'eventDate',
+                    'eventTime',
+                    'minimumDepthInMeters',
+                    'maximumDepthInMeters'
+                    ]
 
     for parent_field in parent_fields:
         parent_details[parent_field] = all_fields_dic[parent_field]
         parent_details[parent_field]['value'] = parent_df[parent_field.lower()][0]
 
     if request.method == 'POST':
-
         form_input = request.form.to_dict(flat=False)
-
-        df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+        #df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+        df_personnel = get_personnel_df(DB=DB, table='personnel')
 
         cols = userSetup.keys()
-
         # Initialising dataframe
         df_to_submit = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
 
@@ -142,7 +143,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         rows = list(range(int(num_samples)))
 
         for key, value in form_input.items():
-
             if '|' not in key and key not in ['submit','labelType', 'movefieldtovary', 'movefieldtosame']:
                 fields_to_submit.append(key)
                 if key in ['pi_details','recordedBy_details']:
@@ -172,7 +172,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             fieldtovary = form_input['movefieldtovary'][0]
             userSetup[fieldtovary] = 'vary'
 
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
 
             userSetup = str(userSetup).replace('\'','"')
@@ -190,9 +191,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             fieldtovary = form_input['movefieldtosame'][0]
             userSetup[fieldtovary] = 'same'
 
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            #conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
             cur = conn.cursor()
-
             userSetup = str(userSetup).replace('\'','"')
 
             exe_str = f"UPDATE user_field_setups SET setup = '{str(userSetup)}', created = CURRENT_TIMESTAMP WHERE setupName = 'temporary';"
@@ -205,12 +206,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             return redirect(f'/logSamples/parentid={parentID}/form/sampletype={sampleType}&num={num_samples}&setup=temporary')
 
         elif 'submit' in form_input.keys():
-
             if form_input['submit'] != ['printLabels']:
                 form_input.pop('labelType')
 
             if form_input['submit'] == ['submitForm']:
-
                 if 'pi_details' in fields_to_submit:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                     fields_to_submit.remove('pi_details')
@@ -240,20 +239,20 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 metadata_df = False
 
                 good, errors = checker(
-                    data=df_to_submit,
-                    required=required,
-                    DBNAME=DBNAME,
-                    METADATA_CATALOGUE=METADATA_CATALOGUE,
-                    new=True
-                    )
+                                        data=df_to_submit,
+                                        required=required,
+                                        #DBNAME=DBNAME,
+                                        DB=DB,
+                                        METADATA_CATALOGUE=METADATA_CATALOGUE,
+                                        new=True
+                                        )
 
                 if good == False:
                     for error in errors:
                         flash(error, category='error')
-
                 else:
-
-                    df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                    #df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                    df_to_submit = propegate_parents_to_children(df_to_submit, DB, METADATA_CATALOGUE)
 
                     for field in fields.fields:
                         if field['name'] in df_to_submit.columns:
@@ -274,31 +273,31 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form")
                     df_to_submit['source'] = "Record uploaded from GUI form"
 
-                    insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                    #insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                    insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DB, METADATA_CATALOGUE)
 
                     flash('Data from file uploaded successfully!', category='success')
 
                     return redirect(f'/logSamples/parentid={parentID}')
 
             elif form_input['submit'] == ['generateExcel']:
-
-                filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
+                #filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
+                filepath = f'{TMP_FILES_FOLDER}{os.sep}{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
                 df_to_submit.fillna('', inplace=True)
-                write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+                #write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DBNAME=DBNAME, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+                write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DB=DB, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
 
                 return send_file(filepath, as_attachment=True)
 
             elif form_input['submit'] == ['submitExcel']:
-
                 f = request.files['file']
 
                 if f.filename == '':
                     flash('No file selected', category='error')
-
                 else:
-
-                    filepath = '/tmp/'+f.filename
+                    #filepath = '/tmp/'+f.filename
+                    filepath = f"{TMP_FILES_FOLDER}{os.sep}{f.filename}"
                     f.save(filepath)
 
                     errors = []
@@ -318,7 +317,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         except:
                             metadata_df = False
                             warnings.append('No sheet named "Metadata" found. Uploading the data without it.')
-
                     else:
                         errors.append('File must be an "XLSX" file.')
                         good = False
@@ -329,7 +327,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     if warnings != []:
                         for warning in warnings:
                             flash(warning, category='warning')
-
                     else:
                         new=True
 
@@ -345,7 +342,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         df_to_submit['pi_details'] = df_to_submit[pi_cols].values.tolist()
                         df_to_submit['recordedBy_details'] = df_to_submit[recordedBy_cols].values.tolist()
 
-                        df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+                        #df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel')
+                        df_personnel = get_personnel_df(DB=DB, table='personnel')
                         df_to_submit[['pi_name','pi_email','pi_orcid', 'pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                         df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
 
@@ -361,21 +359,22 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                         good, errors = checker(
-                            data=df_to_submit,
-                            metadata=metadata_df,
-                            required=required,
-                            DBNAME=DBNAME,
-                            METADATA_CATALOGUE=METADATA_CATALOGUE,
-                            new=new,
-                            firstrow=4
-                            )
+                                                data=df_to_submit,
+                                                metadata=metadata_df,
+                                                required=required,
+                                                #DBNAME=DBNAME,
+                                                DB=DB,
+                                                METADATA_CATALOGUE=METADATA_CATALOGUE,
+                                                new=new,
+                                                firstrow=4
+                                                )
 
                         if good == False:
                             for error in errors:
                                 flash(error, category='error')
                         else:
-
-                            df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                            #df_to_submit = propegate_parents_to_children(df_to_submit,DBNAME, METADATA_CATALOGUE)
+                            df_to_submit = propegate_parents_to_children(df_to_submit,DB, METADATA_CATALOGUE)
                             # How should I assign eventids if using spreadsheets?
 
                             # Write to function? Used multiple times
@@ -401,7 +400,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
                             df_to_submit['source'] = "Record uploaded from spreadsheet, filename " + f.filename
 
-                            insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            #insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DBNAME, METADATA_CATALOGUE)
+                            insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DB, METADATA_CATALOGUE)
 
                             flash('Data from file uploaded successfully!', category='success')
                             return redirect(f'/logSamples/parentid={parentID}')
@@ -412,13 +412,13 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     for key, val in setup_fields_dic.items():
         print('\n\n',key,'\n',val,'\n')
     return render_template(
-    "logSamplesForm.html",
-    parentID=parentID,
-    parent_details=parent_details,
-    sampleType=sampleType,
-    gearType=gearType,
-    setup_fields_dic = setup_fields_dic,
-    extra_fields_dic = extra_fields_dic,
-    groups = groups,
-    num_rows = int(num_samples)
-    )
+                            "logSamplesForm.html",
+                            parentID=parentID,
+                            parent_details=parent_details,
+                            sampleType=sampleType,
+                            gearType=gearType,
+                            setup_fields_dic = setup_fields_dic,
+                            extra_fields_dic = extra_fields_dic,
+                            groups = groups,
+                            num_rows = int(num_samples)
+                            )
