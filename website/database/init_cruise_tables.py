@@ -4,7 +4,7 @@ import getpass
 import website.database.fields as fields
 import pandas as pd
 
-def init_metadata_catalogue(DBNAME, CRUISE_NUMBER, cur):
+def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
     '''
     Creating the metadata catalogue table within the database to be used for the cruise.
 
@@ -18,7 +18,7 @@ def init_metadata_catalogue(DBNAME, CRUISE_NUMBER, cur):
         psycopg2 conn cursor object, used to execute psql commands
     '''
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
     cur.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
@@ -37,7 +37,7 @@ def init_metadata_catalogue(DBNAME, CRUISE_NUMBER, cur):
     cur.close()
     conn.close()
 
-def init_stations(DBNAME, CRUISE_NUMBER, cur):
+def init_stations(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS stations_{CRUISE_NUMBER} (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
 
     df = pd.read_csv('website/database/dropdown_initial_values/stations.csv')
@@ -49,7 +49,7 @@ def init_stations(DBNAME, CRUISE_NUMBER, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) SELECT '{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT stationName FROM stations_{CRUISE_NUMBER} WHERE stationName = '{stationName}');")
 
-def init_personnel(DBNAME, CRUISE_NUMBER, cur):
+def init_personnel(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS personnel_{CRUISE_NUMBER} (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
 
     df = pd.read_csv('website/database/dropdown_initial_values/personnel.csv')
@@ -64,7 +64,7 @@ def init_personnel(DBNAME, CRUISE_NUMBER, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) SELECT '{id}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT email FROM personnel_{CRUISE_NUMBER} WHERE email = '{email}');")
 
-def init_user_field_setups(DBNAME, CRUISE_NUMBER, cur):
+def init_user_field_setups(DB, CRUISE_NUMBER, cur):
     '''
     Creating a table to log different setups when users select fields to use for various sample types.
     '''
@@ -89,8 +89,8 @@ def init_user_field_setups(DBNAME, CRUISE_NUMBER, cur):
     exe_str = f"INSERT INTO user_field_setups_{CRUISE_NUMBER} (setupName, setup, created) SELECT 'temporary', '{setup}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName = 'temporary');"
     cur.execute(exe_str)
 
-def check_if_cruise_exists(DBNAME, CRUISE_NUMBER):
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+def check_if_cruise_exists(DB, CRUISE_NUMBER):
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     df = pd.read_sql(f"SELECT cruise_number FROM cruises WHERE cruise_number = '{CRUISE_NUMBER}'", con=conn)
     if len(df) == 1:
         return True
@@ -100,15 +100,15 @@ def check_if_cruise_exists(DBNAME, CRUISE_NUMBER):
         print('Multiple cruises logged with the same cruise number')
         return True
 
-def run(DBNAME, CRUISE_NUMBER, VESSEL_NAME):
+def run(DB, CRUISE_NUMBER, VESSEL_NAME):
 
     print('Initialising database tables for the cruise')
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
-    init_personnel(DBNAME, CRUISE_NUMBER, cur)
-    init_stations(DBNAME, CRUISE_NUMBER, cur)
-    init_user_field_setups(DBNAME, CRUISE_NUMBER, cur)
-    init_metadata_catalogue(DBNAME, CRUISE_NUMBER, cur)
+    init_personnel(DB, CRUISE_NUMBER, cur)
+    init_stations(DB, CRUISE_NUMBER, cur)
+    init_user_field_setups(DB, CRUISE_NUMBER, cur)
+    init_metadata_catalogue(DB, CRUISE_NUMBER, cur)
     conn.commit()
     cur.close()
     conn.close()

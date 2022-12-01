@@ -11,7 +11,7 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details
-from . import DBNAME, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -26,13 +26,13 @@ def missing_metadata():
     '''
     Generate template html page code
     '''
-    cruise_details_df = get_cruise(DBNAME)
+    cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    activities_df = harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER).reset_index()
+    activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
 
     # Loading fields
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
     # Removing rows from dataframe where no missing values
     check_for_missing = list(required_fields_dic.keys())
@@ -86,7 +86,7 @@ def missing_metadata():
 
     elif request.method == 'POST':
         form_input = request.form.to_dict(flat=False)
-        df_personnel = get_personnel_df(DBNAME=DBNAME, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
+        df_personnel = get_personnel_df(DB=DB, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
 
         required = list(activity_fields_dic.keys())
         df_to_submit = activities_df[required]
@@ -159,7 +159,7 @@ def missing_metadata():
         good, errors = checker(
             data=df_to_submit,
             required=fields_to_submit,
-            DBNAME=DBNAME,
+            DB=DB,
             CRUISE_NUMBER=CRUISE_NUMBER,
             new=False,
             )
@@ -191,7 +191,7 @@ def missing_metadata():
             df_to_submit['history'] = activities_df.loc[activities_df['id'].isin(ids), 'history'].iloc[0]
             df_to_submit['history'] = df_to_submit['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities")
             df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            update_record_metadata_catalogue_df(df_to_submit, metadata_df=False, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+            update_record_metadata_catalogue_df(df_to_submit, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
             flash('Records updated successfully!', category='success')
 

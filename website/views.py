@@ -7,7 +7,7 @@ from website.database.init_cruise_tables import run as init_cruise_tables
 from website.database.get_data import get_data, get_cruise, get_cruises
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.harvest_niskins import harvest_niskins
-from . import DBNAME, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
+from . import DB, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -18,7 +18,7 @@ views = Blueprint('views', __name__)
 @views.route('/', methods=['GET', 'POST'])
 def home():
 
-    cruise_details_df = get_cruise(DBNAME)
+    cruise_details_df = get_cruise(DB)
 
     if isinstance(cruise_details_df, pd.DataFrame):
 
@@ -31,8 +31,8 @@ def home():
         cruise_name = cruise_details_df['cruise_name'].values[-1]
 
         # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
-        activities_df = harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER).reset_index()
-        harvest_niskins(DBNAME, CRUISE_NUMBER, BTL_FILES_FOLDER)
+        activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
+        harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
         activities_df['message'] = 'Okay'
 
         # Get this from configuration file
@@ -62,7 +62,7 @@ def home():
 
             if request.form['submit'] == 'endCruise':
 
-                conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+                conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
                 cur = conn.cursor()
                 exe_str = f"UPDATE cruises SET current = false WHERE cruise_number = '{CRUISE_NUMBER}';"
                 cur.execute(exe_str)
@@ -107,13 +107,13 @@ def home():
             vessel_name_toktlogger = ''
 
         # Pull list of existing cruises for resume_cruise drop-down list
-        existing_cruise_numbers = get_cruises(DBNAME)
+        existing_cruise_numbers = get_cruises(DB)
 
         if request.method == 'POST':
 
             form_input = request.form.to_dict(flat=False)
 
-            conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
             cur = conn.cursor()
 
             if request.form['submit'] == 'startCruise':
@@ -134,7 +134,7 @@ def home():
                     cur.close()
                     conn.close()
 
-                    init_cruise_tables(DBNAME, CRUISE_NUMBER, VESSEL_NAME)
+                    init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
 
                     # redirect to home, run the script again now that new cruise is logged with current = true
                     return redirect('')

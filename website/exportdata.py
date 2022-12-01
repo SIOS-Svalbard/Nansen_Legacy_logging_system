@@ -4,7 +4,7 @@ from website.spreadsheets.make_xlsx import write_file
 from website.database.get_data import get_data, get_cruise, get_personnel_df, get_samples_for_pi, get_samples_for_recordedby, get_samples_for_personnel, get_samples_for_sampletype
 from website.other_functions.other_functions import split_personnel_list
 from website.configurations.get_configurations import get_fields
-from . import DBNAME, METADATA_CATALOGUE, CRUISE_NUMBER
+from . import DB, METADATA_CATALOGUE, CRUISE_NUMBER
 import website.database.fields as fields
 import numpy as np
 import yaml
@@ -15,13 +15,13 @@ exportdata = Blueprint('exportdata', __name__)
 @exportdata.route('/exportData', methods=['GET', 'POST'])
 def export_data():
 
-    cruise_details_df = get_cruise(DBNAME)
+    cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    sample_types_df = get_data(DBNAME, 'sample_types')
+    sample_types_df = get_data(DB, 'sample_types')
     sampleTypes = list(sample_types_df['sampletype'])
 
-    personnel_df = get_personnel_df(DBNAME=DBNAME, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
+    personnel_df = get_personnel_df(DB=DB, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
     personnel = list(personnel_df['personnel'])
 
     if request.method == 'POST':
@@ -34,7 +34,7 @@ def export_data():
 
             pi_name, pi_email, pi_orcid, pi_institution = split_personnel_list(pi, personnel_df)
 
-            df_to_export = get_samples_for_pi(DBNAME, CRUISE_NUMBER, pi_email)
+            df_to_export = get_samples_for_pi(DB, CRUISE_NUMBER, pi_email)
 
             filepath = f'/tmp/{CRUISE_NUMBER}_pi_{pi_name}.xlsx'
 
@@ -44,7 +44,7 @@ def export_data():
 
             recordedby_name, recordedby_email, recordedby_orcid, recordedby_institution = split_personnel_list(recordedby, personnel_df)
 
-            df_to_export = get_samples_for_recordedby(DBNAME, CRUISE_NUMBER, recordedby_email)
+            df_to_export = get_samples_for_recordedby(DB, CRUISE_NUMBER, recordedby_email)
 
             filepath = f'/tmp/{CRUISE_NUMBER}_recorded_by_{recordedby_name}.xlsx'
 
@@ -54,7 +54,7 @@ def export_data():
 
             personnel_name, personnel_email, personnel_orcid, personnel_institution = split_personnel_list(personnel, personnel_df)
 
-            df_to_export = get_samples_for_personnel(DBNAME, CRUISE_NUMBER, personnel_email)
+            df_to_export = get_samples_for_personnel(DB, CRUISE_NUMBER, personnel_email)
 
             filepath = f'/tmp/{CRUISE_NUMBER}_{personnel_name}.xlsx'
 
@@ -62,7 +62,7 @@ def export_data():
 
             sampletype = form_input['sampleType'][0]
 
-            df_to_export = get_samples_for_sampletype(DBNAME, CRUISE_NUMBER, sampletype)
+            df_to_export = get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype)
 
             filepath = f'/tmp/{CRUISE_NUMBER}_{sampletype}.xlsx'
 
@@ -83,7 +83,7 @@ def export_data():
         # for setup in setups:
         #     if setup['name'] == sampleType:
         #         config = sampleType
-        required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+        required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         required = list(required_fields_dic.keys())
 
         df_to_export.replace('nan', np.nan, inplace=True)
@@ -108,7 +108,7 @@ def export_data():
         #metadata_df = derive_metadata_df(df_to_export)
         metadata_df = False
 
-        write_file(filepath, df_to_export.columns, metadata=True, conversions=True, data=df_to_export, metadata_df=False, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+        write_file(filepath, df_to_export.columns, metadata=True, conversions=True, data=df_to_export, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
         return send_file(filepath, as_attachment=True)
 

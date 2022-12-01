@@ -11,7 +11,7 @@ import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DBNAME, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
+from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
 import requests
 import numpy as np
 from datetime import datetime as dt
@@ -26,10 +26,10 @@ def generate_template():
     Generate template html page code
     '''
 
-    cruise_details_df = get_cruise(DBNAME)
+    cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
     added_fields_dic = {}
     if request.method == 'POST':
@@ -54,7 +54,7 @@ def generate_template():
 
             filepath = '/tmp/generated_template.xlsx'
 
-            write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DBNAME=DBNAME, CRUISE_NUMBER=CRUISE_NUMBER)
+            write_file(filepath, fields_list, metadata=True, conversions=True, data=False, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
             return send_file(filepath, as_attachment=True)
 

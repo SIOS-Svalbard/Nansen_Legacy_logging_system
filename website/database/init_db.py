@@ -19,17 +19,18 @@ import website.database.fields as fields
 import pandas as pd
 import json
 
-def create_database(DBNAME):
+def create_database(DB):
     '''
     Initialising the database if it doesn't already exist.
 
     A single database will run on the vessel for all cruises, so that the tables within can be used for future cruises.
     This allows someone to log a station name on one cruise and use it again on the next cruise for example.
 
-    DBNAME: string
-            Name of the database to be created
+    DB: dictionary
+        Details of the database to be created
     '''
 
+    # Ideally find a solution without using getpass or a created user, e.g. using the default 'postgres' user
     conn = psycopg2.connect(database='postgres', user=getpass.getuser())
     conn.autocommit = True
     cur = conn.cursor()
@@ -37,35 +38,37 @@ def create_database(DBNAME):
     list_databases = cur.fetchall()
 
     # Initialise database if doesn't exist
-    if (DBNAME,) in list_databases:
-        print(f'Database {DBNAME} already exists')
+    if (DB['dbname'],) in list_databases:
+        print(f'Database {DB["dbname"]} already exists')
     else:
         print('Creating database...')
-        cur.execute(f'CREATE database {DBNAME}')
+        cur.execute(f'CREATE database {DB["dbname"]}')
         cur.close()
         conn.close() # CREATE DATABASE cannot be executed inside a transaction block, so disconnecting and reconnecting
 
-        conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+        conn = psycopg2.connect(dbname=DB["dbname"], user=getpass.getuser())
+        #conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
         cur = conn.cursor()
 
         # Creating tables and adding some values
-        init_institutions(DBNAME, cur)
-        init_sample_types(DBNAME, cur)
-        init_gear_types(DBNAME, cur)
-        init_intended_methods(DBNAME, cur)
-        init_projects(DBNAME, cur)
-        init_storage_temperatures(DBNAME, cur)
-        init_filters(DBNAME, cur)
-        init_sex(DBNAME, cur)
-        init_kingdoms(DBNAME, cur)
-        init_cruises(DBNAME, cur)
+        init_institutions(cur)
+        init_sample_types(cur)
+        init_gear_types(cur)
+        init_intended_methods(cur)
+        init_projects(cur)
+        init_storage_temperatures(cur)
+        init_filters(cur)
+        init_sex(cur)
+        init_kingdoms(cur)
+        init_cruises(cur)
 
         conn.commit()
         cur.close()
         conn.close()
-        print(f'Database created with name {DBNAME}')
 
-def init_institutions(DBNAME, cur):
+        print(f'Database created with name {DB["dbname"]}')
+
+def init_institutions(cur):
     cur.execute("CREATE TABLE institutions (id uuid PRIMARY KEY, short_name text, full_name text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/institutions.csv')
     for idx, row in df.iterrows():
@@ -75,7 +78,7 @@ def init_institutions(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_sample_types(DBNAME, cur):
+def init_sample_types(cur):
     cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
 
     with open('website/database/dropdown_initial_values/sampleTypes.json', 'r') as f:
@@ -90,7 +93,7 @@ def init_sample_types(DBNAME, cur):
         vocabURI = item['vocabURI']
         cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
-def init_gear_types(DBNAME, cur):
+def init_gear_types(cur):
     cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
 
     with open('website/database/dropdown_initial_values/gearTypes.json', 'r') as f:
@@ -109,7 +112,7 @@ def init_gear_types(DBNAME, cur):
 
         cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
 
-def init_intended_methods(DBNAME, cur):
+def init_intended_methods(cur):
     cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/intended_methods.csv')
     for idx, row in df.iterrows():
@@ -118,7 +121,7 @@ def init_intended_methods(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_projects(DBNAME, cur):
+def init_projects(cur):
     cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/projects.csv')
     for idx, row in df.iterrows():
@@ -127,7 +130,7 @@ def init_projects(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_storage_temperatures(DBNAME, cur):
+def init_storage_temperatures(cur):
     cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/storage_temperatures.csv')
     for idx, row in df.iterrows():
@@ -136,7 +139,7 @@ def init_storage_temperatures(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
-def init_filters(DBNAME, cur):
+def init_filters(cur):
     cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/filters.csv')
     for idx, row in df.iterrows():
@@ -145,7 +148,7 @@ def init_filters(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{id}','{filter}','{comment}', CURRENT_TIMESTAMP);")
 
-def init_sex(DBNAME, cur):
+def init_sex(cur):
     cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/database/dropdown_initial_values/sex.csv')
     for idx, row in df.iterrows():
@@ -154,7 +157,7 @@ def init_sex(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{id}', '{sex}' ,'{comment}', CURRENT_TIMESTAMP);")
 
-def init_kingdoms(DBNAME, cur):
+def init_kingdoms(cur):
     cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
     df = pd.read_csv('website/database/dropdown_initial_values/kingdoms.csv')
     for idx, row in df.iterrows():
@@ -163,7 +166,7 @@ def init_kingdoms(DBNAME, cur):
         comment = row['comment']
         cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
-def init_cruises(DBNAME, cur):
+def init_cruises(cur):
     '''
     Creating a table to log the cruise details used for each cruise.
     '''
@@ -184,7 +187,7 @@ def init_cruises(DBNAME, cur):
     comment text,
     created timestamp with time zone)''')
 
-def run(DBNAME):
+def run(DB):
     '''
     Creating the database and tables.
 
@@ -192,5 +195,4 @@ def run(DBNAME):
         Name of the database within which the tables will be createde
 
     '''
-    create_database(DBNAME)
-    #init_metadata_catalogue(DBNAME, METADATA_CATALOGUE)
+    create_database(DB)

@@ -31,13 +31,13 @@ def check_whether_to_inherit(parentID, col, df_parents, child_value=None, weak=T
             else:
                 return True
 
-def propegate_parents_to_children(df_children,DBNAME, CRUISE_NUMBER):
+def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
 
     try:
         parentIDs = list(df_children['parentID'])
     except:
         parentIDs = list(df_children['parentid'])
-    df_parents = get_metadata_for_list_of_ids(DBNAME, CRUISE_NUMBER, parentIDs)
+    df_parents = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, parentIDs)
 
     inheritable = []  # For holding inheritable fields
     weak = []  # For holding weak inheritance
@@ -68,7 +68,7 @@ def propegate_parents_to_children(df_children,DBNAME, CRUISE_NUMBER):
 
     return df_children
 
-def find_all_children(IDs,DBNAME, CRUISE_NUMBER):
+def find_all_children(IDs,DB, CRUISE_NUMBER):
     '''
     Return a list of child IDs for parent IDs provided.
     Children, grandchildren etc are all included in the returned list
@@ -79,7 +79,7 @@ def find_all_children(IDs,DBNAME, CRUISE_NUMBER):
     ----------
     IDs : list
         List of IDs whose children you want to find
-    DBNAME: str
+    DB: str
         Name of PSQL database that hosts the metadata catalogue
         and other tables where lists of values for certain fields are registered
     CRUISE_NUMBER: str
@@ -92,7 +92,7 @@ def find_all_children(IDs,DBNAME, CRUISE_NUMBER):
 
     '''
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
 
     moreChildren = True
     children_IDs = []

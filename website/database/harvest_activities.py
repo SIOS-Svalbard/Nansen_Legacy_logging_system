@@ -95,7 +95,7 @@ def get_bottom_depth(start_datetime, TOKTLOGGER):
 
     return bottomdepthinmeters
 
-def harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER):
+def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
     '''
     Provide IP or DNS of toktlogger to access IMR API
 
@@ -115,7 +115,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER):
     else:
         json_activities = []
 
-    registered_activities = get_registered_activities(DBNAME, CRUISE_NUMBER)['id'].values
+    registered_activities = get_registered_activities(DB, CRUISE_NUMBER)['id'].values
 
     to_remove = [] # indexes of activities that are already registered don't need to be registered again. Creating a list of those, removing after for loop.
 
@@ -127,10 +127,10 @@ def harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER):
 
     new_activities = list(map( lambda x: flattenjson( x, "__" ), new_activities ))
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
-    gear_df = get_data(DBNAME, 'gear_types')
+    gear_df = get_data(DB, 'gear_types')
 
     for idx, activity in enumerate(new_activities):
 
@@ -210,7 +210,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, CRUISE_NUMBER):
 
     conn.commit()
 
-    activities_df = get_registered_activities(DBNAME, CRUISE_NUMBER)
+    activities_df = get_registered_activities(DB, CRUISE_NUMBER)
 
     cur.close()
     conn.close()

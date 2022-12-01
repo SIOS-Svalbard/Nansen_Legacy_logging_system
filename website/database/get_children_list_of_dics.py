@@ -3,7 +3,7 @@ from website.database.expand_hstore import expand_hstore
 from website.configurations.get_configurations import get_fields
 from website.other_functions.other_functions import combine_personnel_details
 
-def get_children_list_of_dics(DBNAME, CRUISE_NUMBER, ids):
+def get_children_list_of_dics(DB, CRUISE_NUMBER, ids):
     '''
     Create a list of dictionaries
     Each dictionary is a collection of fields and values to be plotted in a single table
@@ -11,8 +11,8 @@ def get_children_list_of_dics(DBNAME, CRUISE_NUMBER, ids):
 
     Parameters
     ----------
-    DBNAME: string
-        Name of the PSQL database that contains the metadata catalogue
+    DB: dict
+        PSQL database details
     CRUISE_NUMBER: string
         Cruise number, used in PSQL table names
     ids: list
@@ -25,16 +25,16 @@ def get_children_list_of_dics(DBNAME, CRUISE_NUMBER, ids):
 
     '''
 
-    children_df = get_children(DBNAME, CRUISE_NUMBER, ids)
+    children_df = get_children(DB, CRUISE_NUMBER, ids)
     sampleTypes = list(set(children_df['sampletype']))
     children_samples_list_of_dics = []
 
     for sampleType in sampleTypes:
 
         try:
-            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=sampleType, CRUISE_NUMBER=CRUISE_NUMBER, DBNAME=DBNAME)
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=sampleType, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
         except:
-            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration='default', CRUISE_NUMBER=CRUISE_NUMBER, DBNAME=DBNAME)
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration='default', CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
         if 'id' in children_required_fields_dic.keys():
             pass
         elif 'id' in children_recommended_fields_dic.keys():

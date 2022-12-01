@@ -68,9 +68,11 @@
   {% if num_activities == 0 %}
     <br><br><br>
     <p><strong>No activities have been registered yet.</strong></p>
+    {% if TOKTLOGGER %}
     <p>If you believe this is a mistake, check that the activities are logged in the Toktlogger
     by visiting <a href="http://{{TOKTLOGGER}}">http://{{TOKTLOGGER}}</a></p>
     <p>If activities are listed in the Toktlogger but not here, please contact the instrument crew.</p>
+    {% endif %}
   {% else %}
     <table class="table">
       <thead class="thead-dark">

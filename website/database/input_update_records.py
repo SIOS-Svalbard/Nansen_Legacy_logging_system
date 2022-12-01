@@ -5,9 +5,9 @@ import pandas as pd
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
 
-def insert_into_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER):
+def insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
     string_1 = f'INSERT INTO metadata_catalogue_{CRUISE_NUMBER} ('
@@ -49,9 +49,9 @@ def insert_into_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER):
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER, ID):
+def update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
     string_1 = f'UPDATE metadata_catalogue_{CRUISE_NUMBER} SET '
@@ -101,9 +101,9 @@ def update_record_metadata_catalogue(form_input, DBNAME, CRUISE_NUMBER, ID):
     cur.close()
     conn.close()
 
-def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, CRUISE_NUMBER):
+def insert_into_metadata_catalogue_df(data_df, metadata_df, DB, CRUISE_NUMBER):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():
@@ -161,9 +161,9 @@ def insert_into_metadata_catalogue_df(data_df, metadata_df, DBNAME, CRUISE_NUMBE
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue_df(data_df, metadata_df, DBNAME, CRUISE_NUMBER):
+def update_record_metadata_catalogue_df(data_df, metadata_df, DB, CRUISE_NUMBER):
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
     for idx, row in data_df.iterrows():
