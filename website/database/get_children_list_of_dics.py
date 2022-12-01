@@ -3,7 +3,7 @@ from website.database.expand_hstore import expand_hstore
 from website.configurations.get_configurations import get_fields
 from website.other_functions.other_functions import combine_personnel_details
 
-def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
+def get_children_list_of_dics(DB, CRUISE_NUMBER, ids):
     '''
     Create a list of dictionaries
     Each dictionary is a collection of fields and values to be plotted in a single table
@@ -11,10 +11,10 @@ def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
 
     Parameters
     ----------
-    DBNAME: string
-        Name of the PSQL database that contains the metadata catalogue
-    METADATA_CATALOGUE: string
-        Name of the table in the PSQL database
+    DB: dict
+        PSQL database details
+    CRUISE_NUMBER: string
+        Cruise number, used in PSQL table names
     ids: list
         List of UUIDS stored as strings to find and plot the children of
 
@@ -25,21 +25,21 @@ def get_children_list_of_dics(DBNAME, METADATA_CATALOGUE, ids):
 
     '''
 
-    children_df = get_children(DBNAME, METADATA_CATALOGUE, ids)
+    children_df = get_children(DB, CRUISE_NUMBER, ids)
     sampleTypes = list(set(children_df['sampletype']))
     children_samples_list_of_dics = []
 
     for sampleType in sampleTypes:
 
         try:
-            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=sampleType, DBNAME=DBNAME)
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration=sampleType, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
         except:
-            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration='default', DBNAME=DBNAME)
+            children_required_fields_dic, children_recommended_fields_dic, children_extra_fields_dic, children_groups = get_fields(configuration='default', CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
         if 'id' in children_required_fields_dic.keys():
             pass
         elif 'id' in children_recommended_fields_dic.keys():
             children_required_fields_dic['id'] = children_recommended_fields_dic['id']
-        elif 'id' in extra_fields_dic:
+        elif 'id' in children_extra_fields_dic:
             children_required_fields_dic['id'] = children_extra_fields_dic['id']
         if 'parentID' in children_required_fields_dic.keys():
             children_required_fields_dic.pop('parentID')

@@ -406,7 +406,7 @@
         "id": "7c32d618-bfe1-11ec-9d64-0242ac120002",
         "gearType": "Harstad trawl",
         "comment": "",
-        "IMR_name": "Pelagisk tr\u00e5l",
+        "IMR_name": "",
         "vocabLabel": "",
         "vocabURI": "",
         "group": "Nets and Trawls",
@@ -462,6 +462,19 @@
         "vocabLabel": "",
         "vocabURI": "",
         "group": "Snow and Ice",
+        "recommendedSampleTypes": "",
+        "recommendedChildren": {
+          "sampleTypes": ""
+        }
+    },
+    {
+        "id": "cc93c50c-65c9-11ed-b85a-bf9bd9f18690",
+        "gearType": "Krill trawl",
+        "comment": "",
+        "IMR_name": "",
+        "vocabLabel": "",
+        "vocabURI": "",
+        "group": "Nets and Trawls",
         "recommendedSampleTypes": "",
         "recommendedChildren": {
           "sampleTypes": ""

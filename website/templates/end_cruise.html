@@ -1,0 +1,29 @@
+
+<form method="POST" enctype = "multipart/form-data">
+  <!-- Button trigger modal for starting cruise -->
+  <button type="button" class="btn btn-lg btn-block btn-info" data-toggle="modal" data-target="#endCruise">
+    End cruise
+  </button>
+  <!-- Modal -->
+  <div class="modal fade" id="endCruise" tabindex="-1" role="dialog" aria-labelledby="endCruiseLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <p>Are you sure you want to finish logging samples for this cruise?</p>
+          <p>Don't worry - you can resume if you decide you want to add more later!</p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger" name="submit" value="endCruise">End cruise</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

@@ -95,7 +95,7 @@ def get_bottom_depth(start_datetime, TOKTLOGGER):
 
     return bottomdepthinmeters
 
-def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
+def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
     '''
     Provide IP or DNS of toktlogger to access IMR API
 
@@ -103,6 +103,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
     '''
 
     # Pull data from IMR API in json format. URL should match IMR API host.
+
     if TOKTLOGGER != False:
         try:
             url = "http://"+TOKTLOGGER+"/api/activities/inCurrentCruise?format=json"
@@ -114,7 +115,7 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
     else:
         json_activities = []
 
-    registered_activities = get_registered_activities(DBNAME, METADATA_CATALOGUE)['id'].values
+    registered_activities = get_registered_activities(DB, CRUISE_NUMBER)['id'].values
 
     to_remove = [] # indexes of activities that are already registered don't need to be registered again. Creating a list of those, removing after for loop.
 
@@ -126,89 +127,90 @@ def harvest_activities(TOKTLOGGER, DBNAME, METADATA_CATALOGUE):
 
     new_activities = list(map( lambda x: flattenjson( x, "__" ), new_activities ))
 
-    conn = psycopg2.connect(f'dbname={DBNAME} user=' + getpass.getuser())
+    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
     cur = conn.cursor()
 
-    gear_df = get_data(DBNAME, 'gear_types')
+    gear_df = get_data(DB, 'gear_types')
 
     for idx, activity in enumerate(new_activities):
 
-        # WHAT ABOUT NONE VALUES FOR EXAMPLE IN LATITUDE AND LONGITUDE
-        # Do I need to add modified field here too? What about recordedBy? Cruise name + project name if exists, otherwise NULL. Need to update all samples once cruise details are logged
-        start_datetime = dt.strptime(activity['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        if type(activity['endTime']) == str and type(activity['endPosition__coordinates'][0]) == float:
 
-        bottomdepthinmeters = get_bottom_depth(start_datetime,TOKTLOGGER)
+            start_datetime = dt.strptime(activity['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
 
-        start_datetime_seconds_precision = activity['startTime'].split('.')[0]
-        eventDate = activity['startTime'].split('T')[0]
-        eventTime = activity['startTime'].split('T')[1].split('.')[0]
-        endDate = activity['endTime'].split('T')[0]
-        endTime = activity['endTime'].split('T')[1].split('.')[0]
+            bottomdepthinmeters = get_bottom_depth(start_datetime,TOKTLOGGER)
 
-        if activity['activityTypeName'] in gear_df['imr_name'].values:
-            geartype = gear_df.loc[gear_df['imr_name'] == activity['activityTypeName'], 'geartype'].item()
-        else:
-            geartype = ''
+            start_datetime_seconds_precision = activity['startTime'].split('.')[0]
+            eventDate = activity['startTime'].split('T')[0]
+            eventTime = activity['startTime'].split('T')[1].split('.')[0]
+            # DON'T RUN IF NO END TIME
+            endDate = activity['endTime'].split('T')[0]
+            endTime = activity['endTime'].split('T')[1].split('.')[0]
 
-        count = activity['activityNumber']
-        readable_id = 'Activity_'+str(count)
+            if activity['activityTypeName'] in gear_df['imr_name'].values:
+                geartype = gear_df.loc[gear_df['imr_name'] == activity['activityTypeName'], 'geartype'].item()
+            else:
+                geartype = ''
 
-        decimalLatitude = round_4dp(activity['startPosition__coordinates'][0])
-        endDecimalLatitude = round_4dp(activity['endPosition__coordinates'][0])
-        decimalLongitude = round_4dp(activity['startPosition__coordinates'][1])
-        endDecimalLongitude = round_4dp(activity['endPosition__coordinates'][1])
+            count = activity['activityNumber']
+            readable_id = 'Activity_'+str(count)
 
-        created = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        history = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created by pulling from Toktlogger")
-        source = "Toktlogger"
+            decimalLatitude = round_4dp(activity['startPosition__coordinates'][0])
+            endDecimalLatitude = round_4dp(activity['endPosition__coordinates'][0])
+            decimalLongitude = round_4dp(activity['startPosition__coordinates'][1])
+            endDecimalLongitude = round_4dp(activity['endPosition__coordinates'][1])
 
-        exe_str = f'''INSERT INTO {METADATA_CATALOGUE}
-        (id,
-        eventid,
-        catalognumber,
-        statid,
-        eventdate,
-        eventtime,
-        enddate,
-        endtime,
-        decimallatitude,
-        decimallongitude,
-        enddecimallatitude,
-        enddecimallongitude,
-        bottomdepthinmeters,
-        comments1,
-        geartype,
-        created,
-        modified,
-        history,
-        source)
-        VALUES
-        ('{activity["id"]}',
-        '{activity["id"]}',
-        '{readable_id}',
-        {activity["localstationNumber"]},
-        '{eventDate}',
-        '{eventTime}',
-        '{endDate}',
-        '{endTime}',
-        {decimalLatitude},
-        {decimalLongitude},
-        {endDecimalLatitude},
-        {endDecimalLongitude},
-        {bottomdepthinmeters},
-        '{activity["comment"]}',
-        '{geartype}',
-        '{created}',
-        '{modified}',
-        '{history}',
-        '{source}');'''
+            created = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            history = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created by pulling from Toktlogger")
+            source = "Toktlogger"
 
-        cur.execute(exe_str)
+            exe_str = f'''INSERT INTO metadata_catalogue_{CRUISE_NUMBER}
+            (id,
+            eventid,
+            catalognumber,
+            statid,
+            eventdate,
+            eventtime,
+            enddate,
+            endtime,
+            decimallatitude,
+            decimallongitude,
+            enddecimallatitude,
+            enddecimallongitude,
+            bottomdepthinmeters,
+            comments1,
+            geartype,
+            created,
+            modified,
+            history,
+            source)
+            VALUES
+            ('{activity["id"]}',
+            '{activity["id"]}',
+            '{readable_id}',
+            {activity["localstationNumber"]},
+            '{eventDate}',
+            '{eventTime}',
+            '{endDate}',
+            '{endTime}',
+            {decimalLatitude},
+            {decimalLongitude},
+            {endDecimalLatitude},
+            {endDecimalLongitude},
+            {bottomdepthinmeters},
+            '{activity["comment"]}',
+            '{geartype}',
+            '{created}',
+            '{modified}',
+            '{history}',
+            '{source}');'''
+
+            cur.execute(exe_str)
 
     conn.commit()
 
-    activities_df = get_registered_activities(DBNAME, METADATA_CATALOGUE)
+    activities_df = get_registered_activities(DB, CRUISE_NUMBER)
 
     cur.close()
     conn.close()

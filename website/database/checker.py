@@ -13,22 +13,23 @@ import numpy as np
 import requests
 import psycopg2
 import getpass
-from website.database.get_data import get_data, get_registered_activities
+from website.database.get_data import get_data, get_all_ids, get_registered_activities
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
 from website.other_functions.other_functions import split_personnel_list
 import uuid
 
-def make_valid_dict(DBNAME):
+def make_valid_dict(DB, CRUISE_NUMBER):
     """
     Makes a dictionary of the possible fields with their validation.
     Does this by reading the fields list from the fields.py library.
     Parameters
     ---------
-    DBNAME: str
-        Name of PSQL database that hosts the metadata catalogue
-        and other tables where lists of values for certain fields are registered
+    DB: dict
+        Details of PSQL database
         Default: False boolean
+    CRUISE_NUMBER: str
+        Cruise number. Included in some PSQL table names
     Returns
     ---------
     field_dict : dict
@@ -39,9 +40,9 @@ def make_valid_dict(DBNAME):
     field_dict = {}
     for field in fields.fields:
         if field['name'] not in ['recordedBy_details', 'pi_details']:
-            new = Checker(DBNAME, name=field['name'], disp_name=field['disp_name'])
+            new = Checker(DB, name=field['name'], disp_name=field['disp_name'])
             if 'valid' in field:
-                new.set_validation(DBNAME, field['valid'])
+                new.set_validation(DB, CRUISE_NUMBER, field['valid'])
             if 'inherit' in field:
                 new.inherit = field['inherit']
             if 'units' in field:
@@ -50,15 +51,14 @@ def make_valid_dict(DBNAME):
 
     return field_dict
 
-def make_valid_dict_metadata(DBNAME):
+def make_valid_dict_metadata(DB):
     """
     Makes a dictionary of the possible metadata fields with their validation.
     Does this by reading the metadata fields list from the metadata_fields.py library.
     Parameters
     ---------
-    DBNAME: str
-        Name of PSQL database that hosts the metadata catalogue
-        and other tables where lists of values for certain fields are registered
+    DB: dict
+        Details of PSQL database
         Default: False boolean
     Returns
     ---------
@@ -70,9 +70,9 @@ def make_valid_dict_metadata(DBNAME):
     metadata_field_dict = {}
     for metadata_field in metadata_fields.metadata_fields:
         if metadata_field['name'] not in ['recordedBy_details', 'pi_details']:
-            new = Checker(DBNAME, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
+            new = Checker(DB, name=metadata_field['name'], disp_name=metadata_field['disp_name'])
             if 'valid' in metadata_field:
-                new.set_validation(DBNAME, metadata_field['valid'])
+                new.set_validation(DB, metadata_field['valid'])
             if 'inherit' in metadata_field:
                 new.inherit = metadata_field['inherit']
             if 'units' in metadata_field:
@@ -296,14 +296,14 @@ class Checker(Field):
         """
         Field.__init__(self, *args, **kwargs)
         if self.validation != {}:
-            self.validator = self.get_validator(DBNAME, self.validation)
+            self.validator = self.get_validator(DB, CRUISE_NUMBER, self.validation)
         else:
             self.validator = lambda x: True
 
         self.inherit = inherit
         self.units = units
 
-    def set_validation(self, DBNAME, validation):
+    def set_validation(self, DBNAME, CRUISE_NUMBER, validation):
         """
         Method for setting the validation by reading the dictionary
         and converting it using the
@@ -315,9 +315,9 @@ class Checker(Field):
         """
 
         Field.set_validation(self, validation)
-        self.validator = self.get_validator(DBNAME, self.validation)
+        self.validator = self.get_validator(DB, CRUISE_NUMBER, self.validation)
 
-    def get_validator(self, DBNAME, validation=None):
+    def get_validator(self, DBNAME, CRUISE_NUMBER, validation=None):
         """
         Checks a parameter according to the defined validation
         Parameters
@@ -337,12 +337,15 @@ class Checker(Field):
         validate = validation['validate']
         if validate == 'any':
             return Evaluator(validation, func=lambda self, x: isinstance(str(x), str))
-        elif validate == 'list' and DBNAME != False:
+        elif validate == 'list' and DB:
             if type(validation['source']) == list:
                 lst = validation['source']
             else:
                 table = validation['source']
-                df = get_data(DBNAME, table)
+                try:
+                    df = get_data(DB, table)
+                except:
+                    df = get_data(DB, table+'_'+CRUISE_NUMBER)
                 lst = df[self.name.lower()].values
             return Evaluator(lst, func=lambda self, x: str(x) in self.validation)
 
@@ -871,7 +874,7 @@ def check_meta(metadata, metadata_checker_list):
 
     return good, errors
 
-def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=False, new=True, firstrow=0, old_id=False):
+def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True, firstrow=0, old_id=False):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -884,17 +887,16 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
         'other' hstore should be expanded into separate columns before input
     metadata: Pandas dataframe
         Pandas dataframe of the metadata to be checked
-        Default False, if not present (not compulsary)
+        Default None, if not present (not compulsary)
     required: List
         List of required columns
         Default: Empty list []
-    DBNAME: str
-        Name of PSQL database that hosts the metadata catalogue
-        and other tables where lists of values for certain fields are registered
+    DB: dict
+        Details of PSQL database
         Default: False boolean
-    METADATA_CATALOGUE: str
-        Name of the metadata catalogue table within DBNAME
-        Default: False boolean
+    CRUISE_NUMBER: str
+        Cruise number
+        Default: None
     new: Boolean
         Whether the record(s) is being logged for the first time or not
         Influences whether we check whether id already registered
@@ -917,13 +919,12 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
         String specifying where the errors were found
     """
 
-    checker_list = make_valid_dict(DBNAME)
+    checker_list = make_valid_dict(DB, CRUISE_NUMBER)
 
     data = clean(data)
 
-    if DBNAME != False and METADATA_CATALOGUE != False:
-        df_metadata_catalogue = get_data(DBNAME, METADATA_CATALOGUE)
-        registered_ids = df_metadata_catalogue['id'].values
+    if DB and CRUISE_NUMBER:
+        registered_ids = get_all_ids(DB, CRUISE_NUMBER)
     else:
         registered_ids = []
 
@@ -933,7 +934,7 @@ def run(data, metadata=False, required=[], DBNAME=False, METADATA_CATALOGUE=Fals
     g = True
     e = []
     if type(metadata) == pd.core.frame.DataFrame:
-        metadata_checker_list = make_valid_dict_metadata(DBNAME)
+        metadata_checker_list = make_valid_dict_metadata(DB)
         g, e = check_meta(metadata, metadata_checker_list)
 
     good = good and g

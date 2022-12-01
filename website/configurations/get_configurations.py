@@ -4,7 +4,7 @@ import os
 from website.database.get_data import get_data, get_personnel_list
 import pandas as pd
 
-def get_fields(configuration, DBNAME=False):
+def get_fields(configuration, DB=None, CRUISE_NUMBER=None):
     '''
     Function to get the fields for a certain configuration in the 'template_configurations.yaml' file.
 
@@ -12,8 +12,10 @@ def get_fields(configuration, DBNAME=False):
     ----------
     configuration: string
         The name of the configuration
-    DBNAME: string
-        The name of the PSQL database that hosts the metadata catalogue and source tables
+    DB: dict
+        Details of PSQL database
+    CRUISE_NUMBER: string
+        Cruise number, used in the name of some database tables
     '''
     setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
@@ -37,12 +39,15 @@ def get_fields(configuration, DBNAME=False):
             required_fields_dic[field['name']]['format'] = field['format']
             if field['valid']['validate'] == 'list':
                 table = field['valid']['source']
-                if DBNAME == False:
-                    df = pd.read_csv(f'website/database/{table}.csv')
+                if not DB:
+                    df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
                 else:
-                    df = get_data(DBNAME, table)
+                    try:
+                        df = get_data(DB, table)
+                    except:
+                        df = get_data(DB, table+'_'+CRUISE_NUMBER)
                 if field['name'] in ['pi_details', 'recordedBy_details']:
-                    required_fields_dic[field['name']]['source'] = get_personnel_list(DBNAME=DBNAME, table='personnel')
+                    required_fields_dic[field['name']]['source'] = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
                 else:
                     required_fields_dic[field['name']]['source'] = list(df[field['name'].lower()])
         elif field['name'] in recommended_fields:
@@ -52,12 +57,15 @@ def get_fields(configuration, DBNAME=False):
             recommended_fields_dic[field['name']]['format'] = field['format']
             if field['valid']['validate'] == 'list':
                 table = field['valid']['source']
-                if DBNAME == False:
-                    df = pd.read_csv(f'website/database/{table}.csv')
+                if not DB:
+                    df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
                 else:
-                    df = get_data(DBNAME, table)
+                    try:
+                        df = get_data(DB, table)
+                    except:
+                        df = get_data(DB, table+'_'+CRUISE_NUMBER)
                 if field['name'] in ['pi_details', 'recordedBy_details']:
-                    recommended_fields_dic[field['name']]['source'] = get_personnel_list(DBNAME=DBNAME, table='personnel')
+                    recommended_fields_dic[field['name']]['source'] = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
                 else:
                     recommended_fields_dic[field['name']]['source'] = list(df[field['name'].lower()])
         else:
@@ -71,12 +79,15 @@ def get_fields(configuration, DBNAME=False):
                 extra_fields_dic[field['name']]['grouping'] = field['grouping']
                 if field['valid']['validate'] == 'list':
                     table = field['valid']['source']
-                    if DBNAME == False:
-                        df = pd.read_csv(f'website/database/{table}.csv')
+                    if not DB:
+                        df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
                     else:
-                        df = get_data(DBNAME, table)
+                        try:
+                            df = get_data(DB, table)
+                        except:
+                            df = get_data(DB, table+'_'+CRUISE_NUMBER)
                     if field['name'] in ['pi_details', 'recordedBy_details']:
-                        extra_fields_dic[field['name']]['source'] = get_personnel_list(DBNAME=DBNAME, table='personnel')
+                        extra_fields_dic[field['name']]['source'] = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
                     else:
                         extra_fields_dic[field['name']]['source'] = list(df[field['name'].lower()])
 
@@ -84,6 +95,6 @@ def get_fields(configuration, DBNAME=False):
 
     groups = sorted(list(set(groups)))
 
-    personnel = get_personnel_list(DBNAME=DBNAME, table='personnel')
+    personnel = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
 
     return required_fields_dic, recommended_fields_dic, extra_fields_dic, groups
