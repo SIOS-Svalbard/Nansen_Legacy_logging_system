@@ -2,7 +2,6 @@ from website.database.get_data import get_metadata_for_list_of_ids
 import website.database.fields as fields
 import numpy as np
 import psycopg2
-import getpass
 import pandas as pd
 
 def copy_from_parent(parentID, col, df_parents, child_value=None, inherit=False):

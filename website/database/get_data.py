@@ -1,6 +1,5 @@
 import psycopg2
 import psycopg2.extras
-import getpass
 import pandas as pd
 
 def get_cruise(DB):

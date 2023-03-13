@@ -14,7 +14,6 @@ Precursors:
 
 import psycopg2
 import psycopg2.extras
-import getpass
 import website.database.fields as fields
 import pandas as pd
 import json
@@ -29,8 +28,6 @@ def create_database(DB):
     DB: dictionary
         Details of the database to be created
     '''
-
-    # Ideally find a solution without using getpass or a created user, e.g. using the default 'postgres' user
 
     DB_WITHOUT_DBNAME = {k: DB[k] for k in DB.keys() if k != "dbname"}
     conn = psycopg2.connect(**DB_WITHOUT_DBNAME)

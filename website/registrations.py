@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_data import get_data, get_cruise
 from website.database.harvest_activities import harvest_activities, get_bottom_depth

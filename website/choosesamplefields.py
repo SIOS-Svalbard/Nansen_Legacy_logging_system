@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_data import get_data, get_cruise, get_user_setup
 from website.database.propegate_parents_to_children import propegate_parents_to_children

@@ -1,6 +1,5 @@
 import psycopg2
 import psycopg2.extras
-import getpass
 import pandas as pd
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
