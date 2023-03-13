@@ -177,7 +177,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             fieldtovary = form_input['movefieldtovary'][0]
             userSetup[fieldtovary] = 'vary'
 
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             userSetup = str(userSetup).replace('\'','"')
@@ -195,7 +195,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             fieldtovary = form_input['movefieldtosame'][0]
             userSetup[fieldtovary] = 'same'
 
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             userSetup = str(userSetup).replace('\'','"')

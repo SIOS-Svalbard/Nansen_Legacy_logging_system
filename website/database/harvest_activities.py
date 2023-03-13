@@ -127,7 +127,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
 
     new_activities = list(map( lambda x: flattenjson( x, "__" ), new_activities ))
 
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     cur = conn.cursor()
 
     gear_df = get_data(DB, 'gear_types')

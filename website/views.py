@@ -62,7 +62,7 @@ def home():
 
             if request.form['submit'] == 'endCruise':
 
-                conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+                conn = psycopg2.connect(**DB)
                 cur = conn.cursor()
                 exe_str = f"UPDATE cruises SET current = false WHERE cruise_number = '{CRUISE_NUMBER}';"
                 cur.execute(exe_str)
@@ -113,7 +113,7 @@ def home():
 
             form_input = request.form.to_dict(flat=False)
 
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             if request.form['submit'] == 'startCruise':

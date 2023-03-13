@@ -92,7 +92,7 @@ def find_all_children(IDs,DB, CRUISE_NUMBER):
 
     '''
 
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
 
     moreChildren = True
     children_IDs = []

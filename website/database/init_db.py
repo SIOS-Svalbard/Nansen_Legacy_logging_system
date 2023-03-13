@@ -31,7 +31,9 @@ def create_database(DB):
     '''
 
     # Ideally find a solution without using getpass or a created user, e.g. using the default 'postgres' user
-    conn = psycopg2.connect(database='postgres', user=getpass.getuser())
+
+    DB_WITHOUT_DBNAME = {k: DB[k] for k in DB.keys() if k != "dbname"}
+    conn = psycopg2.connect(**DB_WITHOUT_DBNAME)
     conn.autocommit = True
     cur = conn.cursor()
     cur.execute('SELECT datname FROM pg_database;')
@@ -46,7 +48,7 @@ def create_database(DB):
         cur.close()
         conn.close() # CREATE DATABASE cannot be executed inside a transaction block, so disconnecting and reconnecting
 
-        conn = psycopg2.connect(dbname=DB["dbname"], user=getpass.getuser())
+        conn = psycopg2.connect(**DB)
         #conn = psycopg2.connect(dbname=DB["dbname"], user=DB["user"], password=DB["password"])
         cur = conn.cursor()
 

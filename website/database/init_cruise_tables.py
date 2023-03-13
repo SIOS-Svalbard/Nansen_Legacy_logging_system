@@ -18,7 +18,7 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
         psycopg2 conn cursor object, used to execute psql commands
     '''
 
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     cur = conn.cursor()
 
     cur.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
@@ -90,7 +90,7 @@ def init_user_field_setups(DB, CRUISE_NUMBER, cur):
     cur.execute(exe_str)
 
 def check_if_cruise_exists(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT cruise_number FROM cruises WHERE cruise_number = '{CRUISE_NUMBER}'", con=conn)
     if len(df) == 1:
         return True
@@ -103,7 +103,7 @@ def check_if_cruise_exists(DB, CRUISE_NUMBER):
 def run(DB, CRUISE_NUMBER, VESSEL_NAME):
 
     print('Initialising database tables for the cruise')
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     cur = conn.cursor()
     init_personnel(DB, CRUISE_NUMBER, cur)
     init_stations(DB, CRUISE_NUMBER, cur)

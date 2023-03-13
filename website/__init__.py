@@ -3,25 +3,29 @@ import uuid
 from website.database.init_db import run as init_db
 from website.database.init_cruise_tables import run as init_cruise_tables
 from website.database.get_data import get_cruise
-import requests
-import numpy as np
 import pandas as pd
+import json
+import os
+
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+with open(os.path.join(BASE_PATH, "config.json"), "r") as fp:
+    CONFIG = json.load(fp)
 
 # Create the database if it doesn't already exist
-DB = {"host": "localhost", "dbname": '', "user": '', "password": ''}
-DB["dbname"] = 'lfnl_db'
-#DB["dbname"] = input("DB name > ")
-#DB["user"] = input("DB user > ")
-#DB["password"] = input("DB password > ")
+DB = CONFIG["database"]
 init_db(DB)
+DBNAME = DB["dbname"]
 
 #TOKTLOGGER = '172.16.0.210' # IP of VM of toktlogger"
 #TOKTLOGGER = 'toktlogger-sars.hi.no'
-#url = "http://"+TOKTLOGGER+"/api/cruises/current?format=json"
-TOKTLOGGER = None # Commented out if there is a TOKTLOGGER
-url = None
-DBNAME = 'lfnl_db'
-BTL_FILES_FOLDER = '/home/lukem/Documents/Testing/btl_files/'
+TOKTLOGGER = CONFIG["toktlogger"]["host"]
+if TOKTLOGGER:
+    url = f"http://{TOKTLOGGER}/api/cruises/current?format=json"
+else:
+    url = None
+
+BTL_FILES_FOLDER = CONFIG["niskinBottles"]["dir"]
 
 # GET CRUISE DETAILS, RETURNS FALSE IF NO CRUISE
 cruise_details_df = get_cruise(DB)
