@@ -1,9 +1,9 @@
 flask
 uuid
 psycopg2
-getpass
 pandas
 datetime
 numpy
 requests
-yaml
+pyyaml
+XlsxWriter
