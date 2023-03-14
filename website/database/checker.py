@@ -1,4 +1,4 @@
-Default: None#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Checks data before they can be imported into the metadata catalogue
