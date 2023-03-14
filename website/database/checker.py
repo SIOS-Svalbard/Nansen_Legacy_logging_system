@@ -26,7 +26,7 @@ def make_valid_dict(DB, CRUISE_NUMBER):
     ---------
     DB: dict
         Details of PSQL database
-        Default: False boolean
+        Default: None
     CRUISE_NUMBER: str
         Cruise number. Included in some PSQL table names
     Returns
@@ -58,7 +58,7 @@ def make_valid_dict_metadata(DB):
     ---------
     DB: dict
         Details of PSQL database
-        Default: False boolean
+        Default: None
     Returns
     ---------
     metadata_field_dict : dict
@@ -302,7 +302,7 @@ class Checker(Field):
         self.inherit = inherit
         self.units = units
 
-    def set_validation(self, DBNAME, CRUISE_NUMBER, validation):
+    def set_validation(self, DB, CRUISE_NUMBER, validation):
         """
         Method for setting the validation by reading the dictionary
         and converting it using the
@@ -316,7 +316,7 @@ class Checker(Field):
         Field.set_validation(self, validation)
         self.validator = self.get_validator(DB, CRUISE_NUMBER, self.validation)
 
-    def get_validator(self, DBNAME, CRUISE_NUMBER, validation=None):
+    def get_validator(self, DB, CRUISE_NUMBER, validation=None):
         """
         Checks a parameter according to the defined validation
         Parameters
@@ -892,7 +892,7 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
         Default: Empty list []
     DB: dict
         Details of PSQL database
-        Default: False boolean
+        Default: None
     CRUISE_NUMBER: str
         Cruise number
         Default: None
