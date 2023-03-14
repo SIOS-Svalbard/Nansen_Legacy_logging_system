@@ -32,7 +32,8 @@ def home():
 
         # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
         activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
-        harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
+        if BTL_FILES_FOLDER:
+            harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
         activities_df['message'] = 'Okay'
 
         # Get this from configuration file
