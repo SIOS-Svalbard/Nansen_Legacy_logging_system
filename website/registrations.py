@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_data import get_data, get_cruise
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -71,7 +70,7 @@ def cruiseDetails():
         cruise_name = request.form.get('cruiseName').capitalize()
         comment = request.form.get('comment')
 
-        conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+        conn = psycopg2.connect(**DB)
         cur = conn.cursor()
 
         cur.execute(f'''UPDATE cruises SET
@@ -133,7 +132,7 @@ def institutions():
         elif len(institutionShort) > 10:
             flash('Institution short name must be shorter than 10 characters', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{uuid.uuid1()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
@@ -166,7 +165,7 @@ def sampleTypes():
         elif len(sample_type) < 3:
             flash('Sample type must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
@@ -199,7 +198,7 @@ def gearTypes():
         elif len(gear_type) < 3:
             flash('Gear type must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
@@ -232,7 +231,7 @@ def intendedMethods():
         elif len(intended_method) < 3:
             flash('Intended method must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
@@ -282,7 +281,7 @@ def stations():
         elif decimalLongitude < -180:
             flash('Longitude must be a between -180 and 180', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
@@ -351,7 +350,7 @@ def personnel():
         elif not check_orcid:
             flash('Invalid ordid', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
             cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
@@ -383,7 +382,7 @@ def sex():
         elif len(sex) < 1:
             flash('Sex must be at least 1 character long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{uuid.uuid1()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
@@ -416,7 +415,7 @@ def kingdoms():
         elif len(kingdom) < 3:
             flash('Kingdom name must be at least 3 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid1()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
@@ -449,7 +448,7 @@ def filters():
         elif len(filter) < 2:
             flash('Filter name must be at least 2 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid1()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
@@ -482,7 +481,7 @@ def registeredprojects():
         elif len(project) < 7:
             flash('Project name must be at least 7 characters long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{uuid.uuid1()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
@@ -515,7 +514,7 @@ def storageTemps():
         elif len(storageTemp) < 1:
             flash('Storage temperature must be at least 1 character long', category='error')
         else:
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")

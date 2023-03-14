@@ -32,7 +32,8 @@ def home():
 
         # Need a better solution than harvesting each time visit home. This will be cumbersome on long cruises
         activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
-        harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
+        if BTL_FILES_FOLDER:
+            harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
         activities_df['message'] = 'Okay'
 
         # Get this from configuration file
@@ -62,7 +63,7 @@ def home():
 
             if request.form['submit'] == 'endCruise':
 
-                conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+                conn = psycopg2.connect(**DB)
                 cur = conn.cursor()
                 exe_str = f"UPDATE cruises SET current = false WHERE cruise_number = '{CRUISE_NUMBER}';"
                 cur.execute(exe_str)
@@ -113,7 +114,7 @@ def home():
 
             form_input = request.form.to_dict(flat=False)
 
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             if request.form['submit'] == 'startCruise':

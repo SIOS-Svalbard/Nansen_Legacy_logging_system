@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_data import get_data, get_cruise, get_user_setup
 from website.database.propegate_parents_to_children import propegate_parents_to_children
@@ -155,7 +154,7 @@ def choose_sample_fields(parentID,sampleType):
             else:
                 setupName = form_input['setupName'][0]
 
-            conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+            conn = psycopg2.connect(**DB)
             df = pd.read_sql(f'SELECT setupName FROM user_field_setups_{CRUISE_NUMBER};', con=conn)
             existing_user_setups = df['setupname'].tolist()
 
@@ -204,7 +203,7 @@ def choose_sample_fields(parentID,sampleType):
 
             else:
 
-                conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+                conn = psycopg2.connect(**DB)
                 cur = conn.cursor()
 
                 if setupName == 'temporary':
@@ -234,7 +233,7 @@ def choose_sample_fields(parentID,sampleType):
     else:
         added_fields_bool = False
 
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName != 'temporary';", con=conn)
     existing_user_setups = sorted(df['setupname'].tolist())
 

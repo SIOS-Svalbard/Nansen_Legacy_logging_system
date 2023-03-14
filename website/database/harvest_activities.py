@@ -13,7 +13,6 @@ from datetime import datetime as dt
 import numpy as np
 import requests
 import psycopg2
-import getpass
 from website.database.get_data import get_data, get_registered_activities
 
 def round_4dp(num):
@@ -127,7 +126,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
 
     new_activities = list(map( lambda x: flattenjson( x, "__" ), new_activities ))
 
-    conn = psycopg2.connect(f'dbname={DB["dbname"]} user=' + getpass.getuser())
+    conn = psycopg2.connect(**DB)
     cur = conn.cursor()
 
     gear_df = get_data(DB, 'gear_types')

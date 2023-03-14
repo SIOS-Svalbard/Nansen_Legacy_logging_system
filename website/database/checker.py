@@ -12,7 +12,6 @@ from datetime import datetime as dt
 import numpy as np
 import requests
 import psycopg2
-import getpass
 from website.database.get_data import get_data, get_all_ids, get_registered_activities
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields

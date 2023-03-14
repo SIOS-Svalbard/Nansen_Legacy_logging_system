@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
 from website.database.get_data import get_data, get_cruise, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids

@@ -1,0 +1,14 @@
+{
+  "database": {
+    "host": "localhost",
+    "user": "postgres",
+    "password": "",
+    "dbname": "lfnl_db"
+  },
+  "toktlogger": {
+    "host": null
+  },
+  "niskinBottles": {
+    "dir": null
+  }
+}

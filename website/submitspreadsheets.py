@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.get_data import get_data, get_personnel_df
 from website.database.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
