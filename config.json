@@ -2,7 +2,7 @@
   "database": {
     "host": "localhost",
     "user": "postgres",
-    "password": "",
+    "password": "postgres",
     "dbname": "lfnl_db"
   },
   "toktlogger": {
