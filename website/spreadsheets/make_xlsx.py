@@ -814,7 +814,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DB, C
 
                         # Add the validation variable to the hidden sheet
                         table = valid_copy['source']
-                        if DB:
+                        if not DB:
                             df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
                         else:
                             try:
@@ -825,7 +825,10 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DB, C
                         if field['name'] in ['pi_details', 'recordedBy_details']:
                             lst_values = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
                         else:
-                            lst_values = list(df[field['name'].lower()])
+                            try:
+                                lst_values = list(df[field['name']])
+                            except:
+                                lst_values = list(df[field['name'].lower()])
 
                         ref = variable_sheet_obj.add_row(
                             field['name']+str(duplication), lst_values)
