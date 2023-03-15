@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_id_with_parents, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
+from website.database.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -252,7 +252,7 @@ def edit_activity_form(ID):
     activity_metadata=activity_metadata,
     extra_fields_dic=extra_fields_dic,
     groups=groups,
-    trace=get_metadata_for_id_with_parents(DB, CRUISE_NUMBER, ID),
+    trace=get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID),
     children_list_of_dics=children_list_of_dics,
     len=len,
     isnan=isnan,
@@ -287,7 +287,7 @@ def log_samples(ID):
     recommendedChildSamples=recommendedChildSamples,
     children_list_of_dics=children_list_of_dics,
     sample_types_df=sample_types_df,
-    trace=get_metadata_for_id_with_parents(DB, CRUISE_NUMBER, ID),
+    trace=get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID),
     len=len,
     isnan=isnan,
     get_title=get_title,
