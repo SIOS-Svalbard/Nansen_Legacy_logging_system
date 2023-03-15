@@ -1,0 +1,24 @@
+{% macro breadcrumb(trace) %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="/">Home</a>
+      </li>
+      {% for index, row in trace.iloc[::-1].iterrows() %}
+        {% if row["id"] == ID %}
+          <li
+            class="breadcrumb-item active"
+            aria-current="page"
+            title="{{ row['id'] }}"
+          >
+            {{ get_title(row) }}
+          </li>
+        {% else %}
+          <li class="breadcrumb-item" title="{{ row['id'] }}">
+            <a href="/logSamples/parentid={{ row['id'] }}">{{ get_title(row) }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+{% endmacro %}

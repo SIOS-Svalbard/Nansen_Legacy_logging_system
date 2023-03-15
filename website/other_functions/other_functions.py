@@ -119,3 +119,13 @@ def combine_personnel_details(names,emails):
         personnel = [None]
 
     return personnel
+
+
+def get_title(series):
+    type_ = series["sampletype"]
+    if not type_:
+        type_ = series["geartype"]
+    human_readable = series["catalognumber"]
+    if human_readable:
+        return f"{human_readable} ({type_})"
+    return type_
