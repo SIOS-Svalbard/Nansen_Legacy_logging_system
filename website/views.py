@@ -72,7 +72,7 @@ def home():
                 conn.close()
                 # UPDATE PSQL TABLE FOR CRUISE, MAKE CURRENT = TRUE
                 # If successful, return home_not_during_cruise
-                return redirect('')
+                return redirect('/')
 
 
 
@@ -138,7 +138,7 @@ def home():
                     init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
 
                     # redirect to home, run the script again now that new cruise is logged with current = true
-                    return redirect('')
+                    return redirect('/')
 
 
                 # If successful, return home_during_cruise
@@ -154,7 +154,7 @@ def home():
                     cur.close()
                     conn.close()
                     # If successful, return home_during_cruise
-                    return redirect('')
+                    return redirect('/')
 
                 else:
 
