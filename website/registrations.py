@@ -3,12 +3,8 @@ import psycopg2
 import psycopg2.extras
 import uuid
 from website.database.get_data import get_data, get_cruise
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
-import requests
-import numpy as np
-from datetime import datetime as dt
-from website.other_functions.other_functions import split_personnel_list, combine_personnel_details
+from . import DB
+from website.other_functions.other_functions import combine_personnel_details
 
 registrations = Blueprint('registrations', __name__)
 

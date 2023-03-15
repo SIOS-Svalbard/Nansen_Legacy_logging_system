@@ -1,18 +1,14 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-import psycopg2
-import psycopg2.extras
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
+from website.database.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_metadata_for_list_of_ids
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.checker import run as checker
 from website.database.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 import website.database.fields as fields
-from website.other_functions.other_functions import distanceCoordinates, split_personnel_list, combine_personnel_details, get_title
-from . import DB, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER
-import requests
+from website.other_functions.other_functions import split_personnel_list, combine_personnel_details, get_title
+from . import DB
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd

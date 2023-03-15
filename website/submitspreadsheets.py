@@ -1,22 +1,14 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
-import psycopg2
-import psycopg2.extras
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 import uuid
 from website.database.get_data import get_data, get_personnel_df
 from website.database.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
 from website.database.checker import run as checker
 import website.database.fields as fields
-import website.database.metadata_fields as metadata_fields
 from website.configurations.get_configurations import get_fields
-from website.spreadsheets.make_xlsx import write_file
-from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
-import requests
-import numpy as np
+from website.other_functions.other_functions import split_personnel_list
+from . import DB, METADATA_CATALOGUE
 from datetime import datetime as dt
 import pandas as pd
-import os
 
 submitspreadsheets = Blueprint('submitspreadsheets', __name__)
 

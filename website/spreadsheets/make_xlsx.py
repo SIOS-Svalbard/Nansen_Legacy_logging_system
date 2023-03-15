@@ -16,7 +16,6 @@ import os
 from argparse import Namespace
 from website.database.get_data import get_data, get_personnel_list, get_cruise
 import numpy as np
-from datetime import datetime
 
 DEBUG = 1
 

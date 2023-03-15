@@ -1,20 +1,12 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
+from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-import uuid
-from website.database.get_data import get_data, get_cruise, get_user_setup
-from website.database.propegate_parents_to_children import propegate_parents_to_children
-from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
-from website.database.checker import run as checker
+from website.database.get_data import get_cruise, get_user_setup
 import website.database.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
-from website.other_functions.other_functions import distanceCoordinates, split_personnel_list
-from . import DB, CRUISE_NUMBER, METADATA_CATALOGUE, VESSEL_NAME, TOKTLOGGER
-import requests
+from . import DB, METADATA_CATALOGUE
 import numpy as np
-from datetime import datetime as dt
 import pandas as pd
 import os
 import yaml

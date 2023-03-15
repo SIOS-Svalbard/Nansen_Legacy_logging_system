@@ -1,16 +1,13 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.init_cruise_tables import run as init_cruise_tables
-from website.database.get_data import get_data, get_cruise, get_cruises
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
+from website.database.get_data import get_cruise, get_cruises
+from website.database.harvest_activities import harvest_activities
 from website.database.harvest_niskins import harvest_niskins
-from . import DB, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
+from . import DB, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
-import numpy as np
-from datetime import datetime as dt
 import pandas as pd
 
 views = Blueprint('views', __name__)

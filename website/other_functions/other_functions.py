@@ -6,7 +6,7 @@ Created on Tue May 03 08:56:15 2022
 @author: lukem
 """
 
-from math import sin, cos, sqrt, atan2, radians, isnan
+from math import sin, cos, sqrt, atan2, radians
 
 def distanceCoordinates(lat1,lon1,lat2, lon2):
     '''
