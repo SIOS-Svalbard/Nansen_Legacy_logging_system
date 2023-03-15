@@ -51,6 +51,15 @@ def get_metadata_for_id(DB, CRUISE_NUMBER, ID):
     df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';", con=conn)
     return df
 
+def get_metadata_for_id_with_parents(db, cruise_number, id):
+    df = get_metadata_for_id(db, cruise_number, id)
+    parentid = df["parentid"].item()
+    while parentid:
+        parent_df = get_metadata_for_id(db, cruise_number, parentid)
+        df = pd.concat([df, parent_df], ignore_index=True)
+        parentid = parent_df["parentid"].item()
+    return df
+
 def get_children(DB, CRUISE_NUMBER, ids):
     conn = psycopg2.connect(**DB)
     if len(ids) == 1:
