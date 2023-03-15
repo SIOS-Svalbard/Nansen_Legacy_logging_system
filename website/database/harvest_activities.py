@@ -7,7 +7,6 @@ Based on https://github.com/SIOS-Svalbard/darwinsheet/blob/master/scripts/toktlo
 @author: lukem
 """
 
-import pandas as pd
 import datetime
 from datetime import datetime as dt
 import numpy as np

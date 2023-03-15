@@ -8,14 +8,10 @@ Checks data before they can be imported into the metadata catalogue
 
 import pandas as pd
 import datetime
-from datetime import datetime as dt
 import numpy as np
-import requests
-import psycopg2
-from website.database.get_data import get_data, get_all_ids, get_registered_activities
+from website.database.get_data import get_data, get_all_ids
 import website.database.fields as fields
 import website.database.metadata_fields as metadata_fields
-from website.other_functions.other_functions import split_personnel_list
 import uuid
 
 def make_valid_dict(DB, CRUISE_NUMBER):
