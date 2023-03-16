@@ -50,7 +50,7 @@ def home():
         else:
             missing = False
 
-        activities_df_home = activities_df[['stationname','eventdate', 'eventtime','decimallatitude','decimallongitude','geartype','pi_name','message','id']]
+        activities_df_home = activities_df[['stationname','eventdate', 'eventtime','decimallatitude','decimallongitude','geartype','pi_name','message','id', 'number_of_children']]
         activities_df_home.sort_values(by=['eventdate', 'eventtime'], ascending=False, inplace=True)
 
         num_activities = len(activities_df_home)
@@ -70,7 +70,6 @@ def home():
                 # UPDATE PSQL TABLE FOR CRUISE, MAKE CURRENT = TRUE
                 # If successful, return home_not_during_cruise
                 return redirect('/')
-
 
 
         return render_template(
