@@ -6,7 +6,7 @@ from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.database.checker import run as checker
 from website.database.propegate_parents_to_children import find_all_children, propegate_parents_to_children
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 from website.other_functions.other_functions import split_personnel_list, combine_personnel_details, get_title
 from . import DB
 import numpy as np

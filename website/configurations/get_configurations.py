@@ -1,5 +1,5 @@
 import yaml
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 import os
 from website.database.get_data import get_data, get_personnel_list
 import pandas as pd
@@ -40,7 +40,7 @@ def get_fields(configuration, DB=None, CRUISE_NUMBER=None):
             if field['valid']['validate'] == 'list':
                 table = field['valid']['source']
                 if not DB:
-                    df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
+                    df = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
                 else:
                     try:
                         df = get_data(DB, table)
@@ -58,7 +58,7 @@ def get_fields(configuration, DB=None, CRUISE_NUMBER=None):
             if field['valid']['validate'] == 'list':
                 table = field['valid']['source']
                 if not DB:
-                    df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
+                    df = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
                 else:
                     try:
                         df = get_data(DB, table)
@@ -80,7 +80,7 @@ def get_fields(configuration, DB=None, CRUISE_NUMBER=None):
                 if field['valid']['validate'] == 'list':
                     table = field['valid']['source']
                     if not DB:
-                        df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
+                        df = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
                     else:
                         try:
                             df = get_data(DB, table)

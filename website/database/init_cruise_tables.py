@@ -1,6 +1,6 @@
 import psycopg2
 import psycopg2.extras
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 import pandas as pd
 
 def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
@@ -39,7 +39,7 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
 def init_stations(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS stations_{CRUISE_NUMBER} (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
 
-    df = pd.read_csv('website/database/dropdown_initial_values/stations.csv')
+    df = pd.read_csv('website/templategenerator/website/config/stations.csv')
     for idx, row in df.iterrows():
         id = row['id']
         stationName = row['stationName']
@@ -51,7 +51,7 @@ def init_stations(DB, CRUISE_NUMBER, cur):
 def init_personnel(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS personnel_{CRUISE_NUMBER} (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
 
-    df = pd.read_csv('website/database/dropdown_initial_values/personnel.csv')
+    df = pd.read_csv('website/templategenerator/website/config/personnel.csv')
 
     for idx, row in df.iterrows():
         id = row['id']

@@ -10,7 +10,7 @@ import pandas as pd
 import datetime
 import numpy as np
 from website.database.get_data import get_data, get_all_ids
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 import website.database.metadata_fields as metadata_fields
 import uuid
 

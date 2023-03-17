@@ -10,7 +10,7 @@ Based on https://github.com/SIOS-Svalbard/darwinsheet/blob/master/scripts/make_x
 
 import xlsxwriter
 import pandas as pd
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 import website.database.metadata_fields as metadata_fields
 import os
 from argparse import Namespace
@@ -814,7 +814,7 @@ def make_xlsx(args, fields_list, metadata, conversions, data, metadata_df, DB, C
                         # Add the validation variable to the hidden sheet
                         table = valid_copy['source']
                         if not DB:
-                            df = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
+                            df = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
                         else:
                             try:
                                 df = get_data(DB, table)

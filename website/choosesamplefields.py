@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 from website.database.get_data import get_cruise, get_user_setup
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from . import DB, METADATA_CATALOGUE

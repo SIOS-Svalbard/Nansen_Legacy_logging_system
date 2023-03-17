@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, send_file
 from website.database.get_data import get_cruise
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 from website.configurations.get_configurations import get_fields
 from website.spreadsheets.make_xlsx import write_file
 from . import DB

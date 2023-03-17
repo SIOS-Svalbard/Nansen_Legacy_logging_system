@@ -71,7 +71,7 @@ def get_children(DB, CRUISE_NUMBER, ids):
 
 def get_personnel_df(DB=None, CRUISE_NUMBER=None, table='personnel'):
     if DB == None:
-        df_personnel = pd.read_csv(f'website/database/dropdown_initial_values/{table}.csv')
+        df_personnel = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
     else:
         df_personnel = get_data(DB, table+'_'+CRUISE_NUMBER)
     df_personnel.sort_values(by='last_name', inplace=True)

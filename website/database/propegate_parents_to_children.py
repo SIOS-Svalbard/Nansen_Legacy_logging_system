@@ -1,5 +1,5 @@
 from website.database.get_data import get_metadata_for_list_of_ids
-import website.database.fields as fields
+import website.templategenerator.website.config.fields as fields
 import psycopg2
 import pandas as pd
 
