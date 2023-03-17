@@ -1,13 +1,18 @@
 {% from "macros.html" import breadcrumb with context %}
 {% extends "base.html" %}
 
-{% block title %}Edit Activity{% endblock %}
+{% block title %}Edit Record{% endblock %}
 
 {% block content %}
 
 <div class="container">
   {{ breadcrumb(trace) }}
-  <h1>Activity form</h1>
+  {% if ID == '' %}
+  <h2>Add activity</h2>
+  {% else %}
+  <h2>Edit record</h2>
+  {% endif %}
+
   <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
 
   <form method="POST">
