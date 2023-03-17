@@ -1,8 +1,12 @@
-{% extends "base.html" %} {% block title %}Edit Activity{% endblock %} {% block content
+{% extends "base.html" %} {% block title %}Edit Record{% endblock %} {% block content
 %}
 
 <div class="container">
-  <h2>Activity form</h2>
+  {% if ID == '' %}
+  <h2>Add activity form</h2>
+  {% else %}
+  <h2>Edit record form</h2>
+  {% endif %}
   <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
 
   <form method="POST">
