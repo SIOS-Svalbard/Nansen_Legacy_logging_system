@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import uuid
 from website.database.get_children_list_of_dics import get_children_list_of_dics
-from website.database.get_data import get_data, get_cruise, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids
+from website.database.get_data import get_data, get_cruise, get_personnel_df, get_registered_activities, get_children, get_metadata_for_id, get_metadata_for_list_of_ids, get_sampleType
 from website.configurations.get_configurations import get_fields
 from website.database.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.database.harvest_activities import harvest_activities, get_bottom_depth
@@ -17,6 +17,8 @@ import numpy as np
 from datetime import datetime as dt
 import pandas as pd
 from math import isnan
+import yaml
+import os
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -33,7 +35,19 @@ def edit_activity_form(ID):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
+    if ID == 'addNew':
+        config = 'activity'
+    else:
+        setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
+        sampleType = get_sampleType(DB, CRUISE_NUMBER, ID)
+        config = 'default'
+        for setup in setups:
+            if setup['name'] == sampleType:
+                config = sampleType
+        if sampleType == None:
+            config = 'activity'
+
+    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
     activity_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
 
@@ -63,7 +77,11 @@ def edit_activity_form(ID):
                         field_name = b[1:-1] # Removing first an last character, the quotation marks (")
                         other_columns.append(field_name)
                         if field_name != '':
-                            activity_fields[field_name] = extra_fields_dic[field_name]
+                            activity_fields[field_name] = required_fields_dic.get('scientificName')
+                            if not activity_fields[field_name]:
+                                activity_fields[field_name] = recommended_fields_dic.get('scientificName')
+                            if not activity_fields[field_name]:
+                                activity_fields[field_name] = extra_fields_dic.get('scientificName')
 
     for field in fields.fields:
         if field['name'] in activity_fields.keys():
