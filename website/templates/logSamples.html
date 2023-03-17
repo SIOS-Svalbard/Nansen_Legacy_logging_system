@@ -1,39 +1,45 @@
-{% extends "base.html" %} {% block title %}Log children samples or gear{% endblock %} {% block content
-%}
+{% from "macros.html" import breadcrumb with context %}
+{% extends "base.html" %}
+
+{% block title %}Log children samples or gear{% endblock %}
+
+{% block content %}
 
 <div class="container">
-  <h1>Log children samples or gear</h1><br>
-
-  <h4>Suggestions</h4><br>
+  {{ breadcrumb(trace) }}
+  <h1>Log children samples or gear</h1>
+  <hr />
+  <h4>Suggestions</h4>
 
   <div class="container">
     {% for sample in recommendedChildSamples %}
       <a
         class="btn btn-primary"
         href="/logSamples/parentid={{ ID }}/chooseSampleFields/sampletype={{ sample }}"
-        role="button">
+        role="button"
+      >
         {{ sample }}
       </a>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endfor %}
   </div>
-  <br><br>
+  <br /><br />
 
-  <h4>Or choose type of sample that you want to log.</h4><br>
-
+  <h4>Or choose type of sample that you want to log.</h4>
+  <br />
 </div>
 
 <div class="container">
-  {% include 'chooseSampleType.html' %}<br><br>
+  {% include 'chooseSampleType.html' %}
+  <br /><br />
 </div>
 
 <div class="container">
   <h4>Upload children from spreadsheet from template generator</h4>
 </div>
 
-
 <div class="container">
-  {% include 'tableChildren.html' %}
+  {% include 'tableChildren.html' %}'
 </div>
 
 {% endblock %}

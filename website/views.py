@@ -1,16 +1,13 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect
 import psycopg2
 import psycopg2.extras
-import getpass
 import uuid
 from website.database.init_cruise_tables import run as init_cruise_tables
-from website.database.get_data import get_data, get_cruise, get_cruises
-from website.database.harvest_activities import harvest_activities, get_bottom_depth
+from website.database.get_data import get_cruise, get_cruises
+from website.database.harvest_activities import harvest_activities
 from website.database.harvest_niskins import harvest_niskins
-from . import DB, CRUISE_NUMBER, VESSEL_NAME, TOKTLOGGER, BTL_FILES_FOLDER
+from . import DB, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
-import numpy as np
-from datetime import datetime as dt
 import pandas as pd
 
 views = Blueprint('views', __name__)
@@ -72,7 +69,7 @@ def home():
                 conn.close()
                 # UPDATE PSQL TABLE FOR CRUISE, MAKE CURRENT = TRUE
                 # If successful, return home_not_during_cruise
-                return redirect('')
+                return redirect('/')
 
 
 
@@ -138,7 +135,7 @@ def home():
                     init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
 
                     # redirect to home, run the script again now that new cruise is logged with current = true
-                    return redirect('')
+                    return redirect('/')
 
 
                 # If successful, return home_during_cruise
@@ -154,7 +151,7 @@ def home():
                     cur.close()
                     conn.close()
                     # If successful, return home_during_cruise
-                    return redirect('')
+                    return redirect('/')
 
                 else:
 

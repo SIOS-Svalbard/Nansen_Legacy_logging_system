@@ -14,7 +14,6 @@ Precursors:
 
 import psycopg2
 import psycopg2.extras
-import website.database.fields as fields
 import pandas as pd
 import json
 

@@ -56,6 +56,15 @@ def get_sampleType(DB, CRUISE_NUMBER, ID):
     sampleType = pd.read_sql(f"SELECT sampletype FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';", con=conn)['sampletype'].item()
     return sampleType
 
+def get_metadata_for_record_and_ancestors(db, cruise_number, id):
+    df = get_metadata_for_id(db, cruise_number, id)
+    parentid = df["parentid"].item()
+    while parentid:
+        parent_df = get_metadata_for_id(db, cruise_number, parentid)
+        df = pd.concat([df, parent_df], ignore_index=True)
+        parentid = parent_df["parentid"].item()
+    return df
+
 def get_children(DB, CRUISE_NUMBER, ids):
     conn = psycopg2.connect(**DB)
     if len(ids) == 1:

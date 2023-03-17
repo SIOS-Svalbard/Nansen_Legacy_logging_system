@@ -6,7 +6,7 @@ Created on Tue May 03 08:56:15 2022
 @author: lukem
 """
 
-from math import sin, cos, sqrt, atan2, radians, isnan
+from math import sin, cos, sqrt, atan2, radians
 
 def distanceCoordinates(lat1,lon1,lat2, lon2):
     '''
@@ -119,3 +119,13 @@ def combine_personnel_details(names,emails):
         personnel = [None]
 
     return personnel
+
+
+def get_title(series):
+    type_ = series["sampletype"]
+    if not type_:
+        type_ = series["geartype"]
+    human_readable = series["catalognumber"]
+    if human_readable:
+        return f"{human_readable} ({type_})"
+    return type_
