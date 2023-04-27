@@ -1,6 +1,6 @@
 from website.database.get_data import get_children
 from website.database.expand_hstore import expand_hstore
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.other_functions.other_functions import combine_personnel_details
 
 def get_children_list_of_dics(DB, CRUISE_NUMBER, ids):

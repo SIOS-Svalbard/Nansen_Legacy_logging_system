@@ -17,7 +17,7 @@ def get_fields(configuration, DB=None, CRUISE_NUMBER=None):
     CRUISE_NUMBER: string
         Cruise number, used in the name of some database tables
     '''
-    setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
+    setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
     for setup in setups:
         if setup['name'] == configuration:

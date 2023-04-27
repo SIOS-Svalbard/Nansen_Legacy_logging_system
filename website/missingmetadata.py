@@ -4,7 +4,7 @@ from website.database.input_update_records import update_record_metadata_catalog
 from website.database.harvest_activities import harvest_activities
 from website.database.checker import run as checker
 import website.templategenerator.website.config.fields as fields
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.other_functions.other_functions import split_personnel_list, combine_personnel_details
 from . import DB, TOKTLOGGER
 from datetime import datetime as dt

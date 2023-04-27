@@ -4,7 +4,7 @@ from website.database.get_data import get_data, get_personnel_df
 from website.database.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
 from website.database.checker import run as checker
 import website.templategenerator.website.config.fields as fields
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.other_functions.other_functions import split_personnel_list
 from . import DB, METADATA_CATALOGUE
 from datetime import datetime as dt

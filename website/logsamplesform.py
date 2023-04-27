@@ -7,7 +7,7 @@ from website.database.propegate_parents_to_children import propegate_parents_to_
 from website.database.input_update_records import insert_into_metadata_catalogue_df
 from website.database.checker import run as checker
 import website.templategenerator.website.config.fields as fields
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.spreadsheets.make_xlsx import write_file
 from website.other_functions.other_functions import split_personnel_list
 from . import DB
@@ -28,13 +28,21 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
+    setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
-    config = 'default'
+    config = 'Learnings from Nansen Legacy logging system'
+    subconfig = 'default'
     for setup in setups:
         if setup['name'] == sampleType:
-            config = sampleType
+            subconfig = sampleType
 
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        groups,
+    ) = get_config_fields(config=config, subconfig=subconfig, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
     all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 

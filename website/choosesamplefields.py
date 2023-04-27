@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 from website.database.get_data import get_cruise, get_user_setup
 import website.templategenerator.website.config.fields as fields
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.spreadsheets.make_xlsx import write_file
 from . import DB, METADATA_CATALOGUE
 import numpy as np
@@ -21,15 +21,29 @@ def choose_sample_fields(parentID,sampleType):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
+    setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
-    config = 'default'
+    config = 'Learnings from Nansen Legacy logging system'
+    subconfig = 'default'
     for setup in setups:
         if setup['name'] == sampleType:
-            config = sampleType
+            subconfig = sampleType
 
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
-    all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        groups,
+    ) = get_config_fields(config=config, subconfig=subconfig, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
+    # Creating a dictionary of all the fields.
+    all_fields_dict = extra_fields_dict.copy()
+    for key in output_config_dict.keys():
+        for field, values in output_config_dict[key].items():
+            all_fields_dict[field] = values
+
+    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
+    #all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
 
     most_likely_same_for_all_samples = [
     'parentID',
@@ -42,13 +56,13 @@ def choose_sample_fields(parentID,sampleType):
     'samplingProtocolVersion'
     ]
 
-    for key, val in required_fields_dic.items():
+    for key, val in output_config_dict['Required'].items():
         if key in most_likely_same_for_all_samples:
             val['checked'] = ['same']
         else:
             val['checked'] = ['vary']
 
-    for key, val in recommended_fields_dic.items():
+    for key, val in output_config_dict['Recommended'].items():
         if key in most_likely_same_for_all_samples:
             val['checked'] = ['same']
         else:
@@ -63,7 +77,7 @@ def choose_sample_fields(parentID,sampleType):
         form_input = request.form.to_dict(flat=False)
 
         for key, val in form_input.items():
-            if key not in required_fields_dic.keys() and key not in recommended_fields_dic.keys() and key != 'submitbutton':
+            if key not in output_config_fields and key != 'submitbutton':
                 for field in fields.fields:
                     if field['name'] == key:
                         added_fields_dic[key] = {}
@@ -86,7 +100,7 @@ def choose_sample_fields(parentID,sampleType):
             data_df['parentID'] = parentID
             data_df['sampleType'] = sampleType
 
-            gear_list = all_fields_dic['gearType']['source']
+            gear_list = all_fields_dict['gearType']['source']
             if sampleType in gear_list:
                 data_df['gearType'] = sampleType
             else:
@@ -94,7 +108,7 @@ def choose_sample_fields(parentID,sampleType):
 
             #data_df = propegate_parents_to_children(data_df,DB,METADATA_CATALOGUE) # Should user get this information here for this in and out read?
 
-            fields_list = list(set(list(required_fields_dic.keys()) + list(data_df.columns)))
+            fields_list = list(set(list(output_config_dict['Required'].keys()) + list(data_df.columns)))
 
             filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
@@ -114,10 +128,10 @@ def choose_sample_fields(parentID,sampleType):
                 else:
                     checked = [val]
 
-                if key in required_fields_dic.keys():
-                    required_fields_dic[key]['checked'] = checked
-                if key in recommended_fields_dic.keys():
-                    recommended_fields_dic[key]['checked'] = checked
+                if key in output_config_dict['Required'].keys():
+                    output_config_dict['Required'][key]['checked'] = checked
+                if key in output_config_dict['Recommended'].keys():
+                    output_config_dict['Recommended'][key]['checked'] = checked
                 if key in extra_fields_dic.keys():
                     for field in fields.fields:
                         if field['name'] == key:
@@ -127,7 +141,7 @@ def choose_sample_fields(parentID,sampleType):
                             added_fields_dic[key]['checked'] = checked
 
             # Fields not included in setup shouldn't be checked.
-            for key, val in recommended_fields_dic.items():
+            for key, val in output_config_dict['Recommended'].items():
                 if key not in userSetup.keys():
                     val['checked'] = ['']
 
@@ -173,14 +187,14 @@ def choose_sample_fields(parentID,sampleType):
                             setup[field['name']] = " | ".join([str(item) for item in sameorvary])
                     else:
                         sameorvary = []
-                        if field['name'] in required_fields_dic.keys():
+                        if field['name'] in output_config_dict['Required'].keys():
                             good = False
                             errors.append(f"At least one box must be ticked for all required fields: {field['disp_name']}")
 
-                    if field['name'] in required_fields_dic.keys():
-                        required_fields_dic[field['name']]['checked'] = sameorvary
-                    elif field['name'] in recommended_fields_dic.keys():
-                        recommended_fields_dic[field['name']]['checked'] = sameorvary
+                    if field['name'] in output_config_dict['Required'].keys():
+                        output_config_dict['Required'][field['name']]['checked'] = sameorvary
+                    elif field['name'] in output_config_dict['Recommended'].keys():
+                        output_config_dict['Recommended'][field['name']]['checked'] = sameorvary
                     elif field['name'] in added_fields_dic.keys():
                         if field['name'] in form_input.keys():
                             added_fields_dic[field['name']]['checked'] = sameorvary
@@ -234,8 +248,7 @@ def choose_sample_fields(parentID,sampleType):
     "chooseSampleFields.html",
     parentID=parentID,
     sampleType=sampleType,
-    required_fields_dic = required_fields_dic,
-    recommended_fields_dic = recommended_fields_dic,
+    output_config_dict=output_config_dict,
     extra_fields_dic = extra_fields_dic,
     groups = groups,
     added_fields_dic = added_fields_dic,

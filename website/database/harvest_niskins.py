@@ -3,7 +3,7 @@ import os
 import re
 import uuid
 import math
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields
 from website.database.get_data import get_registered_activities, get_all_ids
 from website.database.propegate_parents_to_children import propegate_parents_to_children
 import website.templategenerator.website.config.fields as fields

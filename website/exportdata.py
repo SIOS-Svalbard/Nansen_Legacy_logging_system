@@ -3,7 +3,7 @@ from website.spreadsheets.make_xlsx import write_file
 #from website.spreadsheets.derive_metadata_df import derive_metadata_df
 from website.database.get_data import get_data, get_cruise, get_personnel_df, get_samples_for_pi, get_samples_for_recordedby, get_samples_for_personnel, get_samples_for_sampletype
 from website.other_functions.other_functions import split_personnel_list
-from website.configurations.get_configurations import get_fields
+from website.templategenerator.website.lib.get_configurations import get_config_fields_dic
 from . import DB
 import website.templategenerator.website.config.fields as fields
 import numpy as np
@@ -77,14 +77,16 @@ def export_data():
 
         # calculate metadata df where possible
 
-        setups = yaml.safe_load(open(os.path.join("website/configurations", "template_configurations.yaml"), encoding='utf-8'))['setups']
+        setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
 
-        config = 'default'
+        config = 'Learnings from Nansen Legacy logging system'
+        subconfig = 'default'
         # for setup in setups:
         #     if setup['name'] == sampleType:
-        #         config = sampleType
-        required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
-        required = list(required_fields_dic.keys())
+        #         subconfig = sampleType
+
+        config_dict = get_config_fields_dic(config=config, subconfig=subconfig)
+        required = config_dict['Required']
 
         df_to_export.replace('nan', np.nan, inplace=True)
         df_to_export.replace('NULL', np.nan, inplace=True)

@@ -41,7 +41,7 @@ def get_config_fields_dic(config, subconfig=None):
 
     return config_dict
 
-def get_config_fields(config, subconfig=None):
+def get_config_fields(config, subconfig=None, DB=None, CRUISE_NUMBER=None):
 
     configs = yaml.safe_load(open("website/config/template_configurations.yaml", encoding='utf-8'))['setups']
 
