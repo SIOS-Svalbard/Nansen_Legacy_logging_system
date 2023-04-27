@@ -32,7 +32,7 @@ class ACDD_conventions_df():
         filename: string
             The name of the json file to be written
         """
-        self.filename = 'website/config/acdd_conventions.csv'
+        self.filename = 'website/config/metadata_sheet_fields/acdd_conventions.csv'
 
 
     def pull_from_online(self):
@@ -79,17 +79,30 @@ class ACDD_conventions_df():
         '''
         self.df = pd.read_csv(self.filename, index_col=False)
 
+def acdd_conventions_update():
+    errors = []
+    acdd = ACDD_conventions_df()
+    if not have_internet():
+        errors.append('Could not update ACDD configuration. Not connected to the internet')
+        return errors
+    try:
+        acdd.pull_from_online()
+    except:
+        errors.append("Could not update ACDD configuration. Couldn't access data from source URL")
+        return errors
+    try:
+        acdd.add_recommendations_column()
+    except:
+        errors.append("Could not update ACDD configuration. Error adding recommendations column")
+        return errors
+    try:
+        acdd.output_to_csv()
+    except:
+        errors.append("Could not update ACDD configuration. Couldn't save the CSV file.")
+        return errors
+    return errors
 
 def acdd_to_df():
     acdd = ACDD_conventions_df()
-    if have_internet():
-        acdd.pull_from_online()
-        acdd.add_recommendations_column()
-        acdd.output_to_csv()
-    else:
-        acdd.read_csv()
-
+    acdd.read_csv()
     return acdd.df
-
-if __name__ == '__main__':
-    acdd_to_df()
