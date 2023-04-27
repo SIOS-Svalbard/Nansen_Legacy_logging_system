@@ -2,14 +2,11 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.database.get_data import get_cruise, get_user_setup, get_metadata_for_id, get_personnel_df
-from website.database.propegate_parents_to_children import propegate_parents_to_children
-from website.database.input_update_records import insert_into_metadata_catalogue_df
-from website.database.checker import run as checker
-import website.templategenerator.website.config.fields as fields
-from website.templategenerator.website.lib.get_configurations import get_config_fields
-from website.spreadsheets.make_xlsx import write_file
-from website.other_functions.other_functions import split_personnel_list
+from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_id, get_personnel_df
+from website.lib.propegate_parents_to_children import propegate_parents_to_children
+from website.lib.input_update_records import insert_into_metadata_catalogue_df
+from website.lib.checker import run as checker
+from website.lib.other_functions import split_personnel_list
 from . import DB
 import numpy as np
 from datetime import datetime as dt

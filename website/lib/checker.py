@@ -9,9 +9,7 @@ Checks data before they can be imported into the metadata catalogue
 import pandas as pd
 import datetime
 import numpy as np
-from website.database.get_data import get_data, get_all_ids
-import website.templategenerator.website.config.fields as fields
-import website.database.metadata_fields as metadata_fields
+from website.lib.get_data import get_data, get_all_ids
 import uuid
 
 def make_valid_dict(DB, CRUISE_NUMBER):

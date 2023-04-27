@@ -2,10 +2,10 @@ from flask import Blueprint, render_template, request, flash, redirect
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.database.init_cruise_tables import run as init_cruise_tables
-from website.database.get_data import get_cruise, get_cruises
-from website.database.harvest_activities import harvest_activities
-from website.database.harvest_niskins import harvest_niskins
+from website.lib.init_cruise_tables import run as init_cruise_tables
+from website.lib.get_data import get_cruise, get_cruises
+from website.lib.harvest_activities import harvest_activities
+from website.lib.harvest_niskins import harvest_niskins
 from . import DB, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
 import pandas as pd

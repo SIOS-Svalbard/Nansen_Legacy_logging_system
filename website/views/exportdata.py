@@ -1,11 +1,7 @@
 from flask import Blueprint, render_template, request, send_file
-from website.spreadsheets.make_xlsx import write_file
-#from website.spreadsheets.derive_metadata_df import derive_metadata_df
-from website.database.get_data import get_data, get_cruise, get_personnel_df, get_samples_for_pi, get_samples_for_recordedby, get_samples_for_personnel, get_samples_for_sampletype
-from website.other_functions.other_functions import split_personnel_list
-from website.templategenerator.website.lib.get_configurations import get_config_fields_dic
+from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_samples_for_pi, get_samples_for_recordedby, get_samples_for_personnel, get_samples_for_sampletype
+from website.lib.other_functions import split_personnel_list
 from . import DB
-import website.templategenerator.website.config.fields as fields
 import numpy as np
 import yaml
 import os

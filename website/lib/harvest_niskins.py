@@ -3,14 +3,12 @@ import os
 import re
 import uuid
 import math
-from website.templategenerator.website.lib.get_configurations import get_config_fields
-from website.database.get_data import get_registered_activities, get_all_ids
-from website.database.propegate_parents_to_children import propegate_parents_to_children
-import website.templategenerator.website.config.fields as fields
+from website.lib.get_data import get_registered_activities, get_all_ids
+from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from datetime import datetime as dt
-from website.database.input_update_records import insert_into_metadata_catalogue_df
+from website.lib.input_update_records import insert_into_metadata_catalogue_df
 
-# from website.database.checker import run as checker
+# from website.lib.checker import run as checker
 # from flask import flash
 
 def get_fields_lists(DB, CRUISE_NUMBER):

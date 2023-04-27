@@ -1,6 +1,5 @@
 import psycopg2
 import psycopg2.extras
-import website.templategenerator.website.config.fields as fields
 import pandas as pd
 
 def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):

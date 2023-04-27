@@ -1,10 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-from website.database.get_data import get_cruise, get_user_setup
-import website.templategenerator.website.config.fields as fields
-from website.templategenerator.website.lib.get_configurations import get_config_fields
-from website.spreadsheets.make_xlsx import write_file
+from website.lib.get_data import get_cruise, get_user_setup
 from . import DB, METADATA_CATALOGUE
 import numpy as np
 import pandas as pd

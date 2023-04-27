@@ -1,8 +1,8 @@
 from flask import Flask
 import uuid
-from website.database.init_db import run as init_db
-from website.database.init_cruise_tables import run as init_cruise_tables
-from website.database.get_data import get_cruise
+from website.lib.init_db import run as init_db
+from website.lib.init_cruise_tables import run as init_cruise_tables
+from website.lib.get_data import get_cruise
 import pandas as pd
 import json
 import os

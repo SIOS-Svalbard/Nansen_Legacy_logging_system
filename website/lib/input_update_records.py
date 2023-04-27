@@ -1,8 +1,6 @@
 import psycopg2
 import psycopg2.extras
 import pandas as pd
-import website.templategenerator.website.config.fields as fields
-import website.database.metadata_fields as metadata_fields
 
 def insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER):
 

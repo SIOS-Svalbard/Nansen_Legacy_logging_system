@@ -12,7 +12,7 @@ from datetime import datetime as dt
 import numpy as np
 import requests
 import psycopg2
-from website.database.get_data import get_data, get_registered_activities
+from website.lib.get_data import get_data, get_registered_activities
 
 def round_4dp(num):
     '''

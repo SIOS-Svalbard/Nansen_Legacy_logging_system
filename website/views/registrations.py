@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.database.get_data import get_data, get_cruise
+from website.lib.get_data import get_data, get_cruise
 from . import DB
-from website.other_functions.other_functions import combine_personnel_details
+from website.lib.other_functions import combine_personnel_details
 
 registrations = Blueprint('registrations', __name__)
 
