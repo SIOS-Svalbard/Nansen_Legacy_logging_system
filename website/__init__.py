@@ -44,17 +44,17 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = str(uuid.uuid1())
 
-    from .views import views
-    from .registrations import registrations
-    from .logsamples import logsamples
-    from .generatetemplates import generatetemplates
-    from .submitspreadsheets import submitspreadsheets
-    from .missingmetadata import missingmetadata
-    from .choosesamplefields import choosesamplefields
-    from .logsamplesform import logsamplesform
-    from .exportdata import exportdata
+    from .views.home import home
+    from .views.registrations import registrations
+    from .views.logsamples import logsamples
+    from .views.generatetemplates import generatetemplates
+    from .views.submitspreadsheets import submitspreadsheets
+    from .views.missingmetadata import missingmetadata
+    from .views.choosesamplefields import choosesamplefields
+    from .views.logsamplesform import logsamplesform
+    from .views.exportdata import exportdata
 
-    app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
     app.register_blueprint(generatetemplates, url_prefix='/')

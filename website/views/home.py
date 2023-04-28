@@ -10,9 +10,9 @@ from . import DB, TOKTLOGGER, BTL_FILES_FOLDER
 import requests
 import pandas as pd
 
-views = Blueprint('views', __name__)
+home = Blueprint('home', __name__)
 
-@views.route('/', methods=['GET', 'POST'])
+@home.route('/', methods=['GET', 'POST'])
 def home():
 
     cruise_details_df = get_cruise(DB)
