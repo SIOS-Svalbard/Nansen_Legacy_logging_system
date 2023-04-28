@@ -4,7 +4,7 @@ from website.lib.input_update_records import update_record_metadata_catalogue_df
 from website.lib.harvest_activities import harvest_activities
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list, combine_personnel_details
-from . import DB, TOKTLOGGER
+from website import DB, TOKTLOGGER
 from datetime import datetime as dt
 from math import isnan
 

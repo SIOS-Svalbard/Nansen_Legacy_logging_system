@@ -3,7 +3,7 @@ import psycopg2
 import psycopg2.extras
 import uuid
 from website.lib.get_data import get_data, get_cruise
-from . import DB
+from website import DB
 from website.lib.other_functions import combine_personnel_details
 
 registrations = Blueprint('registrations', __name__)

@@ -54,6 +54,8 @@ def create_app():
     from .views.logsamplesform import logsamplesform
     from .views.exportdata import exportdata
 
+    print(home)
+
     app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')

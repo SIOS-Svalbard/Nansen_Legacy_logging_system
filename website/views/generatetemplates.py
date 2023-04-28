@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, send_file
 from website.lib.get_data import get_cruise
-from . import DB
+from website import DB
 
 generatetemplates = Blueprint('generatetemplates', __name__)
 

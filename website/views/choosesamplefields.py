@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 from website.lib.get_data import get_cruise, get_user_setup
-from . import DB, METADATA_CATALOGUE
+from website import DB, METADATA_CATALOGUE
 import numpy as np
 import pandas as pd
 import os

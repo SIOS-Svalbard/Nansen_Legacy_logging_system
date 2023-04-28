@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, send_file
 from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_samples_for_pi, get_samples_for_recordedby, get_samples_for_personnel, get_samples_for_sampletype
 from website.lib.other_functions import split_personnel_list
-from . import DB
+from website import DB
 import numpy as np
 import yaml
 import os

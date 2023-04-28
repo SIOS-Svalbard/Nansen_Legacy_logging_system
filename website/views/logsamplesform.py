@@ -7,7 +7,7 @@ from website.lib.propegate_parents_to_children import propegate_parents_to_child
 from website.lib.input_update_records import insert_into_metadata_catalogue_df
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list
-from . import DB
+from website import DB
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd

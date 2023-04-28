@@ -6,7 +6,7 @@ from website.lib.input_update_records import insert_into_metadata_catalogue, upd
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title
-from . import DB
+from website import DB
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd

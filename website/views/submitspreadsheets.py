@@ -4,7 +4,7 @@ from website.lib.get_data import get_data, get_personnel_df
 from website.lib.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list
-from . import DB, METADATA_CATALOGUE
+from website import DB, METADATA_CATALOGUE
 from datetime import datetime as dt
 import pandas as pd
 
