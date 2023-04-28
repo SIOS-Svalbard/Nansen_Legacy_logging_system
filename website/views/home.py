@@ -71,8 +71,6 @@ def homepage():
                 # If successful, return home_not_during_cruise
                 return redirect('/')
 
-
-
         return render_template(
         "home_during_cruise.html",
         CRUISE_NUMBER=CRUISE_NUMBER,
@@ -156,8 +154,6 @@ def homepage():
                 else:
 
                     flash('Please select a cruise number from the drop-down list', category='warning')
-
-
 
         return render_template(
         "home_not_during_cruise.html",
