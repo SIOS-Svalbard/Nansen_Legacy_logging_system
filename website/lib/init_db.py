@@ -68,7 +68,7 @@ def create_database(DB):
 
 def init_institutions(cur):
     cur.execute("CREATE TABLE institutions (id uuid PRIMARY KEY, short_name text, full_name text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/institutions.csv')
+    df = pd.read_csv('website/config/dropdown_initial_values/institutions.csv')
     for idx, row in df.iterrows():
         id = row['id']
         short_name = row['short_name']
@@ -79,40 +79,38 @@ def init_institutions(cur):
 def init_sample_types(cur):
     cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
 
-    with open('website/templategenerator/website/config/sampleTypes.json', 'r') as f:
-        data = json.load(f)
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sampleType.csv')
 
-    for item in data:
-        ID = item['id']
-        sampleType = item['sampleType']
-        comment = item['comment']
-        group = item['group']
-        vocabLabel = item['vocabLabel']
-        vocabURI = item['vocabURI']
+    for idx, row in df.iterrows():
+        ID = row['id']
+        sampleType = row['sampleType']
+        comment = row['comment']
+        group = row['group']
+        vocabLabel = row['vocabLabel']
+        vocabURI = row['vocabURI']
         cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(cur):
     cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
 
-    with open('website/templategenerator/website/config/gearTypes.json', 'r') as f:
-        data = json.load(f)
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/gearType.csv')
 
-    for item in data:
-        ID = item['id']
-        gearType = item['gearType']
-        IMR_name = item['IMR_name']
-        comment = item['comment']
-        group = item['group']
-        vocabLabel = item['vocabLabel']
-        vocabURI = item['vocabURI']
-        recommendedSampleTypes = item['recommendedSampleTypes']
-        recommendedChildSamples = item['recommendedChildren']['sampleTypes']
+    for idx, row in df.iterrows():
+        ID = row['id']
+        gearType = row['gearType']
+        IMR_name = row['IMR_name']
+        comment = row['comment']
+        group = row['group']
+        vocabLabel = row['vocabLabel']
+        vocabURI = row['vocabURI']
+        recommendedSampleTypes = row['recommendedSampleTypes']
+        recommendedChildSamples = row['recommendedChildren']
 
         cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(cur):
     cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/intended_methods.csv')
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/intendedMethod.csv')
     for idx, row in df.iterrows():
         id = row['id']
         intendedMethod = row['intendedmethod']
@@ -121,7 +119,7 @@ def init_intended_methods(cur):
 
 def init_projects(cur):
     cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/projects.csv')
+    df = pd.read_csv('website/config/dropdown_initial_values/projects.csv')
     for idx, row in df.iterrows():
         id = row['id']
         project = row['project']
@@ -130,7 +128,7 @@ def init_projects(cur):
 
 def init_storage_temperatures(cur):
     cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/storage_temperatures.csv')
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemp.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storagetemp']
@@ -139,7 +137,7 @@ def init_storage_temperatures(cur):
 
 def init_filters(cur):
     cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/filters.csv')
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/filter.csv')
     for idx, row in df.iterrows():
         id = row['id']
         filter = row['filter']
@@ -148,7 +146,7 @@ def init_filters(cur):
 
 def init_sex(cur):
     cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/templategenerator/website/config/sex.csv')
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sex.csv')
     for idx, row in df.iterrows():
         id = row['id']
         sex = row['sex']
@@ -157,7 +155,7 @@ def init_sex(cur):
 
 def init_kingdoms(cur):
     cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
-    df = pd.read_csv('website/templategenerator/website/config/kingdoms.csv')
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/kingdom.csv')
     for idx, row in df.iterrows():
         id = row['id']
         kingdom = row['kingdom']
