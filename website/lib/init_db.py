@@ -113,7 +113,7 @@ def init_intended_methods(cur):
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/intendedMethod.csv')
     for idx, row in df.iterrows():
         id = row['id']
-        intendedMethod = row['intendedmethod']
+        intendedMethod = row['intendedMethod']
         comment = row['comment']
         cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
 
@@ -131,7 +131,7 @@ def init_storage_temperatures(cur):
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemp.csv')
     for idx, row in df.iterrows():
         id = row['id']
-        storageTemp = row['storagetemp']
+        storageTemp = row['storageTemp']
         comment = row['comment']
         cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
