@@ -27,6 +27,7 @@ else:
     url = None
 
 BTL_FILES_FOLDER = CONFIG["niskinBottles"]["dir"]
+FIELDS_FILEPATH = 'website/Learnings_from_AeN_template_generator/website/config/fields'
 
 # GET CRUISE DETAILS, RETURNS FALSE IF NO CRUISE
 cruise_details_df = get_cruise(DB)
@@ -36,7 +37,7 @@ if isinstance(cruise_details_df, pd.DataFrame):
     VESSEL_NAME = cruise_details_df['vessel_name'].item()
     METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
     metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
-    metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list)
+    metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list, FIELDS_FILEPATH)
     init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 else:
     CRUISE_NUMBER = None
