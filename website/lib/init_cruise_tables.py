@@ -2,7 +2,7 @@ import psycopg2
 import psycopg2.extras
 import pandas as pd
 
-def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
+def init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict):
     '''
     Creating the metadata catalogue table within the database to be used for the cruise.
 
@@ -12,13 +12,15 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
         Name of the database within which the tables will be created
     CRUISE_NUMBER: string
         Cruise number
-    cur:
-        psycopg2 conn cursor object, used to execute psql commands
+    cur: cursor object
+        PSQL cursor object
+    metadata_columns_dict: dict
+        dict of fields to use as column headers in the metadata catalogue table and specifications
     '''
 
-    conn = psycopg2.connect(**DB)
-    cur = conn.cursor()
-
+    print('-----')
+    print(metadata_columns_dict)
+    print('-----')
     cur.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
 
     exe_str = f"CREATE TABLE IF NOT EXISTS metadata_catalogue_{CRUISE_NUMBER} (id uuid PRIMARY KEY, "
@@ -30,10 +32,6 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur):
     exe_str = exe_str + "other hstore, metadata hstore)"
 
     cur.execute(exe_str)
-
-    conn.commit()
-    cur.close()
-    conn.close()
 
 def init_stations(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS stations_{CRUISE_NUMBER} (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
@@ -98,7 +96,7 @@ def check_if_cruise_exists(DB, CRUISE_NUMBER):
         print('Multiple cruises logged with the same cruise number')
         return True
 
-def run(DB, CRUISE_NUMBER, VESSEL_NAME):
+def run(DB, CRUISE_NUMBER, metadata_columns_dict):
 
     print('Initialising database tables for the cruise')
     conn = psycopg2.connect(**DB)
@@ -106,7 +104,7 @@ def run(DB, CRUISE_NUMBER, VESSEL_NAME):
     init_personnel(DB, CRUISE_NUMBER, cur)
     init_stations(DB, CRUISE_NUMBER, cur)
     init_user_field_setups(DB, CRUISE_NUMBER, cur)
-    init_metadata_catalogue(DB, CRUISE_NUMBER, cur)
+    init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict)
     conn.commit()
     cur.close()
     conn.close()

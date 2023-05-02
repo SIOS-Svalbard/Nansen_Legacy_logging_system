@@ -3,6 +3,7 @@ import uuid
 from website.lib.init_db import run as init_db
 from website.lib.init_cruise_tables import run as init_cruise_tables
 from website.lib.get_data import get_cruise
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 import pandas as pd
 import json
 import os
@@ -34,7 +35,9 @@ if isinstance(cruise_details_df, pd.DataFrame):
     CRUISE_NUMBER = cruise_details_df['cruise_number'].item()
     VESSEL_NAME = cruise_details_df['vessel_name'].item()
     METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
-    init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
+    metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+    metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list)
+    init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 else:
     CRUISE_NUMBER = None
     VESSEL_NAME = None

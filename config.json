@@ -6,7 +6,7 @@
     "dbname": "lfnl_db"
   },
   "metadata_catalogue": {
-    "fields_used_as_columns": [
+    "fields_to_use_as_columns": [
       "id",
       "parentID",
       "catalogNumber",
