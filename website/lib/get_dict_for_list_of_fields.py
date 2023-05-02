@@ -11,7 +11,5 @@ def get_dict_for_list_of_fields(fields_list, FIELDS_FILEPATH):
     cf_standard_names = cf_standard_names_to_dic(FIELDS_FILEPATH)
     dwc_terms = dwc_terms_to_dic(FIELDS_FILEPATH)
 
-    print(other_fields)
-
     fields_dict = {}
     return fields_dict
