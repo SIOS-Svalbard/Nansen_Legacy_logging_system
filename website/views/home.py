@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 import psycopg2
 import psycopg2.extras
 import uuid
@@ -155,6 +155,9 @@ def homepage():
 
                     flash('Please select a cruise number from the drop-down list', category='warning')
 
+        print('-----')
+        print(url_for('static', filename='style.css'))
+        print('-----')
         return render_template(
         "home_not_during_cruise.html",
         cruise_number_toktlogger = cruise_number_toktlogger,
