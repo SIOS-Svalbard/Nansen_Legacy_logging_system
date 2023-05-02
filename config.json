@@ -3,37 +3,37 @@
     "host": "localhost",
     "user": "postgres",
     "password": "postgres",
-    "dbname": "lfnl_db",
-    "metadata_catalogue": {
-      "fields_used_as_columns": [
-        "id",
-        "parentID",
-        "catalogNumber",
-        "eventDate",
-        "eventTime",
-        "stationName",
-        "decimalLatitude",
-        "decimalLongitude",
-        "gearType",
-        "pi_name",
-        "pi_email",
-        "pi_institution",
-        "pi_orcid",
-        "recordedBy_name",
-        "recordedBy_email",
-        "recordedBy_institution",
-        "recordedBy_orcid",
-        "endDate",
-        "endTime",
-        "endDecimalLatitude",
-        "endDecimalLongitude",
-        "minimumDepthInMeters",
-        "maximumDepthInMeters",
-        "minimumElevationInMeters",
-        "maximumElevationInMeters",
-        "eventRemarks"        
-      ]
-    }
+    "dbname": "lfnl_db"
+  },
+  "metadata_catalogue": {
+    "fields_used_as_columns": [
+      "id",
+      "parentID",
+      "catalogNumber",
+      "eventDate",
+      "eventTime",
+      "stationName",
+      "decimalLatitude",
+      "decimalLongitude",
+      "gearType",
+      "pi_name",
+      "pi_email",
+      "pi_institution",
+      "pi_orcid",
+      "recordedBy_name",
+      "recordedBy_email",
+      "recordedBy_institution",
+      "recordedBy_orcid",
+      "endDate",
+      "endTime",
+      "endDecimalLatitude",
+      "endDecimalLongitude",
+      "minimumDepthInMeters",
+      "maximumDepthInMeters",
+      "minimumElevationInMeters",
+      "maximumElevationInMeters",
+      "eventRemarks"
+    ]
   },
   "toktlogger": {
     "host": null
