@@ -128,7 +128,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
     conn = psycopg2.connect(**DB)
     cur = conn.cursor()
 
-    gear_df = get_data(DB, 'gear_types')
+    gear_df = get_data(DB, 'geartype')
 
     for idx, activity in enumerate(new_activities):
 

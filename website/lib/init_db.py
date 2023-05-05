@@ -77,7 +77,7 @@ def init_institutions(cur):
         cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_sample_types(cur):
-    cur.execute("CREATE TABLE sample_types (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE sampletype (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
 
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sampleType.csv')
 
@@ -88,10 +88,10 @@ def init_sample_types(cur):
         group = row['group']
         vocabLabel = row['vocabLabel']
         vocabURI = row['vocabURI']
-        cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(cur):
-    cur.execute("CREATE TABLE gear_types (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE geartype (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
 
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/gearType.csv')
 
@@ -106,16 +106,16 @@ def init_gear_types(cur):
         recommendedSampleTypes = row['recommendedSampleTypes']
         recommendedChildSamples = row['recommendedChildren']
 
-        cur.execute(f"INSERT INTO gear_types (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO geartype (id, gearType, IMR_name, comment, grouping, vocabLabel, vocabURI, recommendedSampleTypes, recommendedChildSamples, created) VALUES ('{ID}','{gearType}','{IMR_name}','{comment}','{group}','{vocabLabel}','{vocabURI}','{recommendedSampleTypes}','{recommendedChildSamples}', CURRENT_TIMESTAMP);")
 
 def init_intended_methods(cur):
-    cur.execute("CREATE TABLE intended_methods (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE intendedmethod (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/intendedMethod.csv')
     for idx, row in df.iterrows():
         id = row['id']
         intendedMethod = row['intendedMethod']
         comment = row['comment']
-        cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO intendedmethod (id, intendedMethod, comment, created) VALUES ('{id}', '{intendedMethod}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_projects(cur):
     cur.execute("CREATE TABLE projects (id uuid PRIMARY KEY, project text, comment text, created timestamp with time zone)")
@@ -127,22 +127,22 @@ def init_projects(cur):
         cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_storage_temperatures(cur):
-    cur.execute("CREATE TABLE storage_temperatures (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE storagetemperature (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemp.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storageTemp']
         comment = row['comment']
-        cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO storagetemperature (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_filters(cur):
-    cur.execute("CREATE TABLE filters (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE filter (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/filter.csv')
     for idx, row in df.iterrows():
         id = row['id']
         filter = row['filter']
         comment = row['comment']
-        cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{id}','{filter}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO filter (id, filter, comment, created) VALUES ('{id}','{filter}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_sex(cur):
     cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
@@ -154,13 +154,13 @@ def init_sex(cur):
         cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{id}', '{sex}' ,'{comment}', CURRENT_TIMESTAMP);")
 
 def init_kingdoms(cur):
-    cur.execute("CREATE TABLE kingdoms (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
+    cur.execute("CREATE TABLE kingdom (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/kingdom.csv')
     for idx, row in df.iterrows():
         id = row['id']
         kingdom = row['kingdom']
         comment = row['comment']
-        cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO kingdom (id, kingdom, comment, created) VALUES ('{id}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_cruises(cur):
     '''

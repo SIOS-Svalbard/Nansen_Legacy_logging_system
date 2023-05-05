@@ -46,10 +46,7 @@ def edit_activity_form(ID):
         for key in output_config_dict[sheet].keys():
             if key not in ['Required CSV', 'Source']:
                 fields_dict = output_config_dict[sheet][key]
-                output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, config)
-
-    print(output_config_dict)
-
+                output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
 
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
@@ -290,8 +287,8 @@ def log_samples(ID):
     else:
         children_list_of_dics = []
 
-    sample_types_df = get_data(DB, 'sample_types')
-    gear_types_df = get_data(DB, 'gear_types')
+    sample_types_df = get_data(DB, 'sampletype')
+    gear_types_df = get_data(DB, 'geartype')
 
     sample_metadata_df = get_metadata_for_id(DB, CRUISE_NUMBER, ID)
     gearType = sample_metadata_df['geartype'].item()

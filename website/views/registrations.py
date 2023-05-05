@@ -146,7 +146,7 @@ def institutions():
 @registrations.route('/register/sampleTypes', methods=['GET', 'POST'])
 def sampleTypes():
 
-    df = get_data(DB, 'sample_types')
+    df = get_data(DB, 'sampletype')
     df.sort_values(by='sampletype', inplace=True)
     sample_types = list(df['sampletype'])
     comments = list(df['comment'])
@@ -164,7 +164,7 @@ def sampleTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sample_types (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -179,7 +179,7 @@ def sampleTypes():
 @registrations.route('/register/gearTypes', methods=['GET', 'POST'])
 def gearTypes():
 
-    df = get_data(DB, 'gear_types')
+    df = get_data(DB, 'geartype')
     df.sort_values(by='geartype', inplace=True)
     gear_types = list(df['geartype'])
     comments = list(df['comment'])
@@ -197,7 +197,7 @@ def gearTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO gear_types (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO geartype (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -212,7 +212,7 @@ def gearTypes():
 @registrations.route('/register/intendedMethods', methods=['GET', 'POST'])
 def intendedMethods():
 
-    df = get_data(DB, 'intended_methods')
+    df = get_data(DB, 'intendedmethod')
     df.sort_values(by='intendedmethod', inplace=True)
     intended_methods = list(df['intendedmethod'])
     comments = list(df['comment'])
@@ -230,7 +230,7 @@ def intendedMethods():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO intended_methods (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO intendedmethod (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()

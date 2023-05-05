@@ -74,7 +74,7 @@ def get_personnel_df(DB=None, CRUISE_NUMBER=None, table='personnel'):
     if DB == None:
         df_personnel = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
     else:
-        df_personnel = get_data(DB, table+'_'+CRUISE_NUMBER)
+        df_personnel = get_data(DB, f'{table}_{CRUISE_NUMBER}')
     df_personnel.sort_values(by='last_name', inplace=True)
     df_personnel['personnel'] = df_personnel['first_name'] + ' ' + df_personnel['last_name'] + ' (' + df_personnel['email'] + ')'
     return df_personnel
@@ -85,9 +85,9 @@ def get_personnel_list(DB=None, CRUISE_NUMBER=None, table='personnel'):
     return personnel
 
 def get_stations_list(DB=None, CRUISE_NUMBER=None, table='stations'):
-    df_stations = get_data(DB, table+'_'+CRUISE_NUMBER)
-    df_stations.sort_values(by='stationName', inplace=True)
-    stations = list(df_stations['stationName'])
+    df_stations = get_data(DB, f'{table}_{CRUISE_NUMBER}')
+    df_stations.sort_values(by='stationname', inplace=True)
+    stations = list(df_stations['stationname'])
     return stations
 
 def get_user_setup(DB, CRUISE_NUMBER, setupName):

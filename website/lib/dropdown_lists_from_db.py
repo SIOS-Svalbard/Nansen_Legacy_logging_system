@@ -1,8 +1,9 @@
 import pandas as pd
-from website import DB, CRUISE_NUMBER
-from website.lib.get_data import get_stations_list, get_personnel_list
+from website import DB
+from website.lib.get_data import get_stations_list, get_personnel_list, get_data
 
-def get_dropdown_list_from_db(field):
+def get_dropdown_list_from_db(field, CRUISE_NUMBER):
+    print('cruise_number: ',CRUISE_NUMBER)
     if field == 'stationName':
         stations = get_stations_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         return stations
@@ -10,10 +11,11 @@ def get_dropdown_list_from_db(field):
         personnel = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         return personnel
     else:
+        field = field.lower()
         df = get_data(DB, field)
         return list(df[field])
 
-def populate_dropdown_lists(fields_dict):
+def populate_dropdown_lists(fields_dict, CRUISE_NUMBER):
 
     fields_with_dropdown_list = [
         'kingdom',
@@ -33,7 +35,7 @@ def populate_dropdown_lists(fields_dict):
         for field in fields_dict:
             if field['id'] in fields_with_dropdown_list:
                 field['valid']['validate'] = 'list'
-                field['valid']['source'] = get_dropdown_list_from_db(field['id'])
+                field['valid']['source'] = get_dropdown_list_from_db(field['id'], CRUISE_NUMBER)
                 field['valid']['error_message'] = 'Not a valid value, pick a value from the drop-down list.'
             fields_with_dropdowns.append(field)
         return fields_with_dropdowns
@@ -42,6 +44,6 @@ def populate_dropdown_lists(fields_dict):
         for field in fields_dict.keys():
             if field in fields_with_dropdown_list:
                 fields_dict[field]['valid']['validate'] = 'list'
-                fields_dict[field]['valid']['source'] = get_dropdown_list_from_db(field)
+                fields_dict[field]['valid']['source'] = get_dropdown_list_from_db(field, CRUISE_NUMBER)
                 fields_dict[field]['valid']['error_message'] = 'Not a valid value, pick a value from the drop-down list.'
         return fields_dict
