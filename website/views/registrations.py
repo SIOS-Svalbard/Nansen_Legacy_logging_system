@@ -90,7 +90,7 @@ def cruiseDetails():
 
         flash('Cruise details edited!', category='success')
 
-        return redirect(url_for('views.home'))
+        return redirect('/')
 
     return render_template(
     "register/cruiseDetails.html",
