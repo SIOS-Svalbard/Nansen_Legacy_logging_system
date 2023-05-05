@@ -33,7 +33,7 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict):
 def init_stations(DB, CRUISE_NUMBER, cur):
     cur.execute(f"CREATE TABLE IF NOT EXISTS stations_{CRUISE_NUMBER} (id uuid PRIMARY KEY, stationName text, decimalLatitude double precision, decimalLongitude double precision, comment text, created timestamp with time zone)")
 
-    df = pd.read_csv('website/config/dropdown_initial_values/stations.csv')
+    df = pd.read_csv('website/config/dropdown_initial_values/stationName.csv')
     for idx, row in df.iterrows():
         id = row['id']
         stationName = row['stationName']

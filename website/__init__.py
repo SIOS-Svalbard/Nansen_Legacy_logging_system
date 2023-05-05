@@ -9,6 +9,7 @@ import json
 import os
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+CONFIG_PATH = 'website/Learnings_from_AeN_template_generator/website/config/template_configurations.yaml'
 
 with open(os.path.join(BASE_PATH, "config.json"), "r") as fp:
     CONFIG = json.load(fp)

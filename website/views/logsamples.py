@@ -6,11 +6,13 @@ from website.lib.input_update_records import insert_into_metadata_catalogue, upd
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title
-from website import DB
+from website import DB, FIELDS_FILEPATH
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd
 from math import isnan
+from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_config_fields
+from website.lib.dropdown_lists_from_db import populate_dropdown_lists
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -26,6 +28,28 @@ def edit_activity_form(ID):
 
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        groups,
+        dwc_terms
+    ) = get_config_fields(
+        fields_filepath=FIELDS_FILEPATH,
+        config='Learnings from Nansen Legacy logging system',
+        subconfig='activity'
+    )
+
+    for sheet in output_config_dict.keys():
+        for key in output_config_dict[sheet].keys():
+            if key not in ['Required CSV', 'Source']:
+                fields_dict = output_config_dict[sheet][key]
+                output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, config)
+
+    print(output_config_dict)
+
 
     required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 

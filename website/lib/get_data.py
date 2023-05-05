@@ -84,6 +84,12 @@ def get_personnel_list(DB=None, CRUISE_NUMBER=None, table='personnel'):
     personnel = list(df_personnel['personnel'])
     return personnel
 
+def get_stations_list(DB=None, CRUISE_NUMBER=None, table='stations'):
+    df_stations = get_data(DB, table+'_'+CRUISE_NUMBER)
+    df_stations.sort_values(by='stationName', inplace=True)
+    stations = list(df_stations['stationName'])
+    return stations
+
 def get_user_setup(DB, CRUISE_NUMBER, setupName):
     conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT setup from user_field_setups_{CRUISE_NUMBER} where setupName = '{setupName}'", con=conn)
