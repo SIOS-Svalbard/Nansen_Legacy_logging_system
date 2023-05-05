@@ -495,9 +495,9 @@ def registeredprojects():
 @registrations.route('/register/storageTemps', methods=['GET', 'POST'])
 def storageTemps():
 
-    df = get_data(DB, 'storage_temperatures')
-    df.sort_values(by='storagetemp', inplace=True)
-    storageTemps = list(df['storagetemp'])
+    df = get_data(DB, 'storagetemperature')
+    df.sort_values(by='storagetemperature', inplace=True)
+    storageTemps = list(df['storagetemperature'])
     comments = list(df['comment'])
 
     if request.method == 'POST':
@@ -513,7 +513,7 @@ def storageTemps():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO storage_temperatures (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO storagetemperature (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()

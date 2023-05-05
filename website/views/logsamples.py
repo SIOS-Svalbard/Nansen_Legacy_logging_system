@@ -11,8 +11,7 @@ import numpy as np
 from datetime import datetime as dt
 import pandas as pd
 from math import isnan
-from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_config_fields
-from website.lib.dropdown_lists_from_db import populate_dropdown_lists
+from website.lib.get_setup_for_configuration import get_setup_for_configuration
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -34,26 +33,21 @@ def edit_activity_form(ID):
         output_config_fields,
         extra_fields_dict,
         cf_standard_names,
-        groups,
-        dwc_terms
-    ) = get_config_fields(
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+    ) = get_setup_for_configuration(
         fields_filepath=FIELDS_FILEPATH,
-        config='Learnings from Nansen Legacy logging system',
-        subconfig='activity'
+        subconfig='activity',
+        CRUISE_NUMBER=CRUISE_NUMBER
     )
 
-    for sheet in output_config_dict.keys():
-        for key in output_config_dict[sheet].keys():
-            if key not in ['Required CSV', 'Source']:
-                fields_dict = output_config_dict[sheet][key]
-                output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
-
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
-
-    activity_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
-
-    required = list(required_fields_dic.keys())
-    recommended = list(recommended_fields_dic.keys())
+    print('OKAY')
+    # I have requirements from the config file
+    # Put all of above into big function that I can call
 
     sample_metadata_df = get_metadata_for_id(DB, CRUISE_NUMBER, ID)
 
