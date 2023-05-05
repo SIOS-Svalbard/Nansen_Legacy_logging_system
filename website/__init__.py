@@ -18,6 +18,8 @@ DB = CONFIG["database"]
 init_db(DB)
 DBNAME = DB["dbname"]
 
+# WHEN IS CRUISE ADDED TO DB WHEN START CRUISE BUTTON PRESSED?
+
 #TOKTLOGGER = '172.16.0.210' # IP of VM of toktlogger"
 #TOKTLOGGER = 'toktlogger-sars.hi.no'
 TOKTLOGGER = CONFIG["toktlogger"]["host"]
@@ -29,17 +31,13 @@ else:
 BTL_FILES_FOLDER = CONFIG["niskinBottles"]["dir"]
 FIELDS_FILEPATH = 'website/Learnings_from_AeN_template_generator/website/config/fields'
 
-# GET CRUISE DETAILS, RETURNS FALSE IF NO CRUISE
+# GET CRUISE DETAILS, RETURNS NONE IF NO CRUISE
 cruise_details_df = get_cruise(DB)
 
-if isinstance(cruise_details_df, pd.DataFrame):
+if cruise_details_df is not None:
     CRUISE_NUMBER = cruise_details_df['cruise_number'].item()
     VESSEL_NAME = cruise_details_df['vessel_name'].item()
     METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
-    metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
-    metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list, FIELDS_FILEPATH)
-
-    init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 else:
     CRUISE_NUMBER = None
     VESSEL_NAME = None

@@ -6,7 +6,8 @@ from website.lib.init_cruise_tables import run as init_cruise_tables
 from website.lib.get_data import get_cruise, get_cruises
 from website.lib.harvest_activities import harvest_activities
 from website.lib.harvest_niskins import harvest_niskins
-from website import DB, TOKTLOGGER, BTL_FILES_FOLDER
+from website import DB, TOKTLOGGER, BTL_FILES_FOLDER, CONFIG, FIELDS_FILEPATH
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 import requests
 import pandas as pd
 
@@ -130,7 +131,10 @@ def homepage():
                     cur.close()
                     conn.close()
 
-                    init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
+                    metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+                    metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list, FIELDS_FILEPATH)
+
+                    init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 
                     # redirect to home, run the script again now that new cruise is logged with current = true
                     return redirect('/')

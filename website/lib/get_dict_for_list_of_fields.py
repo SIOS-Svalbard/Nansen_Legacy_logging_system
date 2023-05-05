@@ -25,4 +25,9 @@ def get_dict_for_list_of_fields(fields_list, FIELDS_FILEPATH):
         if field['id'] in fields_list:
             fields_dict[field['id']] = field
 
-    return fields_dict
+    ordered_fields_dict = {}
+
+    for field in fields_list:
+        ordered_fields_dict[field] = fields_dict[field]
+
+    return ordered_fields_dict

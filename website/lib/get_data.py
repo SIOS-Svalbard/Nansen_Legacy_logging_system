@@ -5,8 +5,11 @@ import pandas as pd
 def get_cruise(DB):
     conn = psycopg2.connect(**DB)
     df = pd.read_sql(f'SELECT * FROM cruises WHERE current = true', con=conn)
+    print('**************')
+    print(df)
+    print('**************')
     if len(df) == 0:
-        return False
+        return None
     elif len(df) == 1:
         return df
     else:
