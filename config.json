@@ -10,9 +10,11 @@
       "id",
       "parentID",
       "catalogNumber",
+      "bottleNumber",
       "eventDate",
       "eventTime",
       "stationName",
+      "statID",
       "decimalLatitude",
       "decimalLongitude",
       "gearType",
@@ -32,7 +34,32 @@
       "maximumDepthInMeters",
       "minimumElevationInMeters",
       "maximumElevationInMeters",
-      "eventRemarks"
+      "comments1"
+    ],
+    "fields_to_inherit": [
+      "bottleNumber",
+      "eventDate",
+      "eventTime",
+      "stationName",
+      "statID",
+      "decimalLatitude",
+      "decimalLongitude",
+      "middleDate",
+      "middleTime",
+      "middleDecimalLatitude",
+      "middleDecimalLongitude",
+      "endDate",
+      "endTime",
+      "endDecimalLatitude",
+      "endDecimalLongitude",
+      "shipSpeedInMetersPerSecond"
+    ],
+    "fields_to_inherit_if_not_logged_for_children": [
+      "gearType",
+      "minimumDepthInMeters",
+      "maximumDepthInMeters",
+      "minimumElevationInMeters",
+      "maximumElevationInMeters"
     ]
   },
   "toktlogger": {
