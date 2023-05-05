@@ -22,9 +22,9 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict):
 
     exe_str = f"CREATE TABLE IF NOT EXISTS metadata_catalogue_{CRUISE_NUMBER} (id uuid PRIMARY KEY, "
 
-    for field in fields.fields:
-        if field['hstore'] == False and field['name'] != 'id':
-            exe_str = exe_str + field['name'] + " " + field['format'] + ", "
+    for field, vals in metadata_columns_dict.items():
+        if field != 'id':
+            exe_str = exe_str + field + " " + vals['format'] + ", "
 
     exe_str = exe_str + "other hstore, metadata hstore)"
 
