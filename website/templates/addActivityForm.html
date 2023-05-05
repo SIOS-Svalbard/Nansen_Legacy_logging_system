@@ -6,7 +6,9 @@
 {% block content %}
 
 <div class="container">
-  {{ breadcrumb(trace) }}
+  {% if trace %}
+    {{ breadcrumb(trace) }}
+  {% endif %}
   <h1>Activity form</h1>
   <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
 

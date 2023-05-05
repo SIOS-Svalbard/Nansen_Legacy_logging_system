@@ -12,6 +12,7 @@ from datetime import datetime as dt
 import pandas as pd
 from math import isnan
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -27,6 +28,8 @@ def edit_activity_form(ID):
 
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+    subconfig = 'activity'
+    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
 
     (
         output_config_dict,
@@ -39,15 +42,12 @@ def edit_activity_form(ID):
         added_fields_dic,
         added_cf_names_dic,
         added_dwc_terms_dic,
+        groups
     ) = get_setup_for_configuration(
         fields_filepath=FIELDS_FILEPATH,
-        subconfig='activity',
+        subconfig=subconfig,
         CRUISE_NUMBER=CRUISE_NUMBER
     )
-
-    print('OKAY')
-    # I have requirements from the config file
-    # Put all of above into big function that I can call
 
     sample_metadata_df = get_metadata_for_id(DB, CRUISE_NUMBER, ID)
 
@@ -72,35 +72,45 @@ def edit_activity_form(ID):
                         field_name = b[1:-1] # Removing first an last character, the quotation marks (")
                         other_columns.append(field_name)
                         if field_name != '':
-                            activity_fields[field_name] = extra_fields_dic[field_name]
+                            for field in cf_standard_names:
+                                if field['id'] == field_name:
+                                    added_cf_names_dic['Data'] = field
+                            for field in dwc_terms_not_in_config:
+                                if field['id'] == field_name:
+                                    added_dwc_terms_dic['Data'] = field
+                            for field in extra_fields_dic:
+                                if field['id'] == field_name:
+                                    added_fields_dic['Data'] = field
 
-    for field in fields.fields:
-        if field['name'] in activity_fields.keys():
-            if field['name'] in required:
-                activity_fields[field['name']]['required'] = True
-            else:
-                activity_fields[field['name']]['required'] = False
-            if ID == 'addNew':
-                if field['format'] in ['double precision', 'date', 'time']:
-                    activity_fields[field['name']]['value'] = None
-                else:
-                    activity_fields[field['name']]['value'] = ''
-            else:
-                if field['name'] in other_columns:
-                    activity_fields[field['name']]['value'] = sample_metadata_df[field['name']].item()
-                else:
-                    if field['name'] not in ['recordedBy_details', 'pi_details']:
-                        activity_fields[field['name']]['value'] = sample_metadata_df[field['name'].lower()].item()
+    # WHAT IS ACTIVITY FIELDS AND WHAT IS THE EQUIVALENT NOW
 
-    if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
-        activity_fields['pi_details']['value'] = combine_personnel_details(sample_metadata_df['pi_name'].item(),sample_metadata_df['pi_email'].item())
-    else:
-        activity_fields['pi_details']['value'] = []
+    # for field in fields.fields:
+    #     if field['name'] in activity_fields.keys():
+    #         if field['name'] in required:
+    #             activity_fields[field['name']]['required'] = True
+    #         else:
+    #             activity_fields[field['name']]['required'] = False
+    #         if ID == 'addNew':
+    #             if field['format'] in ['double precision', 'date', 'time']:
+    #                 activity_fields[field['name']]['value'] = None
+    #             else:
+    #                 activity_fields[field['name']]['value'] = ''
+    #         else:
+    #             if field['name'] in other_columns:
+    #                 activity_fields[field['name']]['value'] = sample_metadata_df[field['name']].item()
+    #             else:
+    #                 if field['name'] not in ['recordedBy_details', 'pi_details']:
+    #                     activity_fields[field['name']]['value'] = sample_metadata_df[field['name'].lower()].item()
 
-    if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
-        activity_fields['recordedBy_details']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
-    else:
-        activity_fields['recordedBy_details']['value'] = []
+    # if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
+    #     activity_fields['pi_details']['value'] = combine_personnel_details(sample_metadata_df['pi_name'].item(),sample_metadata_df['pi_email'].item())
+    # else:
+    #     activity_fields['pi_details']['value'] = []
+    #
+    # if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
+    #     activity_fields['recordedBy_details']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
+    # else:
+    #     activity_fields['recordedBy_details']['value'] = []
 
     # Get children
     if ID != 'addNew':
@@ -247,25 +257,30 @@ def edit_activity_form(ID):
                 return redirect(url_for('views.home'))
 
     if ID == 'addNew':
-        ID = ''
-
+        ID = None
+        trace = None
+    else:
+        trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
     # Reordering dictionary to order in fields.py
-    activity_metadata = {}
-    for field in fields.fields:
-        if field['name'] in activity_fields.keys():
-            activity_metadata[field['name']] = activity_fields[field['name']]
 
     return render_template(
     "addActivityForm.html",
     ID=ID,
-    activity_metadata=activity_metadata,
-    extra_fields_dic=extra_fields_dic,
+    output_config_dict=output_config_dict,
+    extra_fields_dict=extra_fields_dict,
     groups=groups,
-    trace=get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID),
+    added_fields_dic=added_fields_dic,
+    cf_standard_names=cf_standard_names,
+    added_cf_names_dic=added_cf_names_dic,
+    dwc_terms_not_in_config=dwc_terms_not_in_config,
+    added_dwc_terms_dic=added_dwc_terms_dic,
+    list_of_subconfigs=list_of_subconfigs,
+    subconfig=subconfig,
+    trace=trace,
     children_list_of_dics=children_list_of_dics,
     len=len,
     isnan=isnan,
-    get_title=get_title,
+    get_title=get_title
     )
 
 @logsamples.route('/logSamples/parentid=<ID>', methods=['GET', 'POST'])

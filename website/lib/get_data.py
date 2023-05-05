@@ -47,7 +47,7 @@ def get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, ids):
 
 def get_metadata_for_id(DB, CRUISE_NUMBER, ID):
     conn = psycopg2.connect(**DB)
-    if ID == 'addNew':
+    if ID in ['addNew', None]:
         ID = '6818a630-3e44-11ed-bc56-07202a870ce3'
     df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';", con=conn)
     return df

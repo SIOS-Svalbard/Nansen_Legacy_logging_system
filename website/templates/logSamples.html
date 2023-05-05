@@ -6,7 +6,9 @@
 {% block content %}
 
 <div class="container">
-  {{ breadcrumb(trace) }}
+  {% if trace %}
+    {{ breadcrumb(trace) }}
+  {% endif %}
   <h1>Log children samples or gear</h1>
   <hr />
   <h4>Suggestions</h4>

@@ -76,4 +76,5 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
         added_fields_dic,
         added_cf_names_dic,
         added_dwc_terms_dic,
+        groups
     )
