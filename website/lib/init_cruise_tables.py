@@ -18,9 +18,6 @@ def init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict):
         dict of fields to use as column headers in the metadata catalogue table and specifications
     '''
 
-    print('-----')
-    print(metadata_columns_dict)
-    print('-----')
     cur.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
 
     exe_str = f"CREATE TABLE IF NOT EXISTS metadata_catalogue_{CRUISE_NUMBER} (id uuid PRIMARY KEY, "

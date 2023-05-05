@@ -38,6 +38,7 @@ if isinstance(cruise_details_df, pd.DataFrame):
     METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
     metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
     metadata_columns_dict = get_dict_for_list_of_fields(metadata_columns_list, FIELDS_FILEPATH)
+
     init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 else:
     CRUISE_NUMBER = None

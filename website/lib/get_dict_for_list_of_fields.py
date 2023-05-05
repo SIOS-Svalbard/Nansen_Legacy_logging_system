@@ -12,4 +12,17 @@ def get_dict_for_list_of_fields(fields_list, FIELDS_FILEPATH):
     dwc_terms = dwc_terms_to_dic(FIELDS_FILEPATH)
 
     fields_dict = {}
+
+    for field in other_fields:
+        if field['id'] in fields_list:
+            fields_dict[field['id']] = field
+
+    for field in cf_standard_names:
+        if field['id'] in fields_list:
+            fields_dict[field['id']] = field
+
+    for field in dwc_terms:
+        if field['id'] in fields_list:
+            fields_dict[field['id']] = field
+
     return fields_dict
