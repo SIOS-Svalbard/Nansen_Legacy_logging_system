@@ -18,10 +18,6 @@ DB = CONFIG["database"]
 init_db(DB)
 DBNAME = DB["dbname"]
 
-# WHEN IS CRUISE ADDED TO DB WHEN START CRUISE BUTTON PRESSED?
-
-#TOKTLOGGER = '172.16.0.210' # IP of VM of toktlogger"
-#TOKTLOGGER = 'toktlogger-sars.hi.no'
 TOKTLOGGER = CONFIG["toktlogger"]["host"]
 if TOKTLOGGER:
     url = f"http://{TOKTLOGGER}/api/cruises/current?format=json"
