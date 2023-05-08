@@ -1,0 +1,122 @@
+<div class="form-row">
+  {% if id == 'minimumDepthInMeters' %}
+    <div class="col-sm-12">
+      Enter either depth or elevation, but not both. Enter minimum and maximum if known, even if they are the same value.
+    </div>
+  {% endif %}
+  <label
+  class="col-sm-3 col-form-label"
+  {% if field['grouping'] == 'Darwin Core term' %}
+  style="color:#006600"
+  {% elif field['grouping'] == 'CF standard name' %}
+  style="color:#0000cc"
+  {% endif %}
+  >
+    {% if requirement == 'Required' %}
+      <span style="color:#ff0000">*</span>
+    {% endif %}{{ field['disp_name'] }}
+    <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ field['description'] }}">
+  </label>
+
+  {% if field['format'] == 'date' %}
+  <div class="col-sm-9">
+    <input type="date" class="form-control" id="{{ id }}" name="{{ id }}" value="{{field['value']}}"> <!--value={{endDate}}-->
+  </div>
+
+  {% elif field['format'] == 'time' %}
+  <div class="col-sm-9">
+    <input type="time" class="form-control" id="{{ id }}" name="{{ id }}" value="{{field['value']}}">
+    <button type="button" onclick="document.getElementById('{{ id }}').value = ''">Remove time</button>
+  </div>
+
+  {% elif field['format'] == 'text' %}
+    {% if id == 'stationName' %}
+    <div class="col-sm-7">
+      <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
+        <option selected>{{field['value']}}</option>
+        {% for station in field['valid']['source'] %}
+          <option>{{station}}</option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
+    </div>
+    <div class="col-sm-2">
+      <a class="btn btn-info" href="/register/stations" role="button">Register new</a>
+    </div>
+    {% elif id == 'gearType' %}
+    <div class="col-sm-7">
+      <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
+        <option selected>{{field['value']}}</option>
+        {% for gearType in field['valid']['source'] %}
+          <option>{{gearType}}</option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
+    </div>
+    <div class="col-sm-2">
+      <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
+    </div>
+    {% elif id == 'pi_details' %}
+    <div class="col-sm-7">
+      <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
+        {% for person in field['valid']['source'] %}
+          {% if person in field['value'] %}
+            <option selected="selected">{{person}}</option>
+          {% else %}
+            <option>{{person}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
+    </div>
+    <div class="col-sm-2">
+      <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
+    </div>
+    {% elif id == 'recordedBy' %}
+    <div class="col-sm-7">
+      <select multiple class="custom-select" id="recordedBy" name="recordedBy" aria-label="Default select example">
+        {% for person in field['valid']['source'] %}
+          {% if person in field['value'] %}
+            <option selected="selected">{{person}}</option>
+          {% else %}
+            <option>{{person}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
+    </div>
+    <div class="col-sm-2">
+      <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
+    </div>
+    {% else %}
+    <div class="col-sm-9">
+      <input type="text" class="form-control" name="{{ id }}" id="{{ id }}" placeholder="{{ id }}" value="{{field['value']}}">
+    </div>
+    {% endif %}
+
+  {% elif field['format'] == 'double precision' %}
+  <div class="col-sm-9">
+    {% if id in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
+    <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+    {% elif id in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
+    <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+    {% elif id in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
+    <input type="number" step=0.0001 min=0 class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+    {% else %}
+    <input type="number" step=0.0001 class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+    {% endif %}
+  </div>
+  {% elif field['format'] == 'int' %}
+  <div class="col-sm-9">
+    <input type="number" step=1 class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+  </div>
+
+  {% else %}
+  <div class="col-sm-9">
+    <input type="text" class="form-control" name="{{ id }}" id="{{ id }}" value="{{field['value']}}">
+  </div>
+
+  {% endif %}
+
+</div>
+<br>

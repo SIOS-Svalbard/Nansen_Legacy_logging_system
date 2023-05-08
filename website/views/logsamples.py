@@ -82,36 +82,6 @@ def edit_activity_form(ID):
                                 if field['id'] == field_name:
                                     added_fields_dic['Data'] = field
 
-    # WHAT IS ACTIVITY FIELDS AND WHAT IS THE EQUIVALENT NOW
-
-    # for field in fields.fields:
-    #     if field['name'] in activity_fields.keys():
-    #         if field['name'] in required:
-    #             activity_fields[field['name']]['required'] = True
-    #         else:
-    #             activity_fields[field['name']]['required'] = False
-    #         if ID == 'addNew':
-    #             if field['format'] in ['double precision', 'date', 'time']:
-    #                 activity_fields[field['name']]['value'] = None
-    #             else:
-    #                 activity_fields[field['name']]['value'] = ''
-    #         else:
-    #             if field['name'] in other_columns:
-    #                 activity_fields[field['name']]['value'] = sample_metadata_df[field['name']].item()
-    #             else:
-    #                 if field['name'] not in ['recordedBy', 'pi_details']:
-    #                     activity_fields[field['name']]['value'] = sample_metadata_df[field['name'].lower()].item()
-
-    # if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
-    #     activity_fields['pi_details']['value'] = combine_personnel_details(sample_metadata_df['pi_name'].item(),sample_metadata_df['pi_email'].item())
-    # else:
-    #     activity_fields['pi_details']['value'] = []
-    #
-    # if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
-    #     activity_fields['recordedBy']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
-    # else:
-    #     activity_fields['recordedBy']['value'] = []
-
     # Get children
     if ID != 'addNew':
         ids = [ID]
@@ -121,43 +91,83 @@ def edit_activity_form(ID):
 
     if request.method == 'POST':
 
-        form_input = request.form.to_dict(flat=False)
+        all_form_keys = request.form.keys()
 
-        for key, value in form_input.items():
-            # Required fields already included by default
-            if key in required or key in recommended:
-                if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
-                    form_input[key] = value[0]
-                    activity_fields[key]['value'] = value[0]
-                elif key == 'pi_details':
-                    activity_fields[key]['value'] = value
-                elif key == 'recordedBy':
-                    activity_fields[key]['value'] = value
-                elif len(value) == 0:
-                    form_input[key] = ''
-                    activity_fields[key]['value'] = ''
+        # CF standard names
+        for field in cf_standard_names:
+            for sheet in output_config_dict.keys():
+                if sheet not in ['Required CSV', 'Source']:
+                    for form_key in all_form_keys:
+                        if form_key == field['id']:
+                            added_cf_names_dic[sheet][field['id']] = {}
+                            added_cf_names_dic[sheet][field['id']]['id'] = field['id']
+                            added_cf_names_dic[sheet][field['id']]['disp_name'] = field['id']
+                            added_cf_names_dic[sheet][field['id']]['valid'] = field['valid']
+                            if field["description"] == None:
+                                field["description"] = ""
+                            added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
+                            added_cf_names_dic[sheet][field['id']]['format'] = field['format']
+                            added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
 
-            # Additional optional fields added by user
-            elif value not in [['submit'],['addfields']]:
-                activity_fields[key] = {}
-                for field, field_info in extra_fields_dic.items():
-                    if field == key:
-                        activity_fields[key] = extra_fields_dic[key]
-                        # First POST request is when user clicks 'add fields', and value of 'y' assigned as value for all fields with checked boxes
-                        if value == ['y']:
-                            if field_info['format'] in ['double precision', 'date', 'time']:
-                                activity_fields[key]['value'] = None
-                            else:
-                                activity_fields[key]['value'] = ''
 
-                        # Not first POST request, in cases where a field has been added and then need to redisplay, e.g. error on first load.
-                        else:
-                            if len(value) == 1:
-                                form_input[key] = value[0]
-                                activity_fields[key]['value'] = value[0]
-                            elif len(value) == 0:
-                                form_input[key] = ''
-                                activity_fields[key]['value'] = ''
+        # Darwin Core terms
+        for sheet in dwc_terms_not_in_config.keys():
+            for term in dwc_terms_not_in_config[sheet]:
+                for form_key in all_form_keys:
+                    if form_key == term['id']:
+                        added_dwc_terms_dic[sheet][term['id']] = {}
+                        added_dwc_terms_dic[sheet][term['id']]['id'] = term['id']
+                        added_dwc_terms_dic[sheet][term['id']]['disp_name'] = term['id']
+                        added_dwc_terms_dic[sheet][term['id']]['valid'] = term['valid']
+                        if term["description"] == None:
+                            term["description"] = ""
+                        added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
+                        added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
+                        added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
+
+        # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
+        for field, vals in extra_fields_dict.items():
+            for form_key in all_form_keys:
+                if field == form_key:
+                    added_fields_dic['Data'][field] = vals
+
+        # form_input = request.form.to_dict(flat=False)
+        #
+        # for key, value in form_input.items():
+        #     # Required fields already included by default
+        #     if key in required or key in recommended:
+        #         if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
+        #             form_input[key] = value[0]
+        #             activity_fields[key]['value'] = value[0]
+        #         elif key == 'pi_details':
+        #             activity_fields[key]['value'] = value
+        #         elif key == 'recordedBy':
+        #             activity_fields[key]['value'] = value
+        #         elif len(value) == 0:
+        #             form_input[key] = ''
+        #             activity_fields[key]['value'] = ''
+        #
+        #     # Additional optional fields added by user
+        #     elif value not in [['submit'],['addfields']]:
+        #         activity_fields[key] = {}
+        #         for field, field_info in extra_fields_dic.items():
+        #             if field == key:
+        #                 activity_fields[key] = extra_fields_dic[key]
+        #                 # First POST request is when user clicks 'add fields', and value of 'y' assigned as value for all fields with checked boxes
+        #                 if value == ['y']:
+        #                     if field_info['format'] in ['double precision', 'date', 'time']:
+        #                         activity_fields[key]['value'] = None
+        #                     else:
+        #                         activity_fields[key]['value'] = ''
+        #
+        #                 # Not first POST request, in cases where a field has been added and then need to redisplay, e.g. error on first load.
+        #                 else:
+        #                     if len(value) == 1:
+        #                         form_input[key] = value[0]
+        #                         activity_fields[key]['value'] = value[0]
+        #                     elif len(value) == 0:
+        #                         form_input[key] = ''
+        #                         activity_fields[key]['value'] = ''
 
         if request.form['submitbutton'] == 'submit':
 
