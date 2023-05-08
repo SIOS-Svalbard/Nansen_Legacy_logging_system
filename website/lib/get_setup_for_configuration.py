@@ -106,6 +106,10 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
     dwc_terms = populate_dropdown_lists(dwc_terms, CRUISE_NUMBER)
     cf_standard_names = populate_dropdown_lists(cf_standard_names, CRUISE_NUMBER)
 
+    # Removing recordedBy and pi_details from extra fields as they are required fields that have been added above
+    for field_to_remove in ['pi_details', 'recordedBy']:
+        extra_fields_dict.pop(field_to_remove, None)
+
     # Creating a dictionary of all the fields.
     all_fields_dict = extra_fields_dict.copy()
 
