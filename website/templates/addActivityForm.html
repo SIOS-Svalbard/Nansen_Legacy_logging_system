@@ -10,7 +10,13 @@
     {{ breadcrumb(trace) }}
   {% endif %}
   <h1>Form to register an activity</h1><br>
-  <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
+  <p class="form-text" id="eventtime_help">
+    <span class="font-weight-bold">Key:</span>
+    <span style="color:#006600">Darwin Core term</span>,
+    <span style="color:#0000cc">CF standard name</span>,
+    Custom field for logging system,
+    <span style="color:#ff0000">*</span>Required field
+  </p>
 
   <form method="POST">
     {% for sheet in output_config_dict.keys() %}
@@ -24,7 +30,19 @@
                     Enter either depth or elevation, but not both. Enter minimum and maximum if known, even if they are the same value.
                   </div>
                 {% endif %}
-                <label class="col-sm-3 col-form-label">{% if requirement == 'Required' %}<span style="color:#ff0000">*</span>{% endif %}{{ field['disp_name'] }}  <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ field['description'] }}"></label>
+                <label
+                class="col-sm-3 col-form-label"
+                {% if field['grouping'] == 'Darwin Core term' %}
+                style="color:#006600"
+                {% elif field['grouping'] == 'CF standard name' %}
+                style="color:#0000cc"
+                {% endif %}
+                >
+                  {% if requirement == 'Required' %}
+                    <span style="color:#ff0000">*</span>
+                  {% endif %}{{ field['disp_name'] }}
+                  <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ field['description'] }}">
+                </label>
 
                 {% if field['format'] == 'date' %}
                 <div class="col-sm-9">
