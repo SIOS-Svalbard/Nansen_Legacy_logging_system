@@ -99,7 +99,7 @@ def edit_activity_form(ID):
     #             if field['name'] in other_columns:
     #                 activity_fields[field['name']]['value'] = sample_metadata_df[field['name']].item()
     #             else:
-    #                 if field['name'] not in ['recordedBy_details', 'pi_details']:
+    #                 if field['name'] not in ['recordedBy', 'pi_details']:
     #                     activity_fields[field['name']]['value'] = sample_metadata_df[field['name'].lower()].item()
 
     # if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
@@ -108,9 +108,9 @@ def edit_activity_form(ID):
     #     activity_fields['pi_details']['value'] = []
     #
     # if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
-    #     activity_fields['recordedBy_details']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
+    #     activity_fields['recordedBy']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
     # else:
-    #     activity_fields['recordedBy_details']['value'] = []
+    #     activity_fields['recordedBy']['value'] = []
 
     # Get children
     if ID != 'addNew':
@@ -126,12 +126,12 @@ def edit_activity_form(ID):
         for key, value in form_input.items():
             # Required fields already included by default
             if key in required or key in recommended:
-                if len(value) == 1 and key not in ['pi_details', 'recordedBy_details']:
+                if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
                     form_input[key] = value[0]
                     activity_fields[key]['value'] = value[0]
                 elif key == 'pi_details':
                     activity_fields[key]['value'] = value
-                elif key == 'recordedBy_details':
+                elif key == 'recordedBy':
                     activity_fields[key]['value'] = value
                 elif len(value) == 0:
                     form_input[key] = ''
@@ -166,12 +166,12 @@ def edit_activity_form(ID):
                 form_input['pi_name'], form_input['pi_email'], form_input['pi_orcid'], form_input['pi_institution'] = split_personnel_list(form_input['pi_details'], df_personnel)
             else:
                 form_input['pi_name'] = form_input['pi_email'] = form_input['pi_orcid'] = form_input['pi_institution'] = ''
-            if 'recordedBy_details' in form_input.keys():
-                form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_orcid'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy_details'], df_personnel)
+            if 'recordedBy' in form_input.keys():
+                form_input['recordedBy_name'], form_input['recordedBy_email'], form_input['recordedBy_orcid'], form_input['recordedBy_institution'] = split_personnel_list(form_input['recordedBy'], df_personnel)
             else:
                 form_input['recordedBy_name'] = form_input['recordedBy_email'] = form_input['recordedBy_orcid'] = form_input['recordedBy_institution'] = ''
 
-            for key in ['pi_details', 'recordedBy_details', 'submitbutton']:
+            for key in ['pi_details', 'recordedBy', 'submitbutton']:
                 if key in form_input.keys():
                     form_input.pop(key)
 
@@ -195,8 +195,8 @@ def edit_activity_form(ID):
             if 'pi_details' in required:
                 required.remove('pi_details')
                 required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-            if 'recordedBy_details' in required:
-                required.remove('recordedBy_details')
+            if 'recordedBy' in required:
+                required.remove('recordedBy')
                 required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
             good, errors = checker(

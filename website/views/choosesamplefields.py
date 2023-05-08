@@ -45,7 +45,7 @@ def choose_sample_fields(parentID,sampleType):
     most_likely_same_for_all_samples = [
     'parentID',
     'pi_details',
-    'recordedBy_details',
+    'recordedBy',
     'sampleType',
     'gearType',
     'samplingProtocolDoc',

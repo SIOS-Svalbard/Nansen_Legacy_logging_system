@@ -97,7 +97,7 @@ def export_data():
                     df_to_export.drop([field['name']], axis=1, inplace=True)
 
 
-        for col in ['created','modified','pi_details','recordedBy_details']:
+        for col in ['created','modified','pi_details','recordedBy']:
             if col in df_to_export.columns:
                 df_to_export.drop([col], axis=1, inplace=True)
 

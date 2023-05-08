@@ -41,7 +41,7 @@
         </div>
         <div class="col-3">
           {% if 'source' in value.keys() %}
-            {% if field in ['recordedBy_details', 'pi_details'] %}
+            {% if field in ['recordedBy', 'pi_details'] %}
               <select multiple class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
                 {% for person in value['source'] %}
                   {% if person in value['values'] %}
@@ -180,7 +180,7 @@
             {% if value['checked'] == ['vary'] %}
               <td>
               {% if 'source' in setup_fields_dic[field].keys() %}
-                {% if field in ['recordedBy_details', 'pi_details'] %}
+                {% if field in ['recordedBy', 'pi_details'] %}
                   <select multiple class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
                     {% for person in value['source'] %}
                       <option>{{person}}</option>

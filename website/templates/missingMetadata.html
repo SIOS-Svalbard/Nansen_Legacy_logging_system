@@ -67,7 +67,7 @@
         {% for field, value in activity_fields_dic.items() %}
           <td>
           {% if 'source' in activity_fields_dic[field].keys() %}
-            {% if field in ['recordedBy_details', 'pi_details'] %}
+            {% if field in ['recordedBy', 'pi_details'] %}
               {% if value['values'][row_num] == [None] %}
                 <div class="container bg-danger">
                   <select multiple class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">

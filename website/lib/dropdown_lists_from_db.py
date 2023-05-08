@@ -7,7 +7,7 @@ def get_dropdown_list_from_db(field, CRUISE_NUMBER):
     if field == 'stationName':
         stations = get_stations_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         return stations
-    elif field in ['recordedBy_details', 'pi_details']:
+    elif field in ['recordedBy', 'pi_details']:
         personnel = get_personnel_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         return personnel
     else:
@@ -25,7 +25,7 @@ def populate_dropdown_lists(fields_dict, CRUISE_NUMBER):
         'intendedMethod',
         'storageTemp',
         'filter',
-        'recordedBy_details',
+        'recordedBy',
         'pi_details',
         'stationName',
     ]

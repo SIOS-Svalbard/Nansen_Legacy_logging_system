@@ -152,7 +152,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
             if '|' not in key and key not in ['submit','labelType', 'movefieldtovary', 'movefieldtosame']:
                 fields_to_submit.append(key)
-                if key in ['pi_details','recordedBy_details']:
+                if key in ['pi_details','recordedBy']:
                     df_to_submit[key] = ' | '.join(value)
                     setup_fields_dic[key]['values'] = ' | '.join(value)
                 else:
@@ -165,10 +165,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 row = int(row)
 
                 if row in rows:
-                    if len(value) == 1 and field not in ['pi_details', 'recordedBy_details']:
+                    if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
                         df_to_submit[field][row] = value[0]
                         setup_fields_dic[field]['values'][row] = value[0]
-                    elif field in ['pi_details','recordedBy_details']:
+                    elif field in ['pi_details','recordedBy']:
                         df_to_submit[field][row] = ' | '.join(value)
                         setup_fields_dic[field]['values'][row] = value
                     elif len(value) == 0:
@@ -222,9 +222,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                     fields_to_submit.remove('pi_details')
                     fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                if 'recordedBy_details' in fields_to_submit:
-                    df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
-                    fields_to_submit.remove('recordedBy_details')
+                if 'recordedBy' in fields_to_submit:
+                    df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+                    fields_to_submit.remove('recordedBy')
                     fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 fields_to_submit = fields_to_submit + ['parentID']
@@ -233,9 +233,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                     required.remove('pi_details')
                     required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                if 'recordedBy_details' in required:
-                    df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
-                    required.remove('recordedBy_details')
+                if 'recordedBy' in required:
+                    df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+                    required.remove('recordedBy')
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 required = required + ['parentID']
@@ -349,25 +349,25 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         for col in df_to_submit.columns:
                             if col.startswith('pi_details'):
                                 pi_cols.append(col)
-                            elif col.startswith('recordedBy_details'):
+                            elif col.startswith('recordedBy'):
                                 recordedBy_cols.append(col)
 
                         df_to_submit['pi_details'] = df_to_submit[pi_cols].values.tolist()
-                        df_to_submit['recordedBy_details'] = df_to_submit[recordedBy_cols].values.tolist()
+                        df_to_submit['recordedBy'] = df_to_submit[recordedBy_cols].values.tolist()
 
                         df_personnel = get_personnel_df(DB=DB, table='personnel')
                         df_to_submit[['pi_name','pi_email','pi_orcid', 'pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
+                        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
                         for col in df_to_submit.columns:
-                            if col.startswith('pi_details') or col.startswith('recordedBy_details'):
+                            if col.startswith('pi_details') or col.startswith('recordedBy'):
                                 df_to_submit.drop(col, axis=1, inplace=True)
 
                         if 'pi_details' in required:
                             required.remove('pi_details')
                             required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                        if 'recordedBy_details' in required:
-                            required.remove('recordedBy_details')
+                        if 'recordedBy' in required:
+                            required.remove('recordedBy')
                             required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                         good, errors = checker(

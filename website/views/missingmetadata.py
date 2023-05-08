@@ -83,8 +83,8 @@ def missing_metadata():
         if 'pi_details' in required:
             required.remove('pi_details')
             required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-        if 'recordedBy_details' in required:
-            required.remove('recordedBy_details')
+        if 'recordedBy' in required:
+            required.remove('recordedBy')
             required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
         fields_to_submit = []
@@ -99,8 +99,8 @@ def missing_metadata():
 
             for key, val in form_input.items():
                 if key == 'bulkrecordedby':
-                    df_to_submit['recordedBy_details'] = ' | '.join(val)
-                    fields_to_submit.append('recordedBy_details')
+                    df_to_submit['recordedBy'] = ' | '.join(val)
+                    fields_to_submit.append('recordedBy')
                 elif key == 'bulkpidetails':
                     df_to_submit['pi_details'] = ' | '.join(val)
                     fields_to_submit.append('pi_details')
@@ -117,9 +117,9 @@ def missing_metadata():
                     fields_to_submit.append(field)
                     row = int(row)
                     if row in rows:
-                        if len(value) == 1 and key not in ['pi_details', 'recordedBy_details']:
+                        if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
                             df_to_submit[field][row] = value[0]
-                        elif key in ['pi_details','recordedBy_details']:
+                        elif key in ['pi_details','recordedBy']:
                             df_to_submit[field][row] = ' | '.join(value)
                         elif len(value) == 0:
                             df_to_submit[field][row] = ''
@@ -136,9 +136,9 @@ def missing_metadata():
             df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
             fields_to_submit.remove('pi_details')
             fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-        if 'recordedBy_details' in fields_to_submit:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
-            fields_to_submit.remove('recordedBy_details')
+        if 'recordedBy' in fields_to_submit:
+            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+            fields_to_submit.remove('recordedBy')
             fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
         for col in df_to_submit.columns:

@@ -98,9 +98,9 @@
                   <div class="col-sm-2">
                     <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
                   </div>
-                  {% elif id == 'recordedBy_details' %}
+                  {% elif id == 'recordedBy' %}
                   <div class="col-sm-7">
-                    <select multiple class="custom-select" id="recordedBy_details" name="recordedBy_details" aria-label="Default select example">
+                    <select multiple class="custom-select" id="recordedBy" name="recordedBy" aria-label="Default select example">
                       {% for person in field['valid']['source'] %}
                         {% if person in field['value'] %}
                           <option selected="selected">{{person}}</option>

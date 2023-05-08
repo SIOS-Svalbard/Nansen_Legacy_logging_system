@@ -72,25 +72,25 @@ def submit_spreadsheet():
                 for col in data_df.columns:
                     if col.startswith('pi_details'):
                         pi_cols.append(col)
-                    elif col.startswith('recordedBy_details'):
+                    elif col.startswith('recordedBy'):
                         recordedBy_cols.append(col)
 
                 data_df['pi_details'] = data_df[pi_cols].values.tolist()
-                data_df['recordedBy_details'] = data_df[recordedBy_cols].values.tolist()
+                data_df['recordedBy'] = data_df[recordedBy_cols].values.tolist()
 
                 df_personnel = get_personnel_df(DB=DB, table='personnel')
                 data_df[['pi_name','pi_email','pi_orcid', 'pi_institution']] = data_df.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                data_df[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = data_df.apply(lambda row : split_personnel_list(row['recordedBy_details'], df_personnel), axis = 1, result_type = 'expand')
+                data_df[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = data_df.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
                 for col in data_df.columns:
-                    if col.startswith('pi_details') or col.startswith('recordedBy_details'):
+                    if col.startswith('pi_details') or col.startswith('recordedBy'):
                         data_df.drop(col, axis=1, inplace=True)
 
                 if 'pi_details' in required:
                     required.remove('pi_details')
                     required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                if 'recordedBy_details' in required:
-                    required.remove('recordedBy_details')
+                if 'recordedBy' in required:
+                    required.remove('recordedBy')
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 good, errors = checker(

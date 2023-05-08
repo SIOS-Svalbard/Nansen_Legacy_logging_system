@@ -67,7 +67,7 @@ def init_user_field_setups(DB, CRUISE_NUMBER, cur):
     'parentID': 'same',
     'sampleType': 'same',
     'pi_details': 'same',
-    'recordedBy_details': 'same',
+    'recordedBy': 'same',
     'id': 'vary',
     'catalogNumber': 'vary',
     'samplingProtocolDoc': 'same',

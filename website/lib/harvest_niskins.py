@@ -35,8 +35,8 @@ def get_fields_lists(DB, CRUISE_NUMBER):
 
     if 'pi_details' in required:
         required.remove('pi_details')
-    if 'recordedBy_details' in required:
-        required.remove('recordedBy_details')
+    if 'recordedBy' in required:
+        required.remove('recordedBy')
 
     return columns, required
 
@@ -154,7 +154,7 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
         df_cruise['sampleType'] = 'Niskin'
         df_cruise['eventID'] = df_cruise['id']
 
-        for col in ['recordedBy_details', 'pi_details']:
+        for col in ['recordedBy', 'pi_details']:
             df_cruise.drop(col, axis=1, inplace=True)
 
         df_cruise = propegate_parents_to_children(df_cruise, DB, METADATA_CATALOGUE)

@@ -44,6 +44,39 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
                         fields_dict[field]['cell_format'] = {
                             "num_format": "hh:mm"
                         }
+
+                # Combining recordedBy and PI fields together so personnel can be selected from drop-down list
+                # These fields are recorded with every sample regardless of the configuration
+                for field_to_remove in ['pi_name', 'pi_email', 'pi_institution', 'pi_orcid', 'recordedBy_name', 'recordedBy_email', 'recordedBy_institution', 'recordedBy_orcid']:
+                    fields_dict.pop(field_to_remove, None)
+
+                if key == 'Required':
+                    fields_dict['pi_details'] = {
+                        "disp_name": "PI Details",
+                        "description": "Details of the principal investigator of the data.\nShould ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).\nCan be a concatenated list, separated by: '|'\n",
+                        "format": "text",
+                        "grouping": "Personnel",
+                        "valid": {
+                            "validate": "any",
+                            "input_title": "PI Details",
+                            "input_message": "Details of the principal investigator of the data.\n    Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).\n    Can be a concatenated list, separated by: '|'\n    "
+                        },
+                        "id": "pi_details"
+                    }
+                    fields_dict['recordedBy'] = {
+                        "disp_name": "Recorded By",
+                        "description": "Details of who has recorded/analysed the data.\nShould ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).\nCan be a concatenated list, separated by: '|'.",
+                        "dwcid": "http://rs.tdwg.org/dwc/terms/recordedBy",
+                        "format": "text",
+                        "grouping": "Darwin Core term",
+                        "valid": {
+                            "validate": "any",
+                            "input_title": "Recorded By",
+                            "input_message": "Details of who has recorded/analysed the data.\n    Should ideally include full name and email, e.g. Luke Marsden (lukem@unis.no).\n    Can be a concatenated list, separated by: '|'."
+                        },
+                        "id": "recordedBy"
+                    }
+
                 output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
 
     dwc_terms_tmp = []
