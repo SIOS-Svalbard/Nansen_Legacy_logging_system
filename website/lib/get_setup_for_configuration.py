@@ -25,6 +25,25 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
         for key in output_config_dict[sheet].keys():
             if key not in ['Required CSV', 'Source']:
                 fields_dict = output_config_dict[sheet][key]
+                for field in fields_dict:
+                    if fields_dict[field]['id'] == 'eventDate':
+                        fields_dict[field]['format'] = 'date'
+                        fields_dict[field]['valid']['validate'] = "date"
+                        fields_dict[field]['valid']['criteria'] = "between"
+                        fields_dict[field]['valid']['minimum'] = "2000-01-01"
+                        fields_dict[field]['valid']['maximum'] = "=TODAY()+100"
+                        fields_dict[field]['cell_format'] = {
+                            "num_format": "yyyy-mm-dd"
+                        }
+                    elif fields_dict[field]['id'] == 'eventTime':
+                        fields_dict[field]['format'] = 'time'
+                        fields_dict[field]['valid']['validate'] = "time"
+                        fields_dict[field]['valid']['criteria'] = "between"
+                        fields_dict[field]['valid']['minimum'] = 0
+                        fields_dict[field]['valid']['maximum'] = 0.9999999
+                        fields_dict[field]['cell_format'] = {
+                            "num_format": "hh:mm"
+                        }
                 output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
 
     extra_fields_dict = populate_dropdown_lists(extra_fields_dict, CRUISE_NUMBER)
@@ -43,13 +62,10 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
     added_fields_dic = {}
     added_cf_names_dic = {}
     added_dwc_terms_dic = {}
-    #fields_list = []  # List of fields selected - dictates columns in template
-    #template_fields_dict = {} # Dictionary of fields. All info needed for spreadsheet template.
     dwc_terms_not_in_config = {} # Separate dictionary of dwc terms that doesn't include required or recommended terms in each sheet.
 
     for sheet in output_config_dict.keys():
         if output_config_dict[sheet]['Required CSV'] == True:
-            #template_fields_dict[sheet] = {}
             added_cf_names_dic[sheet] = {}
             added_dwc_terms_dic[sheet] = {}
             added_fields_dic[sheet] = {}

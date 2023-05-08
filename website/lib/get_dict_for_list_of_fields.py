@@ -24,6 +24,24 @@ def get_dict_for_list_of_fields(fields_list, FIELDS_FILEPATH):
     for field in dwc_terms:
         if field['id'] in fields_list:
             fields_dict[field['id']] = field
+            if field['id'] == 'eventDate':
+                fields_dict[field['id']]['format'] = 'date'
+                fields_dict[field['id']]['valid']['validate'] = "date"
+                fields_dict[field['id']]['valid']['criteria'] = "between"
+                fields_dict[field['id']]['valid']['minimum'] = "2000-01-01"
+                fields_dict[field['id']]['valid']['maximum'] = "=TODAY()+100"
+                fields_dict[field['id']]['cell_format'] = {
+                    "num_format": "yyyy-mm-dd"
+                }
+            elif field['id'] == 'eventTime':
+                fields_dict[field['id']]['format'] = 'time'
+                fields_dict[field['id']]['valid']['validate'] = "time"
+                fields_dict[field['id']]['valid']['criteria'] = "between"
+                fields_dict[field['id']]['valid']['minimum'] = 0
+                fields_dict[field['id']]['valid']['maximum'] = 0.9999999
+                fields_dict[field['id']]['cell_format'] = {
+                    "num_format": "hh:mm"
+                }
 
     ordered_fields_dict = {}
 
