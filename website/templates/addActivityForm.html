@@ -131,12 +131,9 @@
             {% endfor %}
           {% endif %}
         {% endfor %}
+        {% include 'add_fields_not_in_config.html' %}
       {% endif %}
     {% endfor %}
-
-    <br>
-    {% include 'add_fields_not_in_config.html' %}
-    <br>
 
     <button type="submit" class="btn btn-primary btn-lg btn-block" name="submitbutton" value="submit">Submit</button>
   </form>

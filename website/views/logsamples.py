@@ -261,7 +261,6 @@ def edit_activity_form(ID):
         trace = None
     else:
         trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
-    # Reordering dictionary to order in fields.py
 
     return render_template(
     "addActivityForm.html",
