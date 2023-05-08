@@ -95,13 +95,12 @@ def edit_activity_form(ID):
         all_form_keys = request.form.keys()
 
         # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
-        print(form_input)
         for sheet in output_config_dict.keys():
             for requirement in output_config_dict[sheet].keys():
                 if requirement not in ['Required CSV', 'Source']:
                     for field, vals in output_config_dict[sheet][requirement].items():
                         if field in form_input:
-                            vals['value'] = format_form_value(field, form_input[field], vals['format'])
+                            vals['value'] = form_input[field] = format_form_value(field, form_input[field], vals['format'])
                         else:
                             if field in ['pi_details', 'recordedBy']:
                                 vals['value'] = []
@@ -123,8 +122,7 @@ def edit_activity_form(ID):
                             added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
                             added_cf_names_dic[sheet][field['id']]['format'] = field['format']
                             added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
-                            added_cf_names_dic[sheet][field['id']]['value'] = format_form_value(field['id'], form_input[form_key], field['format'])
-
+                            added_cf_names_dic[sheet][field['id']]['value'] = form_input[form_key] = format_form_value(field['id'], form_input[form_key], field['format'])
 
         # Darwin Core terms
         for sheet in dwc_terms_not_in_config.keys():
@@ -140,51 +138,14 @@ def edit_activity_form(ID):
                         added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
                         added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
                         added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
-                        added_dwc_terms_dic[sheet][term['id']]['value'] = format_form_value(term['id'], form_input[form_key], term['format'])
+                        added_dwc_terms_dic[sheet][term['id']]['value'] = form_input[form_key] = format_form_value(term['id'], form_input[form_key], term['format'])
 
         # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
         for field, vals in extra_fields_dict.items():
             for form_key in all_form_keys:
                 if field == form_key:
                     added_fields_dic['Data'][field] = vals
-                    added_fields_dic['Data'][field]['value'] = format_form_value(field, form_input[form_key], vals['format'])
-
-        # for key, value in form_input.items():
-        #    print(key)
-        #     # Required fields already included by default
-        #     if key in required or key in recommended:
-        #         if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
-        #             form_input[key] = value[0]
-        #             activity_fields[key]['value'] = value[0]
-        #         elif key == 'pi_details':
-        #             activity_fields[key]['value'] = value
-        #         elif key == 'recordedBy':
-        #             activity_fields[key]['value'] = value
-        #         elif len(value) == 0:
-        #             form_input[key] = ''
-        #             activity_fields[key]['value'] = ''
-        #
-        #     # Additional optional fields added by user
-        #     elif value not in [['submit'],['addfields']]:
-        #         activity_fields[key] = {}
-        #         for field, field_info in extra_fields_dic.items():
-        #             if field == key:
-        #                 activity_fields[key] = extra_fields_dic[key]
-        #                 # First POST request is when user clicks 'add fields', and value of 'y' assigned as value for all fields with checked boxes
-        #                 if value == ['y']:
-        #                     if field_info['format'] in ['double precision', 'date', 'time']:
-        #                         activity_fields[key]['value'] = None
-        #                     else:
-        #                         activity_fields[key]['value'] = ''
-        #
-        #                 # Not first POST request, in cases where a field has been added and then need to redisplay, e.g. error on first load.
-        #                 else:
-        #                     if len(value) == 1:
-        #                         form_input[key] = value[0]
-        #                         activity_fields[key]['value'] = value[0]
-        #                     elif len(value) == 0:
-        #                         form_input[key] = ''
-        #                         activity_fields[key]['value'] = ''
+                    added_fields_dic['Data'][field]['value'] = form_input[form_key] = format_form_value(field, form_input[form_key], vals['format'])
 
         if request.form['submitbutton'] == 'submit':
 
@@ -205,12 +166,12 @@ def edit_activity_form(ID):
             fields_to_check_dic = {}
             for key, val in form_input.items():
                 fields_to_check_dic[key] = [val]
-                fields_to_check_df = pd.DataFrame.from_dict(fields_to_check_dic)
+            fields_to_check_df = pd.DataFrame.from_dict(fields_to_check_dic)
 
-            for col in ['eventTime', 'endTime']:
+            for col in ['eventTime', 'endTime', 'middleTime']:
                 if col in fields_to_check_df.columns:
                     fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
-            for col in ['eventDate','endDate']:
+            for col in ['eventDate','endDate', 'middleDate']:
                 if col in fields_to_check_df.columns:
                     fields_to_check_df[col] = pd.to_datetime(fields_to_check_df[col])
 
@@ -219,6 +180,7 @@ def edit_activity_form(ID):
             else:
                 new = False
 
+            required = list(output_config_dict['Data']['Required'].keys())
             if 'pi_details' in required:
                 required.remove('pi_details')
                 required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
