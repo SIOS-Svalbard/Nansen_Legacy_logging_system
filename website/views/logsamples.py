@@ -5,7 +5,7 @@ from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_met
 from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
-from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title
+from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title, format_form_value
 from website import DB, FIELDS_FILEPATH
 import numpy as np
 from datetime import datetime as dt
@@ -91,6 +91,11 @@ def edit_activity_form(ID):
 
     if request.method == 'POST':
 
+        # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
+
+
+        # 2. Adding extra fields selected by user
+        form_input = request.form.to_dict(flat=False)
         all_form_keys = request.form.keys()
 
         # CF standard names
@@ -108,6 +113,7 @@ def edit_activity_form(ID):
                             added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
                             added_cf_names_dic[sheet][field['id']]['format'] = field['format']
                             added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
+                            added_cf_names_dic[sheet][field['id']]['value'] = format_form_value(field['id'], form_input[form_key], field['format'])
 
 
         # Darwin Core terms
@@ -124,16 +130,17 @@ def edit_activity_form(ID):
                         added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
                         added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
                         added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
+                        added_dwc_terms_dic[sheet][term['id']]['value'] = format_form_value(term['id'], form_input[form_key], term['format'])
 
         # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
         for field, vals in extra_fields_dict.items():
             for form_key in all_form_keys:
                 if field == form_key:
                     added_fields_dic['Data'][field] = vals
+                    added_fields_dic['Data'][field]['value'] = format_form_value(field, form_input[form_key], vals['format'])
 
-        # form_input = request.form.to_dict(flat=False)
-        #
         # for key, value in form_input.items():
+        #    print(key)
         #     # Required fields already included by default
         #     if key in required or key in recommended:
         #         if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
