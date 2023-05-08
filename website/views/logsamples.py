@@ -91,12 +91,22 @@ def edit_activity_form(ID):
 
     if request.method == 'POST':
 
-        # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
-
-
-        # 2. Adding extra fields selected by user
         form_input = request.form.to_dict(flat=False)
         all_form_keys = request.form.keys()
+
+        # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
+        print(form_input)
+        for sheet in output_config_dict.keys():
+            for requirement in output_config_dict[sheet].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for field, vals in output_config_dict[sheet][requirement].items():
+                        if field in form_input:
+                            vals['value'] = format_form_value(field, form_input[field], vals['format'])
+                        else:
+                            if field in ['pi_details', 'recordedBy']:
+                                vals['value'] = []
+
+        # 2. Adding extra fields selected by user
 
         # CF standard names
         for field in cf_standard_names:

@@ -140,7 +140,7 @@ def format_form_value(field, value, format):
     else:
         if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
             return value[0]
-        elif key in ['pi_details', 'recordedBy']:
+        elif field in ['pi_details', 'recordedBy']:
             return value
         elif len(value) == 0:
             if format in ['double precision', 'date', 'time']:
