@@ -60,7 +60,7 @@
                   <div class="col-sm-7">
                     <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
                       <option selected>{{field['value']}}</option>
-                      {% for station in field['source'] %}
+                      {% for station in field['valid']['source'] %}
                         <option>{{station}}</option>
                       {% endfor %}
                     </select>
@@ -73,7 +73,7 @@
                   <div class="col-sm-7">
                     <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
                       <option selected>{{field['value']}}</option>
-                      {% for gearType in field['source'] %}
+                      {% for gearType in field['valid']['source'] %}
                         <option>{{gearType}}</option>
                       {% endfor %}
                     </select>
@@ -85,7 +85,7 @@
                   {% elif id == 'pi_details' %}
                   <div class="col-sm-7">
                     <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
-                      {% for person in field['source'] %}
+                      {% for person in field['valid']['source'] %}
                         {% if person in field['value'] %}
                           <option selected="selected">{{person}}</option>
                         {% else %}
@@ -101,7 +101,7 @@
                   {% elif id == 'recordedBy_details' %}
                   <div class="col-sm-7">
                     <select multiple class="custom-select" id="recordedBy_details" name="recordedBy_details" aria-label="Default select example">
-                      {% for person in field['source'] %}
+                      {% for person in field['valid']['source'] %}
                         {% if person in field['value'] %}
                           <option selected="selected">{{person}}</option>
                         {% else %}

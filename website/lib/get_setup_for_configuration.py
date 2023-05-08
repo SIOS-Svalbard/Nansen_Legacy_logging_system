@@ -46,6 +46,29 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
                         }
                 output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
 
+    dwc_terms_tmp = []
+    for term in dwc_terms:
+        if term['id'] == 'eventDate':
+            term['format'] = 'date'
+            term['valid']['validate'] = "date"
+            term['valid']['criteria'] = "between"
+            term['valid']['minimum'] = "2000-01-01"
+            term['valid']['maximum'] = "=TODAY()+100"
+            term['cell_format'] = {
+                "num_format": "yyyy-mm-dd"
+            }
+        elif term['id'] == 'eventTime':
+            term['format'] = 'time'
+            term['valid']['validate'] = "time"
+            term['valid']['criteria'] = "between"
+            term['valid']['minimum'] = 0
+            term['valid']['maximum'] = 0.9999999
+            term['cell_format'] = {
+                "num_format": "hh:mm"
+            }
+        dwc_terms_tmp.append(term)
+    dwc_terms = dwc_terms_tmp
+
     extra_fields_dict = populate_dropdown_lists(extra_fields_dict, CRUISE_NUMBER)
     dwc_terms = populate_dropdown_lists(dwc_terms, CRUISE_NUMBER)
     cf_standard_names = populate_dropdown_lists(cf_standard_names, CRUISE_NUMBER)
