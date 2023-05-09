@@ -831,6 +831,36 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
         else:
             errors.append('Please include an elevation or depth (preferably both minimum and maximum, they can be the same)')
 
+    recordedBy_field_count = 0
+    pi_field_count = 0
+    errors_tmp = []
+
+    for error in errors:
+        if 'Required value missing (Recorded' in error:
+            if recordedBy_field_count == 0:
+                recordedBy_field_count = recordedBy_field_count + 1
+                errors_tmp.append('Required value missing (Recorded By)')
+        elif 'Required value missing (PI' in error:
+            if pi_field_count == 0:
+                pi_field_count = pi_field_count + 1
+                errors_tmp.append('Required value missing (PI Details)')
+        else:
+            errors_tmp.append(error)
+    errors = errors_tmp
+
+
+    for req in required:
+        if req not in data.columns:
+            good = False
+            if req in ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']:
+                if pi_field_count == 0 and req != 'pi_orcid':
+                    errors.append(f'Required field "pi_details" is missing')
+                    pi_field_count = pi_field_count + 1
+            elif req in ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']:
+                if recordedBy_field_count == 0 and req != 'recordedBy_orcid':
+                    errors.append(f'Required field "recordedBy" is missing')
+                    recordedBy_field_count = recordedBy_field_count + 1
+
     '''
     Potential additional checks:
         1. Prevent people entering both elevation and depth.
