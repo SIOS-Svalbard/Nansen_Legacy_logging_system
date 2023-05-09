@@ -6,13 +6,14 @@ from website.lib.input_update_records import insert_into_metadata_catalogue, upd
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title, format_form_value
-from website import DB, FIELDS_FILEPATH
+from website import DB, FIELDS_FILEPATH, CONFIG
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd
 from math import isnan
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
 from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 
 logsamples = Blueprint('logsamples', __name__)
 
@@ -202,22 +203,62 @@ def edit_activity_form(ID):
                     flash(error, category='error')
 
             else:
-                for field in fields.fields:
-                    if field['name'] in required or field['name'] in recommended:
-                        if form_input[field['name']] == '':
-                            if field['format'] in ['int', 'double precision', 'time', 'date']:
-                                form_input[field['name']] = 'NULL'
-                            elif field['name'] == 'id':
-                                form_input[field['name']] = str(uuid.uuid1())
 
-                form_input['eventID'] = form_input['id']
+                fields_to_submit = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
+                fields_to_submit['columns'] = {}
+                fields_to_submit['hstore'] = {}
+                metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+
+                for sheet in output_config_dict.keys():
+                    for requirement in output_config_dict[sheet].keys():
+                        if requirement not in ['Required CSV', 'Source']:
+                            for field, vals in output_config_dict[sheet][requirement].items():
+                                if field in form_input:
+                                    if form_input[field] == '':
+                                        if output_config_dict[sheet][requirement][field]['format'] in ['int', 'double precision', 'time', 'date']:
+                                            form_input[field] = 'NULL'
+                                        elif field == 'id':
+                                            form_input[field] = str(uuid.uuid4())
+                                    if field in metadata_columns_list:
+                                        fields_to_submit['columns'][field] = output_config_dict[sheet][requirement][field]
+                                    else:
+                                        fields_to_submit['hstore'][field] = output_config_dict[sheet][requirement][field]
+
+                fields_to_submit['hstore']['eventID'] = fields_to_submit['columns']['id']
+
+                for sheet in added_cf_names_dic.keys():
+                    for field, vals in added_cf_names_dic[sheet]:
+                        if field in metadata_columns_list:
+                            fields_to_submit['columns'][field] = added_cf_names_dic[sheet][field]
+                        else:
+                            fields_to_submit['hstore'][field] = added_cf_names_dic[sheet][field]
+
+                for sheet in added_dwc_terms_dic.keys():
+                    for term, vals in added_dwc_terms_dic[sheet]:
+                        if term in metadata_columns_list:
+                            fields_to_submit['columns'][term] = added_dwc_terms_dic[sheet][term]
+                        else:
+                            fields_to_submit['hstore'][term] = added_dwc_terms_dic[sheet][term]
+
+                for sheet in added_fields_dic.keys():
+                    for field, vals in added_fields_dic[sheet]:
+                        if field in metadata_columns_list:
+                            fields_to_submit['columns'][field] = added_fields_dic[sheet][field]
+                        else:
+                            fields_to_submit['hstore'][field] = added_fields_dic[sheet][field]
+
+                record_details = get_dict_for_list_of_fields(['created','modified','history','source'],FIELDS_FILEPATH)
+                fields_to_submit['columns']['created'] = record_details['created']
+                fields_to_submit['columns']['modified'] = record_details['modified']
+                fields_to_submit['columns']['history'] = record_details['history']
+                fields_to_submit['columns']['source'] = record_details['source']
 
                 if ID == 'addNew':
 
-                    form_input['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                    form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                    form_input['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
-                    form_input['source'] = "Record created manually from add activity page"
+                    fields_to_submit['columns']['created']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fields_to_submit['columns']['modified']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fields_to_submit['columns']['history']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
+                    fields_to_submit['columns']['source']['value'] = "Record created manually from add activity page"
 
                     insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER)
 
@@ -225,23 +266,23 @@ def edit_activity_form(ID):
 
                 else:
 
-                    form_input['history'] = sample_metadata_df.loc[sample_metadata_df['id'] == ID, 'history'].iloc[0]
-                    form_input['history'] = form_input['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
-                    form_input['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fields_to_submit['columns']['modified']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fields_to_submit['columns']['history']['value'] = sample_metadata_df.loc[sample_metadata_df['id'] == ID, 'history'].iloc[0]
+                    fields_to_submit['columns']['history']['value'] = fields_to_submit['columns']['history']['value'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
 
                     update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID)
 
                     flash('Activity edited!', category='success')
-
-                    children_IDs = find_all_children([ID],DB, CRUISE_NUMBER)
-                    if len(children_IDs) > 0:
-                        df_children = get_metadata_for_list_of_ids(DB, METADATA_CATALOGUE, children_IDs)
-                        df_children = propegate_parents_to_children(df_children,DB, METADATA_CATALOGUE)
-                        df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
-                        metadata_df = False
-                        update_record_metadata_catalogue_df(df_children, metadata_df, DB, CRUISE_NUMBER)
-
-                        flash('Relevant metadata copied to children', category='success')
+                    #
+                    # children_IDs = find_all_children([ID],DB, CRUISE_NUMBER)
+                    # if len(children_IDs) > 0:
+                    #     df_children = get_metadata_for_list_of_ids(DB, METADATA_CATALOGUE, children_IDs)
+                    #     df_children = propegate_parents_to_children(df_children,DB, METADATA_CATALOGUE)
+                    #     df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
+                    #     metadata_df = False
+                    #     update_record_metadata_catalogue_df(df_children, metadata_df, DB, CRUISE_NUMBER)
+                    #
+                    #     flash('Relevant metadata copied to children', category='success')
 
                 return redirect(url_for('views.home'))
 

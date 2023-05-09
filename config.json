@@ -34,7 +34,11 @@
       "maximumDepthInMeters",
       "minimumElevationInMeters",
       "maximumElevationInMeters",
-      "comments1"
+      "comments1",
+      "created",
+      "modified",
+      "history",
+      "source"
     ],
     "fields_to_inherit": [
       "bottleNumber",
