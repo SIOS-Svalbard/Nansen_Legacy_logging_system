@@ -131,7 +131,7 @@ def init_storage_temperatures(cur):
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemperature.csv')
     for idx, row in df.iterrows():
         id = row['id']
-        storageTemp = row['storageTemp']
+        storageTemp = row['storageTemperature']
         comment = row['comment']
         cur.execute(f"INSERT INTO storagetemperature (id, storageTemperature, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
