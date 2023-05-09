@@ -4,6 +4,7 @@
 from website import DB, FIELDS_FILEPATH
 from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_config_fields
 from website.lib.dropdown_lists_from_db import populate_dropdown_lists
+import datetime as dt
 
 def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
 
@@ -26,16 +27,16 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
             if key not in ['Required CSV', 'Source']:
                 fields_dict = output_config_dict[sheet][key]
                 for field in fields_dict:
-                    if fields_dict[field]['id'] == 'eventDate':
+                    if fields_dict[field]['id'] in ['eventDate','middleDate','endDate']:
                         fields_dict[field]['format'] = 'date'
                         fields_dict[field]['valid']['validate'] = "date"
                         fields_dict[field]['valid']['criteria'] = "between"
-                        fields_dict[field]['valid']['minimum'] = "2000-01-01"
+                        fields_dict[field]['valid']['minimum'] = dt.date(2000,1,1)
                         fields_dict[field]['valid']['maximum'] = "=TODAY()+100"
                         fields_dict[field]['cell_format'] = {
                             "num_format": "yyyy-mm-dd"
                         }
-                    elif fields_dict[field]['id'] == 'eventTime':
+                    elif fields_dict[field]['id'] in ['eventTime','middleTime','endTime']:
                         fields_dict[field]['format'] = 'time'
                         fields_dict[field]['valid']['validate'] = "time"
                         fields_dict[field]['valid']['criteria'] = "between"
@@ -79,13 +80,33 @@ def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
 
                 output_config_dict[sheet][key] = populate_dropdown_lists(fields_dict, CRUISE_NUMBER)
 
+    for field, vals in extra_fields_dict.items():
+        if field in ['eventDate','middleDate','endDate']:
+            vals['format'] = 'date'
+            vals['valid']['validate'] = "date"
+            vals['valid']['criteria'] = "between"
+            vals['valid']['minimum'] = dt.date(2000,1,1)
+            vals['valid']['maximum'] = "=TODAY()+100"
+            vals['cell_format'] = {
+                "num_format": "yyyy-mm-dd"
+            }
+        elif field in ['eventTime','middleTime','endTime']:
+            vals['format'] = 'time'
+            vals['valid']['validate'] = "time"
+            vals['valid']['criteria'] = "between"
+            vals['valid']['minimum'] = 0
+            vals['valid']['maximum'] = 0.9999999
+            vals['cell_format'] = {
+                "num_format": "hh:mm"
+            }
+
     dwc_terms_tmp = []
     for term in dwc_terms:
         if term['id'] == 'eventDate':
             term['format'] = 'date'
             term['valid']['validate'] = "date"
             term['valid']['criteria'] = "between"
-            term['valid']['minimum'] = "2000-01-01"
+            term['valid']['minimum'] = dt.date(2000,1,1)
             term['valid']['maximum'] = "=TODAY()+100"
             term['cell_format'] = {
                 "num_format": "yyyy-mm-dd"

@@ -11,8 +11,12 @@ import datetime
 import numpy as np
 from website.lib.get_data import get_data, get_all_ids
 import uuid
+from website.Learnings_from_AeN_template_generator.website.lib.pull_cf_standard_names import cf_standard_names_to_dic
+from website.Learnings_from_AeN_template_generator.website.lib.pull_other_fields import other_fields_to_dic
+from website.Learnings_from_AeN_template_generator.website.lib.pull_darwin_core_terms import dwc_terms_to_dic, dwc_extension_to_dic
+from website import FIELDS_FILEPATH
 
-def make_valid_dict(DB, CRUISE_NUMBER):
+def make_valid_dict(DB, CRUISE_NUMBER, all_fields):
     """
     Makes a dictionary of the possible fields with their validation.
     Does this by reading the fields list from the fields.py library.
@@ -31,16 +35,16 @@ def make_valid_dict(DB, CRUISE_NUMBER):
     """
     # First we go through the fields.py
     field_dict = {}
-    for field in fields.fields:
-        if field['name'] not in ['recordedBy', 'pi_details']:
-            new = Checker(DB, name=field['name'], disp_name=field['disp_name'])
+    for field in all_fields:
+        if field['id'] not in ['recordedBy', 'pi_details']:
+            new = Checker(DB, name=field['id'], disp_name=field['disp_name'])
             if 'valid' in field:
                 new.set_validation(DB, CRUISE_NUMBER, field['valid'])
             if 'inherit' in field:
                 new.inherit = field['inherit']
             if 'units' in field:
                 new.units = field['units']
-            field_dict[field['name']] = new
+            field_dict[field['id']] = new
 
     return field_dict
 
@@ -364,11 +368,13 @@ class Checker(Field):
                 form = form.replace('TODAY()', 'datetime.datetime.today()')
             if '+' in form:
                 parts = form.split('+')
+                parts[1] = str(int(parts[1]))
                 parts[1] = 'datetime.timedelta(days=' + parts[1] + ')'
                 form = parts[0] + '+' + parts[1]
             elif '-' in form:
                 parts = form.split('-')
-                parts[1] = 'datetime.timedelta(days=' + parts[1] + ')'
+                parts[1] = str(int(parts[1]))
+                parts[1] = f'datetime.timedelta(days=' + parts[1] + ')'
                 form = parts[0] + '-' + parts[1]
             return eval(form)
 
@@ -912,7 +918,18 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
         String specifying where the errors were found
     """
 
-    checker_list = make_valid_dict(DB, CRUISE_NUMBER)
+    cf_standard_names = cf_standard_names_to_dic(FIELDS_FILEPATH)
+    dwc_terms = dwc_terms_to_dic(FIELDS_FILEPATH)
+    other_fields = other_fields_to_dic(FIELDS_FILEPATH)
+    all_fields_tmp = cf_standard_names + dwc_terms + other_fields
+
+    all_fields = []
+    for field in all_fields_tmp:
+        if field['format'] == 'date':
+            field['valid']['minimum'] = datetime.date(2000,1,1)
+        all_fields.append(field)
+
+    checker_list = make_valid_dict(DB, CRUISE_NUMBER, all_fields)
 
     data = clean(data)
 

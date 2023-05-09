@@ -3,7 +3,6 @@ from website import DB
 from website.lib.get_data import get_stations_list, get_personnel_list, get_data
 
 def get_dropdown_list_from_db(field, CRUISE_NUMBER):
-    print('cruise_number: ',CRUISE_NUMBER)
     if field == 'stationName':
         stations = get_stations_list(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
         return stations

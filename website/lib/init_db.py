@@ -127,13 +127,13 @@ def init_projects(cur):
         cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{id}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_storage_temperatures(cur):
-    cur.execute("CREATE TABLE storagetemperature (id uuid PRIMARY KEY, storageTemp text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemp.csv')
+    cur.execute("CREATE TABLE storagetemperature (id uuid PRIMARY KEY, storageTemperature text, comment text, created timestamp with time zone)")
+    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemperature.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storageTemp']
         comment = row['comment']
-        cur.execute(f"INSERT INTO storagetemperature (id, storageTemp, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO storagetemperature (id, storageTemperature, comment, created) VALUES ('{id}', '{storageTemp}','{comment}', CURRENT_TIMESTAMP);")
 
 def init_filters(cur):
     cur.execute("CREATE TABLE filter (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
