@@ -2,7 +2,7 @@ import psycopg2
 import psycopg2.extras
 import pandas as pd
 
-def insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER):
+def insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER):
 
     conn = psycopg2.connect(**DB)
     cur = conn.cursor()
@@ -14,32 +14,34 @@ def insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER):
     string_5 = ');'
 
     # MAIN FIELDS
-    for field in fields.fields:
-        if field['name'] in form_input.keys() and field['hstore'] == False:
-            string_2 = string_2 + field['name'] +", "
-            if field['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and form_input[field['name']] != 'NULL':
-                string_4 = string_4 + "'" + form_input[field['name']] + "'" + ", "
-            else:
-                string_4 = string_4 + form_input[field['name']] + ", "
+    for field, criteria in fields_to_submit['columns'].items():
+        string_2 = string_2 + field +", "
+        if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
+            string_4 = string_4 + "'" + criteria['value'] + "'" + ", "
+        else:
+            string_4 = string_4 + criteria['value'] + ", "
+        print(field, criteria['format'], criteria['value'])
 
     string_2 = string_2[:-2]
     string_4 = string_4[:-2]
 
     # HSTORE FIELDS
     n = 0
-    for field in fields.fields:
-        if field['name'] in form_input.keys() and field['hstore'] != False and form_input[field['name']] != '':
+    for field, criteria in fields_to_submit['hstore'].items():
+        if criteria['value'] != '':
             if n == 0:
                 string_2 = string_2 + ", other"
                 string_4 = string_4 + ", '"
                 n = n + 1
-            string_4 = string_4 + f'''"{field['name']}" => "{form_input[field['name']]}", '''
+            string_4 = string_4 + f'''"{field}" => "{criteria['value']}", '''
 
     if n != 0:
         string_4 = string_4[:-2] + "'"
 
     exe_str = string_1 + string_2 + string_3 + string_4 + string_5
-
+    print('*****')
+    print(exe_str)
+    print('*****')
     cur.execute(exe_str)
 
     conn.commit()

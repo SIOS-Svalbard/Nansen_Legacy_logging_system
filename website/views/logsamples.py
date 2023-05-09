@@ -216,9 +216,9 @@ def edit_activity_form(ID):
                                 if field in form_input:
                                     if form_input[field] == '':
                                         if output_config_dict[sheet][requirement][field]['format'] in ['int', 'double precision', 'time', 'date']:
-                                            form_input[field] = 'NULL'
+                                            output_config_dict[sheet][requirement][field]['value'] = 'NULL'
                                         elif field == 'id':
-                                            form_input[field] = str(uuid.uuid4())
+                                            output_config_dict[sheet][requirement][field]['value'] = str(uuid.uuid4())
                                     if field in metadata_columns_list:
                                         fields_to_submit['columns'][field] = output_config_dict[sheet][requirement][field]
                                     else:
@@ -247,20 +247,20 @@ def edit_activity_form(ID):
                         else:
                             fields_to_submit['hstore'][field] = added_fields_dic[sheet][field]
 
-                record_details = get_dict_for_list_of_fields(['created','modified','history','source'],FIELDS_FILEPATH)
+                record_details = get_dict_for_list_of_fields(['created','modified','history','recordSource'],FIELDS_FILEPATH)
                 fields_to_submit['columns']['created'] = record_details['created']
                 fields_to_submit['columns']['modified'] = record_details['modified']
                 fields_to_submit['columns']['history'] = record_details['history']
-                fields_to_submit['columns']['source'] = record_details['source']
+                fields_to_submit['columns']['recordSource'] = record_details['recordSource']
 
                 if ID == 'addNew':
 
                     fields_to_submit['columns']['created']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                     fields_to_submit['columns']['modified']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                     fields_to_submit['columns']['history']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
-                    fields_to_submit['columns']['source']['value'] = "Record created manually from add activity page"
+                    fields_to_submit['columns']['recordSource']['value'] = "Record created manually from add activity page"
 
-                    insert_into_metadata_catalogue(form_input, DB, CRUISE_NUMBER)
+                    insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER)
 
                     flash('Activity registered!', category='success')
 
@@ -284,7 +284,7 @@ def edit_activity_form(ID):
                     #
                     #     flash('Relevant metadata copied to children', category='success')
 
-                return redirect(url_for('views.home'))
+                return redirect('/')
 
     if ID == 'addNew':
         ID = None
