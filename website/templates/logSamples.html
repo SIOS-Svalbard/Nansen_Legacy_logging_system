@@ -6,7 +6,7 @@
 {% block content %}
 
 <div class="container">
-  {% if trace != None %}
+  {% if not trace.empty: %}
     {{ breadcrumb(trace) }}
   {% endif %}
   <h1>Log children samples or gear</h1>
