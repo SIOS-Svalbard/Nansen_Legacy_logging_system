@@ -39,16 +39,13 @@ def insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER):
         string_4 = string_4[:-2] + "'"
 
     exe_str = string_1 + string_2 + string_3 + string_4 + string_5
-    print('*****')
-    print(exe_str)
-    print('*****')
     cur.execute(exe_str)
 
     conn.commit()
     cur.close()
     conn.close()
 
-def update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID):
+def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, ID):
 
     conn = psycopg2.connect(**DB)
     cur = conn.cursor()
@@ -60,26 +57,27 @@ def update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID):
     string_5 = f" WHERE id = '{ID}';"
 
     # MAIN FIELDS
-    for field in fields.fields:
-        if field['name'] in form_input.keys() and field['hstore'] == False:
-            if field['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and form_input[field['name']] != 'NULL':
-                string_2 = string_2 + field['name'] + ' = ' + "'" + form_input[field['name']] + "'" + ', '
+    for field, criteria in fields_to_submit['columns'].items():
+        if 'value' in criteria:
+            if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
+                string_2 = string_2 + field + ' = ' + "'" + criteria['value'] + "'" + ', '
             else:
-                string_2 = string_2 + field['name'] + ' = ' + form_input[field['name']] + ', '
+                string_2 = string_2 + field + ' = ' + criteria['value'] + ', '
 
     string_2 = string_2[:-2]
 
     # HSTORE FIELDS
     n = 0
-    for field in fields.fields:
-        if field['name'] in form_input.keys() and field['hstore'] == 'other':
-            if n == 0:
-                string_3 = string_3 + ", other = other || hstore(array["
-                string_4 = string_4 + "], array ["
-                n = n + 1
-            string_3 = string_3 + f"'{field['name']}', "
+    for field, criteria in fields_to_submit['hstore'].items():
+        if 'value' in criteria:
+            if criteria['value'] != '':
+                if n == 0:
+                    string_3 = string_3 + ", other = other || hstore(array["
+                    string_4 = string_4 + "], array ["
+                    n = n + 1
+                string_3 = string_3 + f"'{field}', "
 
-            string_4 = string_4 + f"'{form_input[field['name']]}', "
+                string_4 = string_4 + f"'{criteria['value']}', "
 
     if n != 0:
         string_3 = string_3[:-2]
@@ -90,11 +88,10 @@ def update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID):
     cur.execute(exe_str)
 
     # Removing hstore fields when value deleted when updating the record
-    for field in fields.fields:
-        if field['name'] in form_input.keys() and field['hstore'] == 'other':
-            if form_input[field['name']] == '' or form_input[field['name']] == 'NULL':
-                exe_str = f"UPDATE {METADATA_CATALOGUE} SET other = delete(other, '{field['name']}')"
-                cur.execute(exe_str)
+    for field, criteria in fields_to_submit['hstore'].items():
+        if criteria['value'] in ['', 'NULL']:
+            exe_str = f"UPDATE metadata_catalogue_{CRUISE_NUMBER} SET other = delete(other, '{field}')"
+            cur.execute(exe_str)
 
     conn.commit()
     cur.close()

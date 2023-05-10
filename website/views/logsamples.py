@@ -335,21 +335,21 @@ def edit_activity_form(ID):
                 fields_to_submit['hstore']['eventID'] = fields_to_submit['columns']['id']
 
                 for sheet in added_cf_names_dic.keys():
-                    for field, vals in added_cf_names_dic[sheet]:
+                    for field, vals in added_cf_names_dic[sheet].items():
                         if field in metadata_columns_list:
                             fields_to_submit['columns'][field] = added_cf_names_dic[sheet][field]
                         else:
                             fields_to_submit['hstore'][field] = added_cf_names_dic[sheet][field]
 
                 for sheet in added_dwc_terms_dic.keys():
-                    for term, vals in added_dwc_terms_dic[sheet]:
+                    for term, vals in added_dwc_terms_dic[sheet].items():
                         if term in metadata_columns_list:
                             fields_to_submit['columns'][term] = added_dwc_terms_dic[sheet][term]
                         else:
                             fields_to_submit['hstore'][term] = added_dwc_terms_dic[sheet][term]
 
                 for sheet in added_fields_dic.keys():
-                    for field, vals in added_fields_dic[sheet]:
+                    for field, vals in added_fields_dic[sheet].items():
                         if field in metadata_columns_list:
                             fields_to_submit['columns'][field] = added_fields_dic[sheet][field]
                         else:
@@ -378,7 +378,7 @@ def edit_activity_form(ID):
                     fields_to_submit['columns']['history']['value'] = sample_metadata_df.loc[sample_metadata_df['id'] == ID, 'history'].iloc[0]
                     fields_to_submit['columns']['history']['value'] = fields_to_submit['columns']['history']['value'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
 
-                    update_record_metadata_catalogue(form_input, DB, CRUISE_NUMBER, ID)
+                    update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, ID)
 
                     flash('Activity edited!', category='success')
                     #
