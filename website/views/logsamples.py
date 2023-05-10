@@ -49,6 +49,7 @@ def edit_activity_form(ID):
         subconfig=subconfig,
         CRUISE_NUMBER=CRUISE_NUMBER
     )
+    print(extra_fields_dict)
 
     sample_metadata_df = get_metadata_for_id(DB, CRUISE_NUMBER, ID)
 
@@ -75,13 +76,13 @@ def edit_activity_form(ID):
                         if field_name != '':
                             for field in cf_standard_names:
                                 if field['id'] == field_name:
-                                    added_cf_names_dic['Data'][field['id']] = field
+                                    added_cf_names_dic['Data'][field['id']] = field['id']
                             for field in dwc_terms_not_in_config['Data']:
                                 if field['id'] == field_name:
-                                    added_dwc_terms_dic['Data'][field['id']] = field
-                            for field in extra_fields_dict:
+                                    added_dwc_terms_dic['Data'][field['id']] = field['id']
+                            for field, vals in extra_fields_dict.items():
                                 if field == field_name:
-                                    added_fields_dic['Data'][field['id']] = field
+                                    added_fields_dic['Data'][field] = vals
 
     # Assigning values already registered in database for output_config_dict
     for sheet in output_config_dict.keys():
