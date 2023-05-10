@@ -17,6 +17,7 @@
       "statID",
       "decimalLatitude",
       "decimalLongitude",
+      "sampleType",
       "gearType",
       "pi_name",
       "pi_email",

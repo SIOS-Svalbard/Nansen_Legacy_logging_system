@@ -6,7 +6,7 @@
 {% block content %}
 
 <div class="container">
-  {% if trace %}
+  {% if not trace.empty: %}
     {{ breadcrumb(trace) }}
   {% endif %}
   <h1>Form to register an activity</h1><br>

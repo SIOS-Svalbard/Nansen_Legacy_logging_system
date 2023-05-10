@@ -76,11 +76,11 @@ def edit_activity_form(ID):
                             for field in cf_standard_names:
                                 if field['id'] == field_name:
                                     added_cf_names_dic['Data'] = field
-                            for field in dwc_terms_not_in_config:
+                            for field in dwc_terms_not_in_config['Data']:
                                 if field['id'] == field_name:
                                     added_dwc_terms_dic['Data'] = field
-                            for field in extra_fields_dic:
-                                if field['id'] == field_name:
+                            for field in extra_fields_dict:
+                                if field == field_name:
                                     added_fields_dic['Data'] = field
 
     # Get children
@@ -288,7 +288,7 @@ def edit_activity_form(ID):
 
     if ID == 'addNew':
         ID = None
-        trace = None
+        trace = pd.DataFrame()
     else:
         trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
 
