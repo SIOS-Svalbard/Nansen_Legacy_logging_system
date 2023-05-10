@@ -15,12 +15,14 @@ def insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER):
 
     # MAIN FIELDS
     for field, criteria in fields_to_submit['columns'].items():
+        print(field)
+        print(criteria)
         string_2 = string_2 + field +", "
         if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
             string_4 = string_4 + "'" + criteria['value'] + "'" + ", "
         else:
             string_4 = string_4 + criteria['value'] + ", "
-        print(field, criteria['format'], criteria['value'])
+
 
     string_2 = string_2[:-2]
     string_4 = string_4[:-2]
