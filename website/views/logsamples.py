@@ -75,13 +75,121 @@ def edit_activity_form(ID):
                         if field_name != '':
                             for field in cf_standard_names:
                                 if field['id'] == field_name:
-                                    added_cf_names_dic['Data'] = field
+                                    added_cf_names_dic['Data'][field['id']] = field
                             for field in dwc_terms_not_in_config['Data']:
                                 if field['id'] == field_name:
-                                    added_dwc_terms_dic['Data'] = field
+                                    added_dwc_terms_dic['Data'][field['id']] = field
                             for field in extra_fields_dict:
                                 if field == field_name:
-                                    added_fields_dic['Data'] = field
+                                    added_fields_dic['Data'][field['id']] = field
+
+    # Assigning values already registered in database for output_config_dict
+    for sheet in output_config_dict.keys():
+        for requirement in output_config_dict[sheet].keys():
+            if requirement not in ['Required CSV', 'Source']:
+                for field, vals in output_config_dict[sheet][requirement].items():
+                    if ID == 'addNew':
+                        if vals['format'] in ['double precision', 'date', 'time']:
+                            output_config_dict[sheet][requirement][field]['value'] = None
+                        else:
+                            output_config_dict[sheet][requirement][field]['value'] = ''
+                    else:
+                        if field in other_columns:
+                            output_config_dict[sheet][requirement][field]['value'] = sample_metadata_df[field].item()
+                        elif field.lower() in sample_metadata_df.columns:
+                            if field not in ['recordedBy', 'pi_details']:
+                                output_config_dict[sheet][requirement][field]['value'] = sample_metadata_df[field.lower()].item()
+                        else: # If not a column the field has not been logged
+                            if vals['format'] in ['double precision', 'date', 'time']:
+                                output_config_dict[sheet][requirement][field]['value'] = None
+                            else:
+                                output_config_dict[sheet][requirement][field]['value'] = ''
+
+    if len(sample_metadata_df) == 1 and sample_metadata_df['pi_name'].item() not in ['', None]:
+        output_config_dict['Data']['Required']['pi_details']['value'] = combine_personnel_details(sample_metadata_df['pi_name'].item(),sample_metadata_df['pi_email'].item())
+    else:
+        output_config_dict['Data']['Required']['pi_details']['value'] = []
+
+    if len(sample_metadata_df) == 1 and sample_metadata_df['recordedby_name'].item() not in ['', None]:
+        output_config_dict['Data']['Required']['recordedBy']['value'] = combine_personnel_details(sample_metadata_df['recordedby_name'].item(),sample_metadata_df['recordedby_email'].item())
+    else:
+        output_config_dict['Data']['Required']['recordedBy']['value'] = []
+
+    # Assigning values already registered in database for dictionaries with added fields
+    for field in cf_standard_names:
+        for sheet in added_cf_names_dic.keys():
+            if sheet not in ['Required CSV', 'Source']:
+                if field['id'] in sample_metadata_df.columns and field['id'] not in output_config_fields:
+                    added_cf_names_dic[sheet][field['id']] = field
+                    if ID == 'addNew':
+                        if field['format'] in ['double precision', 'date', 'time']:
+                            added_cf_names_dic[sheet][field['id']]['value'] = None
+                        else:
+                            added_cf_names_dic[sheet][field['id']]['value'] = ''
+                    else:
+                        if field['id'] in other_columns:
+                            added_cf_names_dic[sheet][field['id']]['value'] = sample_metadata_df[field['id']].item()
+                        elif field['id'].lower() in sample_metadata_df.columns:
+                            if field not in ['recordedBy', 'pi_details']:
+                                added_cf_names_dic[sheet][field['id']]['value'] = sample_metadata_df[field['id'].lower()].item()
+                        else: # If not a column the field has not been logged
+                            if field['format'] in ['double precision', 'date', 'time']:
+                                added_cf_names_dic[sheet][field['id']]['value'] = None
+                            else:
+                                added_cf_names_dic[sheet][field['id']]['value'] = ''
+
+    for term in dwc_terms:
+        for sheet in added_dwc_terms_dic.keys():
+            if sheet not in ['Required CSV', 'Source']:
+                if term['id'] in sample_metadata_df.columns and term['id'] not in output_config_fields:
+                    added_dwc_terms_dic[sheet][term['id']] = term
+                    if ID == 'addNew':
+                        if term['format'] in ['double precision', 'date', 'time']:
+                            added_dwc_terms_dic[sheet][term['id']]['value'] = None
+                        else:
+                            added_dwc_terms_dic[sheet][term['id']]['value'] = ''
+                    else:
+                        if term['id'] in other_columns:
+                            added_dwc_terms_dic[sheet][term['id']]['value'] = sample_metadata_df[term['id']].item()
+                        elif term['id'].lower() in sample_metadata_df.columns:
+                            if term['id'] not in ['recordedBy', 'pi_details']:
+                                added_dwc_terms_dic[sheet][term['id']]['value'] = sample_metadata_df[term['id'].lower()].item()
+                        else: # If not a column the field has not been logged
+                            if term['format'] in ['double precision', 'date', 'time']:
+                                added_dwc_terms_dic[sheet][term['id']]['value'] = None
+                            else:
+                                added_dwc_terms_dic[sheet][term['id']]['value'] = ''
+
+    for field, vals in extra_fields_dict.items():
+        if field not in ['source', 'history', 'modified', 'created']:
+            for sheet in added_fields_dic.keys():
+                if sheet not in ['Required CSV', 'Source']:
+                    if vals['id'] in sample_metadata_df.columns and vals['id'] not in output_config_fields:
+                        added_fields_dic[sheet][vals['id']] = vals
+                        if ID == 'addNew':
+                            if vals['format'] in ['double precision', 'date', 'time']:
+                                added_fields_dic[sheet][vals['id']]['value'] = None
+                            else:
+                                added_fields_dic[sheet][vals['id']]['value'] = ''
+                        else:
+                            if vals['id'] in other_columns:
+                                value = sample_metadata_df[vals['id']].item()
+                                if value not in [None, '']:
+                                    added_fields_dic[sheet][vals['id']]['value'] = value
+                                else:
+                                    added_fields_dic[sheet].pop(vals['id'], None)
+                            elif vals['id'].lower() in sample_metadata_df.columns:
+                                if field not in ['recordedBy', 'pi_details']:
+                                    value = sample_metadata_df[vals['id'].lower()].item()
+                                    if value not in [None, '']:
+                                        added_fields_dic[sheet][vals['id']]['value'] = sample_metadata_df[vals['id'].lower()].item()
+                                    else:
+                                        added_fields_dic[sheet].pop(vals['id'], None)
+                            else: # If not a column the field has not been logged
+                                if vals['format'] in ['double precision', 'date', 'time']:
+                                    added_fields_dic[sheet][vals['id']]['value'] = None
+                                else:
+                                    added_fields_dic[sheet][vals['id']]['value'] = ''
 
     # Get children
     if ID != 'addNew':
@@ -110,7 +218,7 @@ def edit_activity_form(ID):
 
         # CF standard names
         for field in cf_standard_names:
-            for sheet in output_config_dict.keys():
+            for sheet in added_cf_names_dic.keys():
                 if sheet not in ['Required CSV', 'Source']:
                     for form_key in all_form_keys:
                         if form_key == field['id']:
@@ -291,6 +399,8 @@ def edit_activity_form(ID):
         trace = pd.DataFrame()
     else:
         trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
+
+    print(added_dwc_terms_dic)
 
     return render_template(
     "addActivityForm.html",
