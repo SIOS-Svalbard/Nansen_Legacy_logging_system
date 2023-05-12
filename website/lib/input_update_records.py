@@ -62,9 +62,9 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, ID):
     for field, criteria in fields_to_submit['columns'].items():
         if 'value' in criteria:
             if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
-                string_2 = string_2 + field + ' = ' + "'" + criteria['value'] + "'" + ', '
+                string_2 = f"{string_2} {field} = '{criteria['value']}', "
             else:
-                string_2 = string_2 + field + ' = ' + criteria['value'] + ', '
+                string_2 = f"{string_2} {field} = {criteria['value']}, "
 
     string_2 = string_2[:-2]
 
@@ -86,7 +86,6 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, ID):
         string_4 = string_4[:-2] + "])"
 
     exe_str = string_1 + string_2 + string_3 + string_4 + string_5
-
     cur.execute(exe_str)
 
     # Removing hstore fields when value deleted when updating the record

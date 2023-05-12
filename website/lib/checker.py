@@ -387,7 +387,7 @@ class Checker(Field):
             if criteria == 'between':
                 return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and self.validation['minimum'] <= float(x) <= self.validation['maximum'])
             else:
-                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("float(x) " + self.validation['criteria'] + "self.validation['value']"))
+                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("float(x) " + self.validation['criteria'] + self.validation['value']))
         elif validate == 'integer':
             if criteria == 'between':
                 return Evaluator(validation, func=lambda self, x: isinstance(x, int) and self.validation['minimum'] <= int(x) <= self.validation['maximum'])
@@ -715,7 +715,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                     parent_child.append(rownum)
                     good = False
         if 'parentID' in data.columns:
-            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values:
+            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
                 missing_parents.append(rownum)
 
     if already_registered_ids != []:
@@ -776,7 +776,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
             good = False
             if len(data) > 1:
                 errors.append(checker.disp_name + ' ('+checker.name + ')'+", Rows: " +
-                              to_ranges_str(content_errors) + ' Error: Value missing (required)')
+                              to_ranges_str(blanks) + ' Error: Value missing (required)')
             else:
                 errors.append(f'Required value missing ({checker.disp_name})')
 

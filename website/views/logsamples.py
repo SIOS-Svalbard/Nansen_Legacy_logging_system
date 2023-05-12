@@ -49,7 +49,6 @@ def edit_activity_form(ID):
         subconfig=subconfig,
         CRUISE_NUMBER=CRUISE_NUMBER
     )
-    print(extra_fields_dict)
 
     sample_metadata_df = get_metadata_for_id(DB, CRUISE_NUMBER, ID)
 
@@ -391,8 +390,6 @@ def edit_activity_form(ID):
         trace = pd.DataFrame()
     else:
         trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
-
-    print(added_dwc_terms_dic)
 
     return render_template(
     "addActivityForm.html",

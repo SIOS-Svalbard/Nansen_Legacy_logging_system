@@ -132,14 +132,21 @@ def get_title(series):
 
 
 def format_form_value(field, value, format):
-    if value == ['y']:
+    if value == ['y'] or value == ['on']:
         if format in ['double precision', 'date', 'time']:
             return None
         else:
             return ''
     else:
         if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
-            return value[0]
+            if format == 'double precision' and value != ['']:
+                return float(value[0])
+            elif format == 'int' and value != ['']:
+                return int(value[0])
+            elif format == 'uuid' and value == ['']:
+                return 'NULL'
+            else:
+                return value[0]
         elif field in ['pi_details', 'recordedBy']:
             return value
         elif len(value) == 0:
