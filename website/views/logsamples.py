@@ -432,7 +432,6 @@ def log_samples(ID):
 
     recommendedChildSamples = find_recommended_child_sample_types(gearType, gear_types_df)
 
-
     return render_template(
     "logSamples.html",
     ID=ID,
@@ -463,7 +462,7 @@ def find_recommended_child_gears(gearType, gear_types_df):
 def find_recommended_child_sample_types(gearType, gear_types_df):
 
     series = gear_types_df.loc[gear_types_df['geartype'] == gearType, 'recommendedchildsamples']
-    if len(series) == 0:
+    if len(series) == 0 or list(series) == ['nan']:
         recommended_child_samples = ""
     else:
         recommended_child_samples = series.item()

@@ -32,7 +32,7 @@
     <table class="table table-hover">
       {% include 'chooseSampleFieldsTableHeader.html' %}
       <tbody>
-        {% for key, field in required_fields_dic.items() %}
+        {% for key, field in output_config_dict['Data']['Required'].items() %}
           {% include 'chooseSampleFieldsTableContents.html' %}
         {% endfor %}
       </tbody>
@@ -43,26 +43,34 @@
     <table class="table table-hover">
       {% include 'chooseSampleFieldsTableHeader.html' %}
       <tbody>
-        {% for key, field in recommended_fields_dic.items() %}
+        {% for key, field in output_config_dict['Data']['Recommended'].items() %}
           {% include 'chooseSampleFieldsTableContents.html' %}
         {% endfor %}
       </tbody>
     </table>
 
     <br>
-    {% include 'addfields.html' %}
+    {% include 'add_fields_not_in_config.html' %}
     <br>
-    {% if added_fields_bool == True %}
+
     <h3>Extra fields</h3>
     <table class="table table-hover">
       {% include 'chooseSampleFieldsTableHeader.html' %}
       <tbody>
-        {% for key, field in added_fields_dic.items() %}
+        {% for key, field in added_fields_dic['Data'].items() %}
+          {% include 'chooseSampleFieldsTableContents.html' %}
+        {% endfor %}
+
+        {% for key, field in added_cf_names_dic['Data'].items() %}
+          {% include 'chooseSampleFieldsTableContents.html' %}
+        {% endfor %}
+
+        {% for key, field in added_dwc_terms_dic['Data'].items() %}
           {% include 'chooseSampleFieldsTableContents.html' %}
         {% endfor %}
       </tbody>
     </table>
-    {% endif %}
+
     <br>
 
     <div class="row">

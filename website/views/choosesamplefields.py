@@ -2,11 +2,13 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 from website.lib.get_data import get_cruise, get_user_setup
-from website import DB, METADATA_CATALOGUE
+from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH
 import numpy as np
 import pandas as pd
 import os
 import yaml
+from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
+from website.lib.get_setup_for_configuration import get_setup_for_configuration
 
 choosesamplefields = Blueprint('choosesamplefields', __name__)
 
@@ -18,29 +20,34 @@ def choose_sample_fields(parentID,sampleType):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
-
     config = 'Learnings from Nansen Legacy logging system'
-    subconfig = 'default'
-    for setup in setups:
-        if setup['name'] == sampleType:
-            subconfig = sampleType
+    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
+
+    if sampleType in list_of_subconfigs:
+        subconfig = sampleType
+    else:
+        subconfig = 'default'
+
+    cruise_details_df = get_cruise(DB)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     (
         output_config_dict,
         output_config_fields,
         extra_fields_dict,
         cf_standard_names,
-        groups,
-    ) = get_config_fields(config=config, subconfig=subconfig, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
-    # Creating a dictionary of all the fields.
-    all_fields_dict = extra_fields_dict.copy()
-    for key in output_config_dict.keys():
-        for field, values in output_config_dict[key].items():
-            all_fields_dict[field] = values
-
-    #required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
-    #all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+        groups
+    ) = get_setup_for_configuration(
+        fields_filepath=FIELDS_FILEPATH,
+        subconfig=subconfig,
+        CRUISE_NUMBER=CRUISE_NUMBER
+    )
 
     most_likely_same_for_all_samples = [
     'parentID',
@@ -53,43 +60,91 @@ def choose_sample_fields(parentID,sampleType):
     'samplingProtocolVersion'
     ]
 
-    for key, val in output_config_dict['Required'].items():
+    for key, val in output_config_dict['Data']['Required'].items():
         if key in most_likely_same_for_all_samples:
             val['checked'] = ['same']
         else:
             val['checked'] = ['vary']
 
-    for key, val in output_config_dict['Recommended'].items():
+    for key, val in output_config_dict['Data']['Recommended'].items():
         if key in most_likely_same_for_all_samples:
             val['checked'] = ['same']
         else:
             val['checked'] = ['vary']
 
-    added_fields_dic = {}
     num_samples = 1
     current_setup = ''
 
     if request.method == 'POST':
 
         form_input = request.form.to_dict(flat=False)
+        all_form_keys = request.form.keys()
 
-        for key, val in form_input.items():
-            if key not in output_config_fields and key != 'submitbutton':
-                for field in fields.fields:
-                    if field['name'] == key:
-                        added_fields_dic[key] = {}
-                        added_fields_dic[key]['disp_name'] = field['disp_name']
-                        added_fields_dic[key]['description'] = field['description']
+        # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
+        for sheet in output_config_dict.keys():
+            for requirement in output_config_dict[sheet].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for field, vals in output_config_dict[sheet][requirement].items():
+                        if field in form_input:
+                            vals['checked'] = form_input[field]
 
-        for key, val in added_fields_dic.items():
-            if key in most_likely_same_for_all_samples:
-                val['checked'] = ['same']
-            else:
-                val['checked'] = ['vary']
+        # 2. Adding extra fields selected by user
+
+        # CF standard names
+        for field in cf_standard_names:
+            for sheet in added_cf_names_dic.keys():
+                if sheet not in ['Required CSV', 'Source']:
+                    for form_key in all_form_keys:
+                        if form_key == field['id']:
+                            added_cf_names_dic[sheet][field['id']] = {}
+                            added_cf_names_dic[sheet][field['id']]['id'] = field['id']
+                            added_cf_names_dic[sheet][field['id']]['disp_name'] = field['id']
+                            added_cf_names_dic[sheet][field['id']]['valid'] = field['valid']
+                            if field["description"] == None:
+                                field["description"] = ""
+                            added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
+                            added_cf_names_dic[sheet][field['id']]['format'] = field['format']
+                            added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
+                            if form_key in most_likely_same_for_all_samples:
+                                added_cf_names_dic[sheet][field['id']]['checked'] = ['same']
+                            else:
+                                added_cf_names_dic[sheet][field['id']]['checked'] = ['vary']
+
+        # Darwin Core terms
+        for sheet in dwc_terms_not_in_config.keys():
+            for term in dwc_terms_not_in_config[sheet]:
+                for form_key in all_form_keys:
+                    if form_key == term['id']:
+                        added_dwc_terms_dic[sheet][term['id']] = {}
+                        added_dwc_terms_dic[sheet][term['id']]['id'] = term['id']
+                        added_dwc_terms_dic[sheet][term['id']]['disp_name'] = term['id']
+                        added_dwc_terms_dic[sheet][term['id']]['valid'] = term['valid']
+                        if term["description"] == None:
+                            term["description"] = ""
+                        added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
+                        added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
+                        added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
+                        if form_key in most_likely_same_for_all_samples:
+                            added_dwc_terms_dic[sheet][term['id']]['checked'] = ['same']
+                        else:
+                            added_dwc_terms_dic[sheet][term['id']]['checked'] = ['vary']
+
+        # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
+        for field, vals in extra_fields_dict.items():
+            for form_key in all_form_keys:
+                if field == form_key:
+                    added_fields_dic['Data'][field] = vals
+                    if form_key in most_likely_same_for_all_samples:
+                        added_fields_dic[sheet][field]['checked'] = ['same']
+                    else:
+                        added_fields_dic[sheet][field]['checked'] = ['vary']
 
         num_samples = int(form_input['num_samples'][0])
 
-        if form_input['submitbutton'] == ['generateTemplate']:
+        if form_input['submitbutton'] == ['addfields']:
+            pass
+
+        elif form_input['submitbutton'] == ['generateTemplate']:
             data_df = pd.DataFrame(index=np.arange(num_samples))
             for field, val in form_input.items():
                 if field not in ['submitbutton','setupName','num_samples','userSetup']:
@@ -129,7 +184,7 @@ def choose_sample_fields(parentID,sampleType):
                     output_config_dict['Required'][key]['checked'] = checked
                 if key in output_config_dict['Recommended'].keys():
                     output_config_dict['Recommended'][key]['checked'] = checked
-                if key in extra_fields_dic.keys():
+                if key in extra_fields_dict.keys():
                     for field in fields.fields:
                         if field['name'] == key:
                             added_fields_dic[key] = {}
@@ -231,26 +286,23 @@ def choose_sample_fields(parentID,sampleType):
                         current_setup = 'temporary'
                     return redirect(f'/logSamples/parentid={parentID}/form/sampletype={sampleType}&num={num_samples}&setup={current_setup}')
 
-    if len(added_fields_dic) > 0:
-        added_fields_bool = True
-    else:
-        added_fields_bool = False
-
     conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName != 'temporary';", con=conn)
     existing_user_setups = sorted(df['setupname'].tolist())
-
 
     return render_template(
     "chooseSampleFields.html",
     parentID=parentID,
     sampleType=sampleType,
     output_config_dict=output_config_dict,
-    extra_fields_dic = extra_fields_dic,
+    extra_fields_dict = extra_fields_dict,
     groups = groups,
-    added_fields_dic = added_fields_dic,
-    added_fields_bool = added_fields_bool,
     num_samples = num_samples,
     existing_user_setups = existing_user_setups,
-    current_setup = current_setup
+    current_setup = current_setup,
+    cf_standard_names=cf_standard_names,
+    dwc_terms_not_in_config=dwc_terms_not_in_config,
+    added_fields_dic=added_fields_dic,
+    added_cf_names_dic=added_cf_names_dic,
+    added_dwc_terms_dic=added_dwc_terms_dic
     )
