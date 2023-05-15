@@ -89,6 +89,8 @@ def choose_sample_fields(parentID,sampleType):
                     for field, vals in output_config_dict[sheet][requirement].items():
                         if field in form_input:
                             vals['checked'] = form_input[field]
+                        else:
+                            vals['checked'] = ['']
 
         # 2. Adding extra fields selected by user
 
@@ -107,10 +109,10 @@ def choose_sample_fields(parentID,sampleType):
                             added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
                             added_cf_names_dic[sheet][field['id']]['format'] = field['format']
                             added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
-                            if form_key in most_likely_same_for_all_samples:
-                                added_cf_names_dic[sheet][field['id']]['checked'] = ['same']
+                            if field in form_input:
+                                added_cf_names_dic[sheet][field['id']]['checked'] = form_input[field]
                             else:
-                                added_cf_names_dic[sheet][field['id']]['checked'] = ['vary']
+                                added_cf_names_dic[sheet][field['id']]['checked'] = ['']
 
         # Darwin Core terms
         for sheet in dwc_terms_not_in_config.keys():
@@ -126,20 +128,20 @@ def choose_sample_fields(parentID,sampleType):
                         added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
                         added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
                         added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
-                        if form_key in most_likely_same_for_all_samples:
-                            added_dwc_terms_dic[sheet][term['id']]['checked'] = ['same']
+                        if field in form_input:
+                            added_dwc_terms_dic[sheet][term['id']]['checked'] = form_input[field]
                         else:
-                            added_dwc_terms_dic[sheet][term['id']]['checked'] = ['vary']
+                            added_dwc_terms_dic[sheet][term['id']]['checked'] = ['']
 
         # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
         for field, vals in extra_fields_dict.items():
             for form_key in all_form_keys:
                 if field == form_key:
                     added_fields_dic['Data'][field] = vals
-                    if form_key in most_likely_same_for_all_samples:
-                        added_fields_dic[sheet][field]['checked'] = ['same']
+                    if field in form_input:
+                        added_fields_dic[sheet][field]['checked'] = form_input[field]
                     else:
-                        added_fields_dic[sheet][field]['checked'] = ['vary']
+                        added_fields_dic[sheet][field]['checked'] = ['']
 
         num_samples = int(form_input['num_samples'][0])
 
@@ -147,6 +149,7 @@ def choose_sample_fields(parentID,sampleType):
             pass
 
         elif form_input['submitbutton'] == ['generateTemplate']:
+
             data_df = pd.DataFrame(index=np.arange(num_samples))
             for field, val in form_input.items():
                 if field not in ['submitbutton','setupName','num_samples','userSetup']:
@@ -243,31 +246,27 @@ def choose_sample_fields(parentID,sampleType):
 
             setup = {}
 
-            for field in fields.fields:
-                if field['name'] in form_input.keys() and form_input[field['name']] == ['y']:
-                    pass
-                else:
-                    if field['name'] in form_input.keys():
-                        sameorvary = form_input[field['name']] # "same" or "vary
-                        if len(form_input[field['name']]) == 1:
-                            setup[field['name']] = sameorvary[0]
-                        else:
-                            setup[field['name']] = " | ".join([str(item) for item in sameorvary])
-                    else:
-                        sameorvary = []
-                        if field['name'] in output_config_dict['Required'].keys():
-                            good = False
-                            errors.append(f"At least one box must be ticked for all required fields: {field['disp_name']}")
+            for sheet in output_config_dict.keys():
+                for requirement in output_config_dict[sheet].keys():
+                    if requirement not in ['Required CSV', 'Source']:
+                        for field, vals in output_config_dict[sheet][requirement].items():
+                            if vals['checked'] == [''] and requirement == 'Required':
+                                good = False
+                                errors.append(f"At least one box must be ticked for all required fields: {vals['disp_name']}")
+                            else:
+                                setup['field'] = vals['checked']
 
-                    if field['name'] in output_config_dict['Required'].keys():
-                        output_config_dict['Required'][field['name']]['checked'] = sameorvary
-                    elif field['name'] in output_config_dict['Recommended'].keys():
-                        output_config_dict['Recommended'][field['name']]['checked'] = sameorvary
-                    elif field['name'] in added_fields_dic.keys():
-                        if field['name'] in form_input.keys():
-                            added_fields_dic[field['name']]['checked'] = sameorvary
-                        else:
-                            added_fields_dic[field['name']]['checked'] = ['vary']
+            for sheet in added_cf_names_dic.keys():
+                for field, vals in added_cf_names_dic[sheet].items():
+                    setup['field'] = vals['checked']
+
+            for sheet in added_dwc_terms_dic.keys():
+                for field, vals in added_dwc_terms_dic[sheet].items():
+                    setup['field'] = vals['checked']
+
+            for sheet in added_fields_dic.keys():
+                for field, vals in added_fields_dic[sheet].items():
+                    setup['field'] = vals['checked']
 
             setup = str(setup).replace('\'','"')
 
