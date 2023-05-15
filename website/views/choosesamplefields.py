@@ -1,14 +1,16 @@
 from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-from website.lib.get_data import get_cruise, get_user_setup
-from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH
+from website.lib.get_data import get_cruise, get_user_setup, get_gears_list
+from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH, CRUISE_NUMBER
 import numpy as np
 import pandas as pd
 import os
 import yaml
 from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
+from website.Learnings_from_AeN_template_generator.website.lib.create_template import create_template
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.lib.other_functions import combine_fields_dictionaries
 
 choosesamplefields = Blueprint('choosesamplefields', __name__)
 
@@ -152,19 +154,33 @@ def choose_sample_fields(parentID,sampleType):
             data_df['parentID'] = parentID
             data_df['sampleType'] = sampleType
 
-            gear_list = all_fields_dict['gearType']['source']
+            gear_list = get_gears_list(DB)
             if sampleType in gear_list:
                 data_df['gearType'] = sampleType
             else:
                 data_df['gearType'] = None
 
-            #data_df = propegate_parents_to_children(data_df,DB,METADATA_CATALOGUE) # Should user get this information here for this in and out read?
-
-            fields_list = list(set(list(output_config_dict['Required'].keys()) + list(data_df.columns)))
+            fields_list = data_df.columns
 
             filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
-            write_file(filepath, fields_list, metadata=True, conversions=True, data=data_df, metadata_df=False, DB=DB, CRUISE_DETAILS_TABLE=CRUISE_DETAILS_TABLE, METADATA_CATALOGUE=METADATA_CATALOGUE)
+            template_fields_dict = combine_fields_dictionaries(
+                output_config_dict,
+                added_fields_dic,
+                added_cf_names_dic,
+                added_dwc_terms_dic,
+                data_df
+            )
+
+            create_template(
+                filepath = filepath,
+                template_fields_dict = template_fields_dict,
+                fields_filepath = FIELDS_FILEPATH,
+                config = config,
+                subconfig=subconfig,
+                metadata=False,
+                conversions=True
+            )
 
             return send_file(filepath, as_attachment=True)
 

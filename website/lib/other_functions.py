@@ -154,3 +154,29 @@ def format_form_value(field, value, format):
                 return None
             else:
                 return ''
+
+def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic, data_df=None):
+    template_fields_dict = {}
+    for sheet in output_config_dict.keys():
+        template_fields_dict[sheet] = {}
+        for requirement in output_config_dict[sheet].keys():
+            if requirement not in ['Required CSV', 'Source']:
+                for field, vals in output_config_dict[sheet][requirement].items():
+                    template_fields_dict[sheet][field] = vals
+    for sheet in added_fields_dic.keys():
+        for field, vals in added_fields_dic[sheet].items():
+            template_fields_dict[sheet][field] = vals
+    for sheet in added_cf_names_dic.keys():
+        for field, vals in added_cf_names_dic[sheet].items():
+            template_fields_dict[sheet][field] = vals
+    for sheet in added_dwc_terms_dic.keys():
+        for field, vals in added_dwc_terms_dic[sheet].items():
+            template_fields_dict[sheet][field] = vals
+
+    if data_df is not None:
+        for col in data_df.columns:
+            for sheet in template_fields_dict.keys():
+                for field, vals in template_fields_dict[sheet].items():
+                    if field.lower() == col.lower():
+                        template_fields_dict[sheet][field]['data'] = list(data_df[col])
+    return template_fields_dict
