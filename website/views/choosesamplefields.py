@@ -190,29 +190,37 @@ def choose_sample_fields(parentID,sampleType):
         elif form_input['submitbutton'] == ['loadSetup']:
 
             current_setup = form_input['userSetup'][0]
-            userSetup = get_user_setup(DB, current_setup) # json of setup
+            userSetup = get_user_setup(DB, CRUISE_NUMBER, current_setup) # json of setup
 
             # adding data for fields in setup to dictionaries to be displayed through HTML
             for key, val in userSetup.items():
                 if '|' in val:
                     checked = val.split(' | ')
                 else:
-                    checked = [val]
+                    checked = val
 
-                if key in output_config_dict['Required'].keys():
-                    output_config_dict['Required'][key]['checked'] = checked
-                if key in output_config_dict['Recommended'].keys():
-                    output_config_dict['Recommended'][key]['checked'] = checked
-                if key in extra_fields_dict.keys():
-                    for field in fields.fields:
-                        if field['name'] == key:
-                            added_fields_dic[key] = {}
-                            added_fields_dic[key]['disp_name'] = field['disp_name']
-                            added_fields_dic[key]['description'] = field['description']
-                            added_fields_dic[key]['checked'] = checked
+                if key in output_config_dict['Data']['Required'].keys():
+                    output_config_dict['Data']['Required'][key]['checked'] = checked
+                if key in output_config_dict['Data']['Recommended'].keys():
+                    output_config_dict['Data']['Recommended'][key]['checked'] = checked
+
+                for field in cf_standard_names:
+                    if field['id'] == key:
+                        added_cf_names_dic['Data'][field['id']] = field
+                        added_cf_names_dic['Data'][field['id']]['checked'] = checked
+
+                for field in dwc_terms_not_in_config['Data']:
+                    if field['id'] == key:
+                        added_dwc_terms_dic['Data'][field['id']] = field
+                        added_dwc_terms_dic['Data'][field['id']]['checked'] = checked
+
+                for field, vals in extra_fields_dict.items():
+                    if field == key:
+                        added_fields_dic['Data'][field] = vals
+                        added_fields_dic['Data'][field]['checked'] = checked
 
             # Fields not included in setup shouldn't be checked.
-            for key, val in output_config_dict['Recommended'].items():
+            for key, val in output_config_dict['Data']['Recommended'].items():
                 if key not in userSetup.keys():
                     val['checked'] = ['']
 
@@ -254,19 +262,19 @@ def choose_sample_fields(parentID,sampleType):
                                 good = False
                                 errors.append(f"At least one box must be ticked for all required fields: {vals['disp_name']}")
                             else:
-                                setup['field'] = vals['checked']
+                                setup[field] = vals['checked']
 
             for sheet in added_cf_names_dic.keys():
                 for field, vals in added_cf_names_dic[sheet].items():
-                    setup['field'] = vals['checked']
+                    setup[field] = vals['checked']
 
             for sheet in added_dwc_terms_dic.keys():
                 for field, vals in added_dwc_terms_dic[sheet].items():
-                    setup['field'] = vals['checked']
+                    setup[field] = vals['checked']
 
             for sheet in added_fields_dic.keys():
                 for field, vals in added_fields_dic[sheet].items():
-                    setup['field'] = vals['checked']
+                    setup[field] = vals['checked']
 
             setup = str(setup).replace('\'','"')
 
