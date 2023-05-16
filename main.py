@@ -11,6 +11,7 @@ from website.lib.pull_cf_standard_names import cf_standard_names_update
 from website.lib.pull_acdd_conventions import acdd_conventions_update
 from website.lib.dropdown_lists_from_static_config_files import populate_dropdown_lists
 from website.lib.pull_darwin_core_terms import dwc_terms_update, dwc_extensions_update
+import os
 
 app = create_app()
 
@@ -34,7 +35,8 @@ def home():
     else:
         subconfig = None
 
-    fields_filepath='website/config/fields'
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+    FIELDS_FILEPATH = os.path.join(BASE_PATH, 'website', 'config', 'fields')
 
     # Getting setup specific to this configuration
     (
@@ -44,7 +46,7 @@ def home():
         cf_standard_names,
         groups,
         dwc_terms
-    ) = get_config_fields(fields_filepath=fields_filepath, config=config, subconfig=subconfig)
+    ) = get_config_fields(fields_filepath=FIELDS_FILEPATH, config=config, subconfig=subconfig)
 
     for sheet in output_config_dict.keys():
         for key in output_config_dict[sheet].keys():
@@ -180,7 +182,7 @@ def home():
             create_template(
                 filepath,
                 template_fields_dict,
-                fields_filepath,
+                FIELDS_FILEPATH,
                 config,
                 subconfig,
                 conversions=True
@@ -228,11 +230,13 @@ def update_config():
     updates the DwC terms, ACDD Conventions and the CF standard names
     in the config directory.
     """
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+    FIELDS_FILEPATH = os.path.join(BASE_PATH, 'website', 'config', 'fields')
 
     if request.method == "POST":
 
         if request.form["submitbutton"] == "pullCF":
-            errors = cf_standard_names_update()
+            errors = cf_standard_names_update(FIELDS_FILEPATH)
             if len(errors) == 0:
                 flash('Pulled latest version of CF standard names', category='success')
             else:
@@ -240,7 +244,7 @@ def update_config():
                     flash(error, category='error')
 
         elif request.form["submitbutton"] == "pullDwC":
-            errors = dwc_terms_update()
+            errors = dwc_terms_update(FIELDS_FILEPATH)
             if len(errors) == 0:
                 flash('Pulled latest version of Darwin Core terms', category='success')
             else:
@@ -248,7 +252,7 @@ def update_config():
                     flash(error, category='error')
 
         elif request.form["submitbutton"] == "pullACDD":
-            errors = acdd_conventions_update()
+            errors = acdd_conventions_update(FIELDS_FILEPATH)
             if len(errors) == 0:
                 flash('Pulled latest version of ACDD configuration', category='success')
             else:

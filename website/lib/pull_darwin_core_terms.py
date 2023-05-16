@@ -106,6 +106,19 @@ class Darwin_Core_Terms_json():
                 }
                 term['format'] = 'double precision'
 
+            elif term['id'] in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'minimumDistanceAboveSurfaceInMeters', 'maximumDistanceAboveSurfaceInMeters']:
+                term["valid"] = {
+                    "validate": "decimal",
+                    "criteria": "between",
+                    "minimum": 0,
+                    "maximum": 99999,
+                    "input_title": term['id'],
+                    "input_message": term['description'],
+                    "error_title": "Error",
+                    "error_message": "Enter a number in range [0, 99999]"
+                }
+                term['format'] = 'double precision'
+
             else:
                 term['valid'] = {
                     'validate': 'any',
@@ -120,8 +133,10 @@ class Darwin_Core_Terms_json():
 
 
     def load_json(self):
-        f = open(self.filename)
-        self.dic = json.load(f)
+        with open(self.filename, 'r', encoding='utf-8', errors='ignore') as f:
+           content = f.read()
+           cleaned_content = content.encode('utf-8').decode('utf-8', 'ignore')
+           self.dic = json.loads(cleaned_content)
 
 class Darwin_Core_Extension():
     '''
@@ -201,6 +216,19 @@ class Darwin_Core_Extension():
                 }
                 term['format'] = 'double precision'
 
+            elif term['id'] in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'minimumDistanceAboveSurfaceInMeters', 'maximumDistanceAboveSurfaceInMeters']:
+                term["valid"] = {
+                    "validate": "decimal",
+                    "criteria": "between",
+                    "minimum": 0,
+                    "maximum": 99999,
+                    "input_title": term['id'],
+                    "input_message": term['description'],
+                    "error_title": "Error",
+                    "error_message": "Enter a number in range [0, 99999]"
+                }
+                term['format'] = 'double precision'
+
             elif 'type' in term:
 
                 if term['type'] == 'integer':
@@ -253,8 +281,10 @@ class Darwin_Core_Extension():
 
 
     def load_json(self):
-        f = open(self.filename)
-        self.dic = json.load(f)
+        with open(self.filename, 'r', encoding='utf-8', errors='ignore') as f:
+           content = f.read()
+           cleaned_content = content.encode('utf-8').decode('utf-8', 'ignore')
+           self.dic = json.loads(cleaned_content)
 
 
 extensions = {
