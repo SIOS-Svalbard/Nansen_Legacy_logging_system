@@ -2,17 +2,20 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_id, get_personnel_df
+from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from website.lib.input_update_records import insert_into_metadata_catalogue_df
 from website.lib.checker import run as checker
-from website.lib.other_functions import split_personnel_list
-from website import DB
+from website.lib.other_functions import split_personnel_list, get_title
+from website import DB, FIELDS_FILEPATH, CONFIG
 import numpy as np
 from datetime import datetime as dt
 import pandas as pd
 import os
 import yaml
+from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 
 logsamplesform = Blueprint('logsamplesform', __name__)
 
@@ -25,26 +28,48 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    setups = yaml.safe_load(open(os.path.join("website/templategenerator/website/config", "template_configurations.yaml"), encoding='utf-8'))['setups']
-
     config = 'Learnings from Nansen Legacy logging system'
-    subconfig = 'default'
-    for setup in setups:
-        if setup['name'] == sampleType:
-            subconfig = sampleType
+    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
+
+    if sampleType in list_of_subconfigs:
+        subconfig = sampleType
+    else:
+        subconfig = 'default'
+
+    gear_list = get_gears_list(DB)
+    if sampleType in gear_list:
+        gearType = sampleType
+    else:
+        gearType = None
+
+    cruise_details_df = get_cruise(DB)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     (
         output_config_dict,
         output_config_fields,
         extra_fields_dict,
         cf_standard_names,
-        groups,
-    ) = get_config_fields(config=config, subconfig=subconfig, CRUISE_NUMBER=CRUISE_NUMBER, DB=DB)
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration=config, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
-    all_fields_dic = {**required_fields_dic, **recommended_fields_dic, **extra_fields_dic}
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+        groups
+    ) = get_setup_for_configuration(
+        fields_filepath=FIELDS_FILEPATH,
+        subconfig=subconfig,
+        CRUISE_NUMBER=CRUISE_NUMBER
+    )
 
-    required = list(required_fields_dic.keys())
-    added_fields_dic = {}
+    required = list(output_config_dict['Data']['Required'].keys())
+    if 'pi_details' in required:
+        required.remove('pi_details')
+        required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
+    if 'recordedBy' in required:
+        required.remove('recordedBy')
+        required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
     userSetup = get_user_setup(DB, CRUISE_NUMBER, current_setup) # json of setup
 
@@ -55,82 +80,106 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         else:
             checked = [val]
 
-        if key in required:
-            required_fields_dic[key]['checked'] = checked
-        if key in recommended_fields_dic.keys():
-            recommended_fields_dic[key]['checked'] = checked
-        if key in extra_fields_dic.keys():
-            for field in fields.fields:
-                if field['name'] == key:
-                    added_fields_dic[key] = {}
-                    added_fields_dic[key]['disp_name'] = field['disp_name']
-                    added_fields_dic[key]['description'] = field['description']
-                    added_fields_dic[key]['checked'] = checked
+        for sheet in output_config_dict.keys():
+            for requirement in output_config_dict[sheet].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for field, vals in output_config_dict[sheet][requirement].items():
+                        if field == key:
+                            if checked == 'same':
+                                if key == 'sampleType':
+                                    vals['values'] = sampleType
+                                elif key == 'gearType':
+                                    vals['values'] = gearType
+                                else:
+                                    vals['values'] = ''
+                            elif checked == 'vary':
+                                if key == 'sampleType':
+                                    vals['values'] = [sampleType] * int(num_samples)
+                                elif key == 'gearType':
+                                    vals['values'] = [gearType] * int(num_samples)
+                                else:
+                                    vals['values'] = [''] * int(num_samples)
+                            vals['checked'] = checked
+                        else:
+                            vals['checked'] = ['']
+                            if checked == 'same':
+                                vals['values'] = ''
+                            elif checked == 'vary':
+                                vals['values'] = [''] * int(num_samples)
 
-    # Removing recommended fields that aren't included in user setup.
-    rem_list = []
-    for key, val in recommended_fields_dic.items():
-        if key not in userSetup.keys():
-            rem_list.append(key)
-    for key in rem_list:
-        del recommended_fields_dic[key]
+        # CF standard names
+        for field in cf_standard_names:
+            for sheet in added_cf_names_dic.keys():
+                if sheet not in ['Required CSV', 'Source']:
+                    if key == field['id']:
+                        added_cf_names_dic[sheet][field['id']] = {}
+                        added_cf_names_dic[sheet][field['id']]['id'] = field['id']
+                        added_cf_names_dic[sheet][field['id']]['disp_name'] = field['id']
+                        added_cf_names_dic[sheet][field['id']]['valid'] = field['valid']
+                        if field["description"] == None:
+                            field["description"] = ""
+                        added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
+                        added_cf_names_dic[sheet][field['id']]['format'] = field['format']
+                        added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
+                        if field in form_input:
+                            added_cf_names_dic[sheet][field['id']]['checked'] = checked
+                        else:
+                            added_cf_names_dic[sheet][field['id']]['checked'] = ['']
 
-    # Combining dictionaries
-    for key, val in required_fields_dic.items():
-        val['requirements'] = 'required'
-    for key, val in recommended_fields_dic.items():
-        val['requirements'] = 'recommended'
-    for key, val in added_fields_dic.items():
-        val['requirements'] = 'optional'
+        # Darwin Core terms
+        for sheet in dwc_terms_not_in_config.keys():
+            for term in dwc_terms_not_in_config[sheet]:
+                if key == term['id']:
+                    added_dwc_terms_dic[sheet][term['id']] = {}
+                    added_dwc_terms_dic[sheet][term['id']]['id'] = term['id']
+                    added_dwc_terms_dic[sheet][term['id']]['disp_name'] = term['id']
+                    added_dwc_terms_dic[sheet][term['id']]['valid'] = term['valid']
+                    if term["description"] == None:
+                        term["description"] = ""
+                    added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
+                    added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
+                    added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
+                    if field in form_input:
+                        added_dwc_terms_dic[sheet][term['id']]['checked'] = checked
+                    else:
+                        added_dwc_terms_dic[sheet][term['id']]['checked'] = ['']
 
-    setup_fields_dic = {**required_fields_dic, **recommended_fields_dic, **added_fields_dic}
-
-    if len(added_fields_dic) > 0:
-        added_fields_bool = True
-    else:
-        added_fields_bool = False
-
-    gear_list = all_fields_dic['gearType']['source']
-    if sampleType in gear_list:
-        gearType = sampleType
-    else:
-        gearType = None
-
-    for key, val in setup_fields_dic.items():
-
-        if userSetup[key] == 'same':
-            if key == 'sampleType':
-                val['values'] = sampleType
-            elif key == 'gearType':
-                val['values'] = gearType
-            else:
-                val['values'] = ''
-        elif userSetup[key] == 'vary':
-            if key == 'sampleType':
-                val['values'] = [sampleType] * int(num_samples)
-            elif key == 'gearType':
-                val['values'] = [gearType] * int(num_samples)
-            else:
-                val['values'] = [''] * int(num_samples)
+        # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
+        for field, vals in extra_fields_dict.items():
+            if field == key:
+                added_fields_dic['Data'][field] = vals
+                added_fields_dic['Data'][field]['checked'] = checked
+                if checked == 'same':
+                    if key == 'sampleType':
+                        added_fields_dic['Data'][field]['values'] = sampleType
+                    elif key == 'gearType':
+                        added_fields_dic['Data'][field]['values'] = gearType
+                    else:
+                        added_fields_dic['Data'][field]['values'] = ''
+                elif checked == 'vary':
+                    if key == 'sampleType':
+                        added_fields_dic['Data'][field]['values'] = [sampleType] * int(num_samples)
+                    elif key == 'gearType':
+                        added_fields_dic['Data'][field]['values'] = [gearType] * int(num_samples)
+                    else:
+                        added_fields_dic['Data'][field]['values'] = [''] * int(num_samples)
 
     parent_df = get_metadata_for_id(DB, CRUISE_NUMBER, parentID)
-    parent_details = {}
-
     parent_fields = [
-    'id',
-    'gearType',
-    'sampleType',
-    'stationName',
-    'decimalLatitude',
-    'decimalLongitude',
-    'eventDate',
-    'eventTime',
-    'minimumDepthInMeters',
-    'maximumDepthInMeters'
+        'id',
+        'gearType',
+        'sampleType',
+        'stationName',
+        'decimalLatitude',
+        'decimalLongitude',
+        'eventDate',
+        'eventTime',
+        'minimumDepthInMeters',
+        'maximumDepthInMeters'
     ]
+    parent_details = get_dict_for_list_of_fields(parent_fields,FIELDS_FILEPATH)
 
     for parent_field in parent_fields:
-        parent_details[parent_field] = all_fields_dic[parent_field]
         parent_details[parent_field]['value'] = parent_df[parent_field.lower()][0]
 
     if request.method == 'POST':
@@ -419,14 +468,22 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             except:
                                 flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
+    trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, parentID)
+
     return render_template(
     "logSamplesForm.html",
     parentID=parentID,
     parent_details=parent_details,
     sampleType=sampleType,
-    gearType=gearType,
-    setup_fields_dic = setup_fields_dic,
-    extra_fields_dic = extra_fields_dic,
-    groups = groups,
-    num_rows = int(num_samples)
+    gearType=gearType,output_config_dict=output_config_dict,
+    extra_fields_dict=extra_fields_dict,
+    groups=groups,
+    added_fields_dic=added_fields_dic,
+    cf_standard_names=cf_standard_names,
+    added_cf_names_dic=added_cf_names_dic,
+    dwc_terms_not_in_config=dwc_terms_not_in_config,
+    added_dwc_terms_dic=added_dwc_terms_dic,
+    num_rows = int(num_samples),
+    trace=trace,
+    get_title=get_title
     )
