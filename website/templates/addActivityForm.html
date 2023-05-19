@@ -10,13 +10,7 @@
     {{ breadcrumb(trace) }}
   {% endif %}
   <h1>Form to register an activity</h1><br>
-  <p class="form-text" id="eventtime_help">
-    <span class="font-weight-bold">Key:</span>
-    <span style="color:#006600">Darwin Core term</span>,
-    <span style="color:#0000cc">CF standard name</span>,
-    Custom field for logging system,
-    <span style="color:#ff0000">*</span>Required field
-  </p>
+  {% include 'fields_key.html' %}
 
   <form method="POST">
     {% for requirement in output_config_dict['Data'].keys() %}

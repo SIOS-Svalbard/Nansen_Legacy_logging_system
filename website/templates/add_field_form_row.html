@@ -6,15 +6,10 @@
   {% endif %}
   <label
   class="col-sm-3 col-form-label"
-  {% if field['grouping'] == 'Darwin Core term' %}
-  style="color:#006600"
-  {% elif field['grouping'] == 'CF standard name' %}
-  style="color:#0000cc"
-  {% endif %}
+  {% include 'fields_colours.html' %}
   >
-    {% if requirement == 'Required' %}
-      <span style="color:#ff0000">*</span>
-    {% endif %}{{ field['disp_name'] }}
+    {% include 'denote_required_fields.html' %}
+    {{ field['disp_name'] }}
     <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ field['description'] }}">
   </label>
 

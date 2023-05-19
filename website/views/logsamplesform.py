@@ -78,34 +78,31 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         if '|' in val:
             checked = val.split(' | ')
         else:
-            checked = [val]
+            checked = val
 
         for sheet in output_config_dict.keys():
             for requirement in output_config_dict[sheet].keys():
                 if requirement not in ['Required CSV', 'Source']:
                     for field, vals in output_config_dict[sheet][requirement].items():
                         if field == key:
-                            if checked == 'same':
+                            if checked == ['same']:
                                 if key == 'sampleType':
                                     vals['values'] = sampleType
                                 elif key == 'gearType':
                                     vals['values'] = gearType
                                 else:
                                     vals['values'] = ''
-                            elif checked == 'vary':
+                            elif checked == ['vary']:
                                 if key == 'sampleType':
                                     vals['values'] = [sampleType] * int(num_samples)
                                 elif key == 'gearType':
                                     vals['values'] = [gearType] * int(num_samples)
                                 else:
                                     vals['values'] = [''] * int(num_samples)
-                            vals['checked'] = checked
-                        else:
-                            vals['checked'] = ['']
-                            if checked == 'same':
+                            else:
                                 vals['values'] = ''
-                            elif checked == 'vary':
-                                vals['values'] = [''] * int(num_samples)
+                            vals['checked'] = checked
+
 
         # CF standard names
         for field in cf_standard_names:
@@ -475,7 +472,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     parentID=parentID,
     parent_details=parent_details,
     sampleType=sampleType,
-    gearType=gearType,output_config_dict=output_config_dict,
+    gearType=gearType,
+    output_config_dict=output_config_dict,
     extra_fields_dict=extra_fields_dict,
     groups=groups,
     added_fields_dic=added_fields_dic,

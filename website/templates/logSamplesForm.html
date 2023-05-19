@@ -10,10 +10,12 @@
   {% if not trace.empty: %}
     {{ breadcrumb(trace) }}
   {% endif %}
+  <h1>Form to register multiple samples</h1><br>
 
   <div class="row">
     <div class="col-8">
-      <h1>{{ sampleType }}</h1>
+      <h2>{{ sampleType }}</h2>
+      {% include 'fields_key.html' %}
     </div>
     <div class="col-4 border border-secondary">
       <div class="container">
@@ -32,91 +34,217 @@
   <div class="container">
     <!--for loop over fields common to all children-->
     <h3>Constant for all samples</h3><br>
-    {% for field, value in setup_fields_dic.items() %}
-    {% if value['checked'] == ['same'] and field not in ['parentID'] %}
-      <div class="row">
-        <div class="col-3">
-          {{ value['disp_name'] }}
-          <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}">
-        </div>
-        <div class="col-2">
-          {% if value['requirements'] == 'required' %}
-            <p class="text-danger font-weight-bold">Required</p>
-          {% elif value['requirements'] == 'recommended' %}
-            <p class="text-warning font-weight-bold">Recommended</p>
-          {% elif value['requirements'] == 'optional' %}
-            <p class="text-success font-weight-bold">Optional</p>
+    {% for requirement in output_config_dict['Data'].keys() %}
+      {% if requirement not in ['Required CSV', 'Source'] %}
+        {% for field, value in output_config_dict['Data'][requirement].items() %}
+          {% if value['checked'] == ['same'] and field not in ['parentID'] %}
+          <div class="row">
+            <div
+            class="col-3"
+            {% include 'fields_colours.html' %}
+            >
+              {% include 'denote_required_fields.html' %}
+              {{ value['disp_name'] }}
+              <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ value['description'] }}">
+            </div>
+            <div class="col-2">
+              {% if value['requirements'] == 'required' %}
+                <p class="text-danger font-weight-bold">Required</p>
+              {% elif value['requirements'] == 'recommended' %}
+                <p class="text-warning font-weight-bold">Recommended</p>
+              {% elif value['requirements'] == 'optional' %}
+                <p class="text-success font-weight-bold">Optional</p>
+              {% endif %}
+            </div>
+            <div class="col-3">
+              {% if 'source' in value['valid'].keys() %}
+                {% if field in ['recordedBy', 'pi_details'] %}
+                  <select multiple class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
+                    {% for person in value['valid']['source'] %}
+                      {% if person in value['values'] %}
+                        <option selected="selected">{{person}}</option>
+                      {% else %}
+                        <option>{{person}}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                {% else %}
+                  <select class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
+                    <option selected="selected">
+                      {{ value['values'] }}
+                    </option>
+                    {% for option in value['valid']['source'] %}
+                      <option>{{option}}</option>
+                    {% endfor %}
+                  </select>
+                {% endif %}
+
+              {% elif value['format'] == 'date' %}
+                <input type="date" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
+
+              {% elif value['format'] == 'time' %}
+                <input type="time" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
+                <button type="button" onclick="document.getElementById('{{ field }}').value = ''">Remove time</button>
+
+              {% elif value['format'] == 'double precision' %}
+                {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
+                <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+                {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
+                <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+                {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
+                <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+                {% else %}
+                <input type="number" step=0.0001 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+                {% endif %}
+
+              {% elif value['format'] == 'int' %}
+                <input type="number" step=1 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+
+              {% else %}
+                <input type="text" class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
+
+              {% endif %}
+            </div>
+            <div class="col-3">
+              <button
+                class="btn btn-light"
+                type="submit"
+                name="movefieldtovary"
+                value="{{ field }}">
+                Some/all samples have different values
+              </button>
+            </div>
+          </div>
           {% endif %}
-        </div>
-        <div class="col-3">
-          {% if 'source' in value.keys() %}
-            {% if field in ['recordedBy', 'pi_details'] %}
-              <select multiple class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
-                {% for person in value['source'] %}
-                  {% if person in value['values'] %}
-                    <option selected="selected">{{person}}</option>
-                  {% else %}
-                    <option>{{person}}</option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            {% else %}
-              <select class="custom-select" id="{{ field }}" name="{{ field }}" aria-label="Default select example">
-                <option selected="selected">
-                  {{ value['values'] }}
-                </option>
-                {% for option in value['source'] %}
-                  <option>{{option}}</option>
-                {% endfor %}
-              </select>
-            {% endif %}
-
-          {% elif value['format'] == 'date' %}
-            <input type="date" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
-
-          {% elif value['format'] == 'time' %}
-            <input type="time" class="form-control" id="{{ field }}" name="{{ field }}" value={{value['values']}}>
-            <button type="button" onclick="document.getElementById('{{ field }}').value = ''">Remove time</button>
-
-          {% elif value['format'] == 'double precision' %}
-            {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-            <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-            {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
-            <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-            {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
-            <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-            {% else %}
-            <input type="number" step=0.0001 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-            {% endif %}
-
-          {% elif value['format'] == 'int' %}
-            <input type="number" step=1 class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-
-          {% else %}
-            <input type="text" class="form-control" name="{{ field }}" id="{{ field }}" value={{value['values']}}>
-
-          {% endif %}
-        </div>
-        <div class="col-3">
-          <button
-            class="btn btn-light"
-            type="submit"
-            name="movefieldtovary"
-            value="{{ field }}">
-            Some/all samples have different values
-          </button>
-        </div>
-      </div>
-      <br>
-    {% endif %}
+        {% endfor %}
+      {% endif %}
     {% endfor %}
+
     <br><br>
   </div>
 
   <div class="container">
     <h3>Different for all samples</h3><br>
 
-    {% if num_rows > 25 %}
+    <div class="row">
+      <table class="table table-responsive table-sm">
+        <thead class="thead-dark">
+          <tr>
+            {% for requirement in output_config_dict['Data'].keys() %}
+              {% if requirement not in ['Required CSV', 'Source'] %}
+                {% for field, value in output_config_dict['Data'][requirement].items() %}
+                  {% if value['checked'] == ['vary'] %}
+                    <th scope="col">
+                      <!--{% include 'fields_colours.html' %}-->
+                      {% include 'denote_required_fields.html' %}
+                      {{ value['disp_name'] }}
+                      <img
+                      src="{{ url_for('static', filename='info.png')}}"
+                      alt="..."
+                      height="20"
+                      title="{{ value['description'] }}"
+                      >
+                    </th>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            {% for requirement in output_config_dict['Data'].keys() %}
+              {% if requirement not in ['Required CSV', 'Source'] %}
+                {% for field, value in output_config_dict['Data'][requirement].items() %}
+                  {% if value['checked'] == ['vary'] %}
+                    <th scope="col">
+                      {% if field not in ['id', 'catalogNumber'] %}
+                      <button
+                        class="btn btn-light"
+                        type="submit"
+                        name="movefieldtosame"
+                        value="{{ field }}">
+                        All same value
+                      </button>
+                      {% endif %}
+                    </th>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </tr>
+
+          <!--Content for user to fill in -->
+          {% for row_num in range(num_rows) %}
+          <tr>
+            {% for requirement in output_config_dict['Data'].keys() %}
+              {% if requirement not in ['Required CSV', 'Source'] %}
+                {% for field, value in output_config_dict['Data'][requirement].items() %}
+                  {% if value['checked'] == ['vary'] %}
+                  <td>
+                  {% if 'source' in value['valid'].keys() %}
+                    {% if field in ['recordedBy', 'pi_details'] %}
+                      <select multiple class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
+                        {% for person in value['valid']['source'] %}
+                          <option>{{person}}</option>
+                        {% endfor %}
+                      </select>
+
+                    {% else %}
+                      <select class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
+                        <option selected="selected">
+                          {% if field == 'sampleType' %}
+                            {{ sampleType }}
+                          {% elif field == 'gearType' %}
+                            {{ gearType }}
+                          {% else %}
+                            None
+                          {% endif %}
+                        </option>
+                        {% for option in value['valid']['source'] %}
+                          <option>{{option}}</option>
+                        {% endfor %}
+                      </select>
+                    {% endif %}
+
+                  {% elif value['format'] == 'date' %}
+                    <input type="date" class="form-control" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}">
+
+                  {% elif value['format'] == 'time' %}
+                    <input type="time" class="form-control" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}">
+                    <button type="button" onclick="document.getElementById('{{ field }}').value = ''">Remove time</button>
+
+                  {% elif value['format'] == 'double precision' %}
+                    {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
+                    <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                    {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
+                    <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                    {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
+                    <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                    {% else %}
+                    <input type="number" step=0.0001 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                    {% endif %}
+
+                  {% elif value['format'] == 'int' %}
+                    <input type="number" step=1 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+
+                  {% else %}
+                    <input type="text" class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+
+                  {% endif %}
+                  </td>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
     <div class="container">
       <div class="row">
         <div class="col-3">
@@ -132,139 +260,9 @@
           <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit" value="submitForm">Submit form</button>
         </div>
       </div>
-    </div><br>
-    {% endif %}
-
-    <div class="row">
-      <table class="table table-responsive table-sm">
-        <thead class="thead-dark">
-          <tr>
-            {% for field, value in setup_fields_dic.items() %}
-              {% if value['checked'] == ['vary'] %}
-                <th scope="col">{{ value['disp_name'] }} <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
-              {% endif %}
-            {% endfor %}
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr>
-            {% for field, value in setup_fields_dic.items() %}
-              {% if value['checked'] == ['vary'] %}
-                <th scope="col">
-                {% if value['requirements'] == 'required' %}
-                  <p class="text-danger font-weight-bold">Required</p>
-                {% elif value['requirements'] == 'recommended' %}
-                  <p class="text-warning font-weight-bold">Recommended</p>
-                {% elif value['requirements'] == 'optional' %}
-                  <p class="text-success font-weight-bold">Optional</p>
-                {% endif %}
-                </th>
-              {% endif %}
-            {% endfor %}
-          </tr>
-
-          <tr>
-            {% for field, value in setup_fields_dic.items() %}
-              {% if value['checked'] == ['vary'] %}
-                <th scope="col">
-                  {% if field not in ['id', 'catalogNumber'] %}
-                  <button
-                    class="btn btn-light"
-                    type="submit"
-                    name="movefieldtosame"
-                    value="{{ field }}">
-                    All same value
-                  </button>
-                  {% endif %}
-                </th>
-              {% endif %}
-            {% endfor %}
-          </tr>
-
-          <!--Content for user to fill in -->
-          {% for row_num in range(num_rows) %}
-          <tr>
-            {% for field, value in setup_fields_dic.items() %}
-            {% if value['checked'] == ['vary'] %}
-              <td>
-              {% if 'source' in setup_fields_dic[field].keys() %}
-                {% if field in ['recordedBy', 'pi_details'] %}
-                  <select multiple class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
-                    {% for person in value['source'] %}
-                      <option>{{person}}</option>
-                    {% endfor %}
-                  </select>
-
-                {% else %}
-                  <select class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
-                    <option selected="selected">
-                      {% if field == 'sampleType' %}
-                        {{ sampleType }}
-                      {% elif field == 'gearType' %}
-                        {{ gearType }}
-                      {% else %}
-                        None
-                      {% endif %}
-                    </option>
-                    {% for option in value['source'] %}
-                      <option>{{option}}</option>
-                    {% endfor %}
-                  </select>
-                {% endif %}
-
-              {% elif value['format'] == 'date' %}
-                <input type="date" class="form-control" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}">
-
-              {% elif value['format'] == 'time' %}
-                <input type="time" class="form-control" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}">
-                <button type="button" onclick="document.getElementById('{{ field }}').value = ''">Remove time</button>
-
-              {% elif value['format'] == 'double precision' %}
-                {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-                <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-                {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
-                <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-                {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
-                <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-                {% else %}
-                <input type="number" step=0.0001 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-                {% endif %}
-
-              {% elif value['format'] == 'int' %}
-                <input type="number" step=1 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-
-              {% else %}
-                <input type="text" class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-
-              {% endif %}
-              </td>
-            {% endif %}
-            {% endfor %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
     </div>
   </div>
 
-
-  <div class="container">
-    <div class="row">
-      <div class="col-3">
-        {% include 'printLabelsModal.html' %}
-      </div>
-      <div class="col-3">
-        <button type="submit" class="btn btn-secondary btn-lg btn-block" name="submit" value="generateExcel">Generate Excel file</button>
-      </div>
-      <div class="col-3">
-        {% include 'submitSpreadsheetModal.html' %}
-      </div>
-      <div class="col-3">
-        <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit" value="submitForm">Submit form</button>
-      </div>
-    </div>
-  </div>
 </form>
 
 
