@@ -25,14 +25,17 @@
         <button class="btn btn-info" type="submit" name="submitbutton" value="loadSetup">Load setup</button>
       </div>
     </div>
+    <br>
+    {% include 'fields_key.html' %}
 
-    <br><br>
+    <br>
 
     <h3>Required fields</h3>
     <table class="table table-hover">
       {% include 'chooseSampleFieldsTableHeader.html' %}
       <tbody>
         {% for key, field in output_config_dict['Data']['Required'].items() %}
+          {% set requirement = 'Required' %}
           {% include 'chooseSampleFieldsTableContents.html' %}
         {% endfor %}
       </tbody>

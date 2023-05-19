@@ -109,8 +109,8 @@ def choose_sample_fields(parentID,sampleType):
                             added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
                             added_cf_names_dic[sheet][field['id']]['format'] = field['format']
                             added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
-                            if field in form_input:
-                                added_cf_names_dic[sheet][field['id']]['checked'] = form_input[field]
+                            if field['id'] in form_input:
+                                added_cf_names_dic[sheet][field['id']]['checked'] = form_input[field['id']]
                             else:
                                 added_cf_names_dic[sheet][field['id']]['checked'] = ['']
 
@@ -128,8 +128,8 @@ def choose_sample_fields(parentID,sampleType):
                         added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
                         added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
                         added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
-                        if field in form_input:
-                            added_dwc_terms_dic[sheet][term['id']]['checked'] = form_input[field]
+                        if term['id'] in form_input:
+                            added_dwc_terms_dic[sheet][term['id']]['checked'] = form_input[term['id']]
                         else:
                             added_dwc_terms_dic[sheet][term['id']]['checked'] = ['']
 
