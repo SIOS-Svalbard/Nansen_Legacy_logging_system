@@ -6,7 +6,7 @@ from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_re
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from website.lib.input_update_records import insert_into_metadata_catalogue_df
 from website.lib.checker import run as checker
-from website.lib.other_functions import split_personnel_list, get_title
+from website.lib.other_functions import split_personnel_list, get_title, format_form_value
 from website import DB, FIELDS_FILEPATH, CONFIG
 import numpy as np
 from datetime import datetime as dt
@@ -118,10 +118,16 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         added_cf_names_dic[sheet][field['id']]['description'] = f"{field['description']} \ncanonical units: {field['canonical_units']}"
                         added_cf_names_dic[sheet][field['id']]['format'] = field['format']
                         added_cf_names_dic[sheet][field['id']]['grouping'] = field['grouping']
-                        if field in form_input:
+                        if field['id'] in userSetup.keys():
                             added_cf_names_dic[sheet][field['id']]['checked'] = checked
                         else:
                             added_cf_names_dic[sheet][field['id']]['checked'] = ['']
+                        if checked == ['same']:
+                            added_cf_names_dic[sheet][field['id']]['values'] = ''
+                        elif checked == ['vary']:
+                            added_cf_names_dic[sheet][field['id']]['values'] = [''] * int(num_samples)
+                        else:
+                            added_cf_names_dic[sheet][field['id']]['values'] = ''
 
         # Darwin Core terms
         for sheet in dwc_terms_not_in_config.keys():
@@ -136,10 +142,16 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     added_dwc_terms_dic[sheet][term['id']]['description'] = term['description']
                     added_dwc_terms_dic[sheet][term['id']]['format'] = term["format"]
                     added_dwc_terms_dic[sheet][term['id']]['grouping'] = term["grouping"]
-                    if field in form_input:
+                    if term['id'] in userSetup.keys():
                         added_dwc_terms_dic[sheet][term['id']]['checked'] = checked
                     else:
                         added_dwc_terms_dic[sheet][term['id']]['checked'] = ['']
+                    if checked == ['same']:
+                        added_dwc_terms_dic[sheet][term['id']]['values'] = ''
+                    elif checked == ['vary']:
+                        added_dwc_terms_dic[sheet][term['id']]['values'] = [''] * int(num_samples)
+                    else:
+                        added_dwc_terms_dic[sheet][term['id']]['values'] = ''
 
         # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
         for field, vals in extra_fields_dict.items():
@@ -160,6 +172,12 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         added_fields_dic['Data'][field]['values'] = [gearType] * int(num_samples)
                     else:
                         added_fields_dic['Data'][field]['values'] = [''] * int(num_samples)
+                if checked == ['same']:
+                    added_fields_dic['Data'][field]['values'] = ''
+                elif checked == ['vary']:
+                    added_fields_dic['Data'][field]['values'] = [''] * int(num_samples)
+                else:
+                    added_fields_dic['Data'][field]['values'] = ''
 
     parent_df = get_metadata_for_id(DB, CRUISE_NUMBER, parentID)
     parent_fields = [
@@ -194,43 +212,116 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         fields_to_submit = []
         rows = list(range(int(num_samples)))
 
-        for key, value in form_input.items():
+        # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
+        # a: First for values constant for all samples
+        # config fields
+        for sheet in output_config_dict.keys():
+            for requirement in output_config_dict[sheet].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for field, vals in output_config_dict[sheet][requirement].items():
+                        if field in form_input:
+                            vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                            if type(value) == list:
+                                df_to_submit[field] = value * len(df_to_submit)
+                            else:
+                                df_to_submit[field] = value
+                        else:
+                            if field in ['pi_details', 'recordedBy']:
+                                vals['values'] = []
 
-            if '|' not in key and key not in ['submit','labelType', 'movefieldtovary', 'movefieldtosame']:
-                fields_to_submit.append(key)
-                if key in ['pi_details','recordedBy']:
-                    df_to_submit[key] = ' | '.join(value)
-                    setup_fields_dic[key]['values'] = ' | '.join(value)
+        # cf_standard_names
+        for field, vals in added_cf_names_dic['Data'].items():
+            if field in form_input:
+                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                if type(value) == list:
+                    df_to_submit[field] = value * len(df_to_submit)
                 else:
-                    df_to_submit[key] = value[0]
-                    setup_fields_dic[key]['values'] = value[0]
+                    df_to_submit[field] = value
 
-            if '|' in key and value != ['']:
+        # darwin core terms
+        for field, vals in added_dwc_terms_dic['Data'].items():
+            if field in form_input:
+                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                if type(value) == list:
+                    df_to_submit[field] = value * len(df_to_submit)
+                else:
+                    df_to_submit[field] = value
+
+        # other fields
+        for field, vals in added_fields_dic['Data'].items():
+            if field in form_input:
+                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                if type(value) == list:
+                    df_to_submit[field] = value * len(df_to_submit)
+                else:
+                    df_to_submit[field] = value
+
+        # b: Second for values different for all samples
+        fields_varied = []
+
+        for key, value in form_input.items():
+            if '|' in key:
                 field, row = key.split('|')
+                fields_varied.append(field)
                 fields_to_submit.append(field)
                 row = int(row)
 
                 if row in rows:
                     if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
-                        df_to_submit[field][row] = value[0]
-                        setup_fields_dic[field]['values'][row] = value[0]
-                    elif field in ['pi_details','recordedBy']:
-                        df_to_submit[field][row] = ' | '.join(value)
-                        setup_fields_dic[field]['values'][row] = value
-                    elif len(value) == 0:
-                        df_to_submit[field][row] = ''
-                        setup_fields_dic[field]['values'][row] = ''
+
+                        for requirement in output_config_dict['Data'].keys():
+                            if requirement not in ['Required CSV', 'Source']:
+                                for term, vals in output_config_dict['Data'][requirement].items():
+                                    if term == field:
+                                        formatted_value = format_form_value(field, value, vals['format'])
+                                        df_to_submit[field][row] = formatted_value
+
+                        for term, vals in added_cf_names_dic['Data'].items():
+                            if term == field:
+                                formatted_value = format_form_value(field, value, vals['format'])
+                                df_to_submit[field][row] = formatted_value
+
+                        for term, vals in added_dwc_terms_dic['Data'].items():
+                            if term == field:
+                                formatted_value = format_form_value(field, value, vals['format'])
+                                df_to_submit[field][row] = formatted_value
+
+                        for term, vals in added_fields_dic['Data'].items():
+                            if term == field:
+                                formatted_value = format_form_value(field, value, vals['format'])
+                                df_to_submit[field][row] = formatted_value
+
+        # Populate dictionaries from df for fields whose values vary for each row
+        fields_varied = list(set(fields_varied))
+        for field in fields_varied:
+            for requirement in output_config_dict['Data'].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for term, vals in output_config_dict['Data'][requirement].items():
+                        if field == term:
+                             vals['values'] = list(df_to_submit[field])
+
+            for term, vals in added_cf_names_dic['Data'].items():
+                if term == field:
+                    vals['values'] = list(df_to_submit[field])
+
+            for term, vals in added_dwc_terms_dic['Data'].items():
+                if term == field:
+                    vals['values'] = list(df_to_submit[field])
+
+            for term, vals in added_fields_dic['Data'].items():
+                if term == field:
+                    vals['values'] = list(df_to_submit[field])
 
         if 'movefieldtovary' in form_input.keys():
             fieldtovary = form_input['movefieldtovary'][0]
-            userSetup[fieldtovary] = 'vary'
+            userSetup[fieldtovary] = ['vary']
 
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             userSetup = str(userSetup).replace('\'','"')
 
-            exe_str = f"UPDATE user_field_setups SET setup = '{str(userSetup)}', created = CURRENT_TIMESTAMP WHERE setupName = 'temporary';"
+            exe_str = f"UPDATE user_field_setups_{CRUISE_NUMBER} SET setup = '{str(userSetup)}', created = CURRENT_TIMESTAMP WHERE setupName = 'temporary';"
 
             cur.execute(exe_str)
             conn.commit()
@@ -241,14 +332,14 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
         elif 'movefieldtosame' in form_input.keys():
             fieldtovary = form_input['movefieldtosame'][0]
-            userSetup[fieldtovary] = 'same'
+            userSetup[fieldtovary] = ['same']
 
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
             userSetup = str(userSetup).replace('\'','"')
 
-            exe_str = f"UPDATE user_field_setups SET setup = '{str(userSetup)}', created = CURRENT_TIMESTAMP WHERE setupName = 'temporary';"
+            exe_str = f"UPDATE user_field_setups_{CRUISE_NUMBER} SET setup = '{str(userSetup)}', created = CURRENT_TIMESTAMP WHERE setupName = 'temporary';"
 
             cur.execute(exe_str)
             conn.commit()

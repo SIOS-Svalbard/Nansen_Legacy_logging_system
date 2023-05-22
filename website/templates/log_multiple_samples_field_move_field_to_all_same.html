@@ -1,0 +1,11 @@
+<th scope="col">
+  {% if field not in ['id', 'catalogNumber'] %}
+  <button
+    class="btn btn-light"
+    type="submit"
+    name="movefieldtosame"
+    value="{{ field }}">
+    All same value
+  </button>
+  {% endif %}
+</th>
