@@ -209,7 +209,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         df_to_submit = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
 
         df_to_submit['parentID'] = parentID
-        fields_to_submit = []
+        fields_to_submit_list = []
         rows = list(range(int(num_samples)))
 
         # 1. Preserve the values added in the form for each field by adding them to the relevant dictionaries
@@ -219,6 +219,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             for requirement in output_config_dict[sheet].keys():
                 if requirement not in ['Required CSV', 'Source']:
                     for field, vals in output_config_dict[sheet][requirement].items():
+                        fields_to_submit_list.append(field)
                         if field in form_input:
                             vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
                             if type(value) == list:
@@ -232,6 +233,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         # cf_standard_names
         for field, vals in added_cf_names_dic['Data'].items():
             if field in form_input:
+                fields_to_submit_list.append(field)
                 vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
@@ -241,6 +243,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         # darwin core terms
         for field, vals in added_dwc_terms_dic['Data'].items():
             if field in form_input:
+                fields_to_submit_list.append(field)
                 vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
@@ -250,6 +253,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         # other fields
         for field, vals in added_fields_dic['Data'].items():
             if field in form_input:
+                fields_to_submit_list.append(field)
                 vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
@@ -263,7 +267,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             if '|' in key:
                 field, row = key.split('|')
                 fields_varied.append(field)
-                fields_to_submit.append(field)
+                fields_to_submit_list.append(field)
                 row = int(row)
 
                 if row in rows:
@@ -355,16 +359,16 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
             if form_input['submit'] == ['submitForm']:
 
-                if 'pi_details' in fields_to_submit:
+                if 'pi_details' in fields_to_submit_list:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                    fields_to_submit.remove('pi_details')
-                    fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                if 'recordedBy' in fields_to_submit:
+                    fields_to_submit_list.remove('pi_details')
+                    fields_to_submit_list = fields_to_submit_list + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
+                if 'recordedBy' in fields_to_submit_list:
                     df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-                    fields_to_submit.remove('recordedBy')
-                    fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
+                    fields_to_submit_list.remove('recordedBy')
+                    fields_to_submit_list = fields_to_submit_list + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
-                fields_to_submit = fields_to_submit + ['parentID']
+                fields_to_submit_list = fields_to_submit_list + ['parentID']
 
                 if 'pi_details' in required:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
@@ -378,13 +382,15 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 required = required + ['parentID']
 
                 for col in df_to_submit.columns:
-                    if col not in fields_to_submit and col != 'id':
+                    if col not in fields_to_submit_list and col != 'id':
                         df_to_submit.drop(col, axis=1, inplace=True)
 
                 metadata_df = False
 
                 if 'id' not in df_to_submit.columns:
-                    df_to_submit['id'] = [str(uuid.uuid1()) for ii in range(len(df_to_submit))]
+                    df_to_submit['id'] = [str(uuid.uuid4()) for ii in range(len(df_to_submit))]
+                else:
+                    df_to_submit['id'] = df_to_submit['id'].apply(lambda x: str(uuid.uuid4()) if x == 'NULL' else x)
 
                 good, errors = checker(
                     data=df_to_submit,
@@ -401,7 +407,78 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 else:
 
                     df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
+                    df_to_submit.columns = df_to_submit.columns.str.lower()
 
+                    fields_to_submit_dict = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
+                    fields_to_submit_dict['columns'] = {}
+                    fields_to_submit_dict['hstore'] = {}
+                    metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+
+                    inherited_columns = df_to_submit.columns
+
+                    for requirement in output_config_dict['Data'].keys():
+                        if requirement not in ['Required CSV', 'Source']:
+                            for field, vals in output_config_dict['Data'][requirement].items():
+                                if field.lower() in df_to_submit.columns:
+                                    if field in metadata_columns_list:
+                                        fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
+                                        fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                    else:
+                                        fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
+                                        fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                    inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+                    for field, vals in added_fields_dic['Data'].items():
+                        if field.lower() in df_to_submit.columns:
+                            if field in metadata_columns_list:
+                                fields_to_submit_dict['columns'][field] = vals
+                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                            else:
+                                fields_to_submit_dict['hstore'][field] = vals
+                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                            inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+                    for field, vals in added_dwc_terms_dic['Data'].items():
+                        if field.lower() in df_to_submit.columns:
+                            if field in metadata_columns_list:
+                                fields_to_submit_dict['columns'][field] = vals
+                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                            else:
+                                fields_to_submit_dict['hstore'][field] = vals
+                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                            inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+                    for field, vals in added_cf_names_dic['Data'].items():
+                        if field.lower() in df_to_submit.columns:
+                            if field in metadata_columns_list:
+                                fields_to_submit_dict['columns'][field] = vals
+                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                            else:
+                                fields_to_submit_dict['hstore'][field] = vals
+                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                            inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+                    inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
+                    weak = CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+                    inherited_columns = [field for field in inherited_columns if field not in ['pi_name', 'pi_institution', 'pi_orcid', 'pi_email', 'recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']]
+                    inherited_columns = [field for field in inheritable+weak if field.lower() in inherited_columns]
+
+                    inherited_fields_dict = get_dict_for_list_of_fields(inherited_columns, FIELDS_FILEPATH)
+
+                    for field, vals in inherited_fields_dict.items():
+                        if field.lower() in df_to_submit.columns:
+                            if field in metadata_columns_list:
+                                fields_to_submit_dict['columns'][field] = vals
+                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                            else:
+                                fields_to_submit_dict['hstore'][field] = vals
+                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+
+                    for key in fields_to_submit_dict:
+                        for field, vals in fields_to_submit_dict[key].items():
+                            print(field, vals['value'])
+
+                    # GOOD TO HERE, REMOVE PRINT ABOVE AND GET IT TO INSERT INTO METADATA CATALOGUE, THEN REST OF SCRIPT
                     for field in fields.fields:
                         if field['name'] in df_to_submit.columns:
                             if field['format'] in ['int', 'double precision', 'time', 'date']:

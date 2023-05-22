@@ -1,6 +1,7 @@
 from website.lib.get_data import get_metadata_for_list_of_ids
 import psycopg2
 import pandas as pd
+from website import CONFIG
 
 def copy_from_parent(parentID, col, df_parents, child_value=None, inherit=False):
     if inherit == True:
@@ -36,20 +37,14 @@ def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
         parentIDs = list(df_children['parentid'])
     df_parents = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, parentIDs)
 
-    inheritable = []  # For holding inheritable fields
-    weak = []  # For holding weak inheritance
-    for f in fields.fields:
-        if f['name'].lower() in df_children.columns:
-            df_children.columns = df_children.columns.str.replace(f['name'].lower(),f['name'])
-        if f['name'].lower() in df_parents.columns:
-            df_parents.columns = df_parents.columns.str.replace(f['name'].lower(),f['name'])
-        if "inherit" in f and f["inherit"]:
-            inheritable.append(f['name'])
-            if "inherit_weak" in f and f["inherit_weak"]:
-                weak.append(f['name'])
+    inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
+    weak = CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+
+    inheritable = [ii.lower() for ii in inheritable]
+    weak = [ii.lower() for ii in weak]
 
     for col in df_parents.columns:
-        if col in inheritable:
+        if col in inheritable + weak:
             df_children['inherit'] = True
             if col in weak and col in df_children.columns:
                 df_children['inherit'] = df_children.apply(lambda row : check_whether_to_inherit(row['parentID'], col, df_parents, child_value = row[col], weak=True), axis=1)
@@ -61,7 +56,7 @@ def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
                 else:
                     df_children['inherit'] = df_children.apply(lambda row : check_whether_to_inherit(row['parentID'], col, df_parents, weak=False), axis=1)
                     df_children[col] = df_children.apply(lambda row : copy_from_parent(row['parentID'], col, df_parents, inherit = row['inherit']), axis=1)
-    df_children.drop('inherit', axis=1, inplace=True)
+            df_children.drop('inherit', axis=1, inplace=True)
 
     return df_children
 
