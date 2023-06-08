@@ -86,10 +86,8 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
 
         sampleType_df = expand_hstore(sampleType_df)
 
-        print(sampleType_df.columns)
         # Writing values to dictionary
         for key, val in output_config_dict['Data']['Required'].items():
-            print(key)
             try:
                 val['values'] = sampleType_df[key.lower()].values.tolist()
             except:
