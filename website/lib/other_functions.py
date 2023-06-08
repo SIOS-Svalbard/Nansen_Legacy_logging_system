@@ -140,9 +140,15 @@ def format_form_value(field, value, format):
     else:
         if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
             if format == 'double precision' and value != ['']:
-                return float(value[0])
+                if value[0]:
+                    return float(value[0])
+                else:
+                    return 'NULL'
             elif format == 'int' and value != ['']:
-                return int(value[0])
+                if value[0]:
+                    return int(value[0])
+                else:
+                    return 'NULL'
             elif format == 'uuid' and value == ['']:
                 return 'NULL'
             else:
@@ -154,6 +160,47 @@ def format_form_value(field, value, format):
                 return None
             else:
                 return ''
+
+def assign_column_format(format):
+    if format in ['uuid', 'text', 'date', 'time']:
+        return 'object'
+    elif format == 'int':
+        return 'int'
+    elif format == 'double precision':
+        return 'float'
+    else:
+        return 'object'
+
+def format_columns(df, output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic):
+    for col in df.columns:
+        for requirement in output_config_dict['Data'].keys():
+            if requirement not in ['Required CSV', 'Source']:
+                for field, vals in output_config_dict['Data'][requirement].items():
+                    if field == col:
+                        format = assign_column_format(vals['format'])
+                        df[col] = df[col].astype(format)
+
+        # cf_standard_names
+        for field, vals in added_cf_names_dic['Data'].items():
+            if field == col:
+                format = assign_column_format(vals['format'])
+                df[col] = df[col].astype(format)
+
+        # darwin core terms
+        for field, vals in added_dwc_terms_dic['Data'].items():
+            if field == col:
+                format = assign_column_format(vals['format'])
+                df[col] = df[col].astype(format)
+
+        # other fields
+        for field, vals in added_fields_dic['Data'].items():
+            if field == col:
+                format = assign_column_format(vals['format'])
+                df[col] = df[col].astype(format)
+
+    return df
+
+
 
 def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic, data_df=None):
     template_fields_dict = {}

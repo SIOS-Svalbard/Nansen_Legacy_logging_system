@@ -387,7 +387,7 @@ class Checker(Field):
             if criteria == 'between':
                 return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and self.validation['minimum'] <= float(x) <= self.validation['maximum'])
             else:
-                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("float(x) " + self.validation['criteria'] + self.validation['value']))
+                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("float(x) " + self.validation['criteria'] + "float(self.validation['value'])"))
         elif validate == 'integer':
             if criteria == 'between':
                 return Evaluator(validation, func=lambda self, x: isinstance(x, int) and self.validation['minimum'] <= int(x) <= self.validation['maximum'])
@@ -960,7 +960,6 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
         all_fields.append(field)
 
     checker_list = make_valid_dict(DB, CRUISE_NUMBER, all_fields)
-
     data = clean(data)
 
     if DB and CRUISE_NUMBER:

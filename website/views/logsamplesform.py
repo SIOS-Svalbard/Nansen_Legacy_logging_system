@@ -4,9 +4,9 @@ import psycopg2.extras
 import uuid
 from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
-from website.lib.input_update_records import insert_into_metadata_catalogue_df
+from website.lib.input_update_records import insert_into_metadata_catalogue
 from website.lib.checker import run as checker
-from website.lib.other_functions import split_personnel_list, get_title, format_form_value
+from website.lib.other_functions import split_personnel_list, get_title, format_form_value, format_columns
 from website import DB, FIELDS_FILEPATH, CONFIG
 import numpy as np
 from datetime import datetime as dt
@@ -87,20 +87,20 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field == key:
                             if checked == ['same']:
                                 if key == 'sampleType':
-                                    vals['values'] = sampleType
+                                    vals['value'] = sampleType
                                 elif key == 'gearType':
-                                    vals['values'] = gearType
+                                    vals['value'] = gearType
                                 else:
-                                    vals['values'] = ''
+                                    vals['value'] = ''
                             elif checked == ['vary']:
                                 if key == 'sampleType':
-                                    vals['values'] = [sampleType] * int(num_samples)
+                                    vals['value'] = [sampleType] * int(num_samples)
                                 elif key == 'gearType':
-                                    vals['values'] = [gearType] * int(num_samples)
+                                    vals['value'] = [gearType] * int(num_samples)
                                 else:
-                                    vals['values'] = [''] * int(num_samples)
+                                    vals['value'] = [''] * int(num_samples)
                             else:
-                                vals['values'] = ''
+                                vals['value'] = ''
                             vals['checked'] = checked
 
 
@@ -123,11 +123,11 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         else:
                             added_cf_names_dic[sheet][field['id']]['checked'] = ['']
                         if checked == ['same']:
-                            added_cf_names_dic[sheet][field['id']]['values'] = ''
+                            added_cf_names_dic[sheet][field['id']]['value'] = ''
                         elif checked == ['vary']:
-                            added_cf_names_dic[sheet][field['id']]['values'] = [''] * int(num_samples)
+                            added_cf_names_dic[sheet][field['id']]['value'] = [''] * int(num_samples)
                         else:
-                            added_cf_names_dic[sheet][field['id']]['values'] = ''
+                            added_cf_names_dic[sheet][field['id']]['value'] = ''
 
         # Darwin Core terms
         for sheet in dwc_terms_not_in_config.keys():
@@ -147,11 +147,11 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     else:
                         added_dwc_terms_dic[sheet][term['id']]['checked'] = ['']
                     if checked == ['same']:
-                        added_dwc_terms_dic[sheet][term['id']]['values'] = ''
+                        added_dwc_terms_dic[sheet][term['id']]['value'] = ''
                     elif checked == ['vary']:
-                        added_dwc_terms_dic[sheet][term['id']]['values'] = [''] * int(num_samples)
+                        added_dwc_terms_dic[sheet][term['id']]['value'] = [''] * int(num_samples)
                     else:
-                        added_dwc_terms_dic[sheet][term['id']]['values'] = ''
+                        added_dwc_terms_dic[sheet][term['id']]['value'] = ''
 
         # Other fields (not CF standard names or DwC terms - terms designed for the template generator and logging system)
         for field, vals in extra_fields_dict.items():
@@ -160,24 +160,24 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 added_fields_dic['Data'][field]['checked'] = checked
                 if checked == 'same':
                     if key == 'sampleType':
-                        added_fields_dic['Data'][field]['values'] = sampleType
+                        added_fields_dic['Data'][field]['value'] = sampleType
                     elif key == 'gearType':
-                        added_fields_dic['Data'][field]['values'] = gearType
+                        added_fields_dic['Data'][field]['value'] = gearType
                     else:
-                        added_fields_dic['Data'][field]['values'] = ''
+                        added_fields_dic['Data'][field]['value'] = ''
                 elif checked == 'vary':
                     if key == 'sampleType':
-                        added_fields_dic['Data'][field]['values'] = [sampleType] * int(num_samples)
+                        added_fields_dic['Data'][field]['value'] = [sampleType] * int(num_samples)
                     elif key == 'gearType':
-                        added_fields_dic['Data'][field]['values'] = [gearType] * int(num_samples)
+                        added_fields_dic['Data'][field]['value'] = [gearType] * int(num_samples)
                     else:
-                        added_fields_dic['Data'][field]['values'] = [''] * int(num_samples)
+                        added_fields_dic['Data'][field]['value'] = [''] * int(num_samples)
                 if checked == ['same']:
-                    added_fields_dic['Data'][field]['values'] = ''
+                    added_fields_dic['Data'][field]['value'] = ''
                 elif checked == ['vary']:
-                    added_fields_dic['Data'][field]['values'] = [''] * int(num_samples)
+                    added_fields_dic['Data'][field]['value'] = [''] * int(num_samples)
                 else:
-                    added_fields_dic['Data'][field]['values'] = ''
+                    added_fields_dic['Data'][field]['value'] = ''
 
     parent_df = get_metadata_for_id(DB, CRUISE_NUMBER, parentID)
     parent_fields = [
@@ -206,7 +206,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         cols = userSetup.keys()
 
         # Initialising dataframe
-        df_to_submit = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
+        df = pd.DataFrame(columns = cols, index=np.arange(int(num_samples)))
+        df_to_submit = format_columns(df, output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic)
 
         df_to_submit['parentID'] = parentID
         fields_to_submit_list = []
@@ -221,20 +222,20 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     for field, vals in output_config_dict[sheet][requirement].items():
                         fields_to_submit_list.append(field)
                         if field in form_input:
-                            vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                            vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                             if type(value) == list:
                                 df_to_submit[field] = value * len(df_to_submit)
                             else:
                                 df_to_submit[field] = value
                         else:
                             if field in ['pi_details', 'recordedBy']:
-                                vals['values'] = []
+                                vals['value'] = []
 
         # cf_standard_names
         for field, vals in added_cf_names_dic['Data'].items():
             if field in form_input:
                 fields_to_submit_list.append(field)
-                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
                 else:
@@ -244,7 +245,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         for field, vals in added_dwc_terms_dic['Data'].items():
             if field in form_input:
                 fields_to_submit_list.append(field)
-                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
                 else:
@@ -254,7 +255,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         for field, vals in added_fields_dic['Data'].items():
             if field in form_input:
                 fields_to_submit_list.append(field)
-                vals['values'] = value = format_form_value(field, form_input[field], vals['format'])
+                vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
                     df_to_submit[field] = value * len(df_to_submit)
                 else:
@@ -302,19 +303,19 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 if requirement not in ['Required CSV', 'Source']:
                     for term, vals in output_config_dict['Data'][requirement].items():
                         if field == term:
-                             vals['values'] = list(df_to_submit[field])
+                            vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
 
             for term, vals in added_cf_names_dic['Data'].items():
                 if term == field:
-                    vals['values'] = list(df_to_submit[field])
+                    vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
 
             for term, vals in added_dwc_terms_dic['Data'].items():
                 if term == field:
-                    vals['values'] = list(df_to_submit[field])
+                    vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
 
             for term, vals in added_fields_dic['Data'].items():
                 if term == field:
-                    vals['values'] = list(df_to_submit[field])
+                    vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
 
         if 'movefieldtovary' in form_input.keys():
             fieldtovary = form_input['movefieldtovary'][0]
@@ -422,40 +423,48 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 if field.lower() in df_to_submit.columns:
                                     if field in metadata_columns_list:
                                         fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
-                                        fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                        #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                        fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                                     else:
                                         fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
-                                        fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                        #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                        fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                                     inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
                     for field, vals in added_fields_dic['Data'].items():
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
                     for field, vals in added_dwc_terms_dic['Data'].items():
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
                     for field, vals in added_cf_names_dic['Data'].items():
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
                     inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
@@ -469,38 +478,27 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
+                                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
 
-                    for key in fields_to_submit_dict:
-                        for field, vals in fields_to_submit_dict[key].items():
-                            print(field, vals['value'])
+                    record_details = get_dict_for_list_of_fields(['created','modified','history','recordSource'],FIELDS_FILEPATH)
+                    fields_to_submit_dict['columns']['created'] = record_details['created']
+                    fields_to_submit_dict['columns']['modified'] = record_details['modified']
+                    fields_to_submit_dict['columns']['history'] = record_details['history']
+                    fields_to_submit_dict['columns']['recordSource'] = record_details['recordSource']
 
-                    # GOOD TO HERE, REMOVE PRINT ABOVE AND GET IT TO INSERT INTO METADATA CATALOGUE, THEN REST OF SCRIPT
-                    for field in fields.fields:
-                        if field['name'] in df_to_submit.columns:
-                            if field['format'] in ['int', 'double precision', 'time', 'date']:
-                                df_to_submit[field['name']] = df_to_submit[field['name']].replace('', 'NULL')
-                                df_to_submit[field['name']].fillna('NULL', inplace=True)
-                            elif field['name'] == 'id':
-                                df_to_submit[field['name']].fillna('', inplace=True)
-                                for idx, row in df_to_submit.iterrows():
-                                    if row[field['name']] == '':
-                                        df_to_submit[field['name']][idx] = str(uuid.uuid1())
-                        if field['format'] == 'time' and field['name'] in df_to_submit.columns:
-                            df_to_submit[field['name']] = df_to_submit[field['name']].astype('object')
-                            df_to_submit[field['name']].fillna('NULL', inplace=True)
+                    fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
+                    fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
+                    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page") for n in range(int(num_samples))]
+                    fields_to_submit_dict['columns']['recordSource']['value'] = ["Record uploaded from GUI form for logging samples" for n in range(int(num_samples))]
 
-                    df_to_submit['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                    df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                    df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form")
-                    df_to_submit['source'] = "Record uploaded from GUI form"
+                    insert_into_metadata_catalogue(fields_to_submit_dict, int(num_samples), DB, CRUISE_NUMBER)
 
-                    insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DB, CRUISE_NUMBER)
-
-                    flash('Data from file uploaded successfully!', category='success')
+                    flash('Samples logged successfully!', category='success')
 
                     return redirect(f'/logSamples/parentid={parentID}')
 

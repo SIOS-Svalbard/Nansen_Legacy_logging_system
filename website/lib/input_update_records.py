@@ -2,46 +2,59 @@ import psycopg2
 import psycopg2.extras
 import pandas as pd
 
-def insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER):
+def insert_into_metadata_catalogue(fields_to_submit, num_records, DB, CRUISE_NUMBER):
 
     conn = psycopg2.connect(**DB)
     cur = conn.cursor()
 
-    string_1 = f'INSERT INTO metadata_catalogue_{CRUISE_NUMBER} ('
-    string_2 = ''
-    string_3 = ') VALUES ('
-    string_4 = ''
-    string_5 = ');'
+    for n in range(num_records):
 
-    # MAIN FIELDS
-    for field, criteria in fields_to_submit['columns'].items():
-        print(field)
-        print(criteria)
-        string_2 = string_2 + field +", "
-        if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
-            string_4 = string_4 + "'" + criteria['value'] + "'" + ", "
-        else:
-            string_4 = string_4 + criteria['value'] + ", "
+        string_1 = f'INSERT INTO metadata_catalogue_{CRUISE_NUMBER} ('
+        string_2 = ''
+        string_3 = ') VALUES ('
+        string_4 = ''
+        string_5 = ');'
+
+        # MAIN FIELDS
+        for field, criteria in fields_to_submit['columns'].items():
+            string_2 = string_2 + field +", "
+            if type(criteria['value']) == list:
+                v = criteria['value'][n]
+                if not v:
+                    v = 'NULL'
+            else:
+                v = criteria['value']
+            if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and v != 'NULL':
+                string_4 = f"{string_4}'{v}', "
+            else:
+                string_4 = f"{string_4}{v}, "
 
 
-    string_2 = string_2[:-2]
-    string_4 = string_4[:-2]
+        string_2 = string_2[:-2]
+        string_4 = string_4[:-2]
 
-    # HSTORE FIELDS
-    n = 0
-    for field, criteria in fields_to_submit['hstore'].items():
-        if criteria['value'] != '':
-            if n == 0:
-                string_2 = string_2 + ", other"
-                string_4 = string_4 + ", '"
-                n = n + 1
-            string_4 = string_4 + f'''"{field}" => "{criteria['value']}", '''
+        # HSTORE FIELDS
+        n = 0
+        for field, criteria in fields_to_submit['hstore'].items():
+            if type(criteria['value']) == list:
+                v = criteria['value'][n]
+            else:
+                v = criteria['value']
+            if v != '':
+                if n == 0:
+                    string_2 = string_2 + ", other"
+                    string_4 = string_4 + ", '"
+                    n = n + 1
+                string_4 = string_4 + f'''"{field}" => "{v}", '''
 
-    if n != 0:
-        string_4 = string_4[:-2] + "'"
+        if n != 0:
+            string_4 = string_4[:-2] + "'"
 
-    exe_str = string_1 + string_2 + string_3 + string_4 + string_5
-    cur.execute(exe_str)
+        exe_str = string_1 + string_2 + string_3 + string_4 + string_5
+        print('*****')
+        print(exe_str)
+        print('*****')
+        cur.execute(exe_str)
 
     conn.commit()
     cur.close()

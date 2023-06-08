@@ -359,7 +359,7 @@ def edit_activity_form(ID):
                     fields_to_submit['columns']['history']['value'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page")
                     fields_to_submit['columns']['recordSource']['value'] = "Record created manually from add activity page"
 
-                    insert_into_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER)
+                    insert_into_metadata_catalogue(fields_to_submit, 1, DB, CRUISE_NUMBER)
 
                     flash('Activity registered!', category='success')
 
