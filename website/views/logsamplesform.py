@@ -415,6 +415,11 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     fields_to_submit_dict['hstore'] = {}
                     metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
 
+                    personnel_details_dict = get_dict_for_list_of_fields(['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution', 'pi_name', 'pi_email', 'pi_orcid', 'pi_institution'],FIELDS_FILEPATH)
+                    for field, vals in personnel_details_dict.items():
+                        fields_to_submit_dict['columns'][field] = vals
+                        fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                        print(fields_to_submit_dict['columns'][field]['value'])
                     inherited_columns = df_to_submit.columns
 
                     for requirement in output_config_dict['Data'].keys():
@@ -423,11 +428,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 if field.lower() in df_to_submit.columns:
                                     if field in metadata_columns_list:
                                         fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
-                                        #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
                                         fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                                     else:
                                         fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
-                                        #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
                                         fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                                     inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
@@ -435,11 +438,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
@@ -447,11 +448,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
@@ -459,11 +458,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
@@ -478,11 +475,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field.lower() in df_to_submit.columns:
                             if field in metadata_columns_list:
                                 fields_to_submit_dict['columns'][field] = vals
-                                #fields_to_submit_dict['columns'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
                             else:
                                 fields_to_submit_dict['hstore'][field] = vals
-                                #fields_to_submit_dict['hstore'][field]['value'] = list(df_to_submit[field.lower()])
                                 fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
 
                     record_details = get_dict_for_list_of_fields(['created','modified','history','recordSource'],FIELDS_FILEPATH)

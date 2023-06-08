@@ -51,9 +51,6 @@ def insert_into_metadata_catalogue(fields_to_submit, num_records, DB, CRUISE_NUM
             string_4 = string_4[:-2] + "'"
 
         exe_str = string_1 + string_2 + string_3 + string_4 + string_5
-        print('*****')
-        print(exe_str)
-        print('*****')
         cur.execute(exe_str)
 
     conn.commit()
