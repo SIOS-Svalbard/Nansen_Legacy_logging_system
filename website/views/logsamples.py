@@ -420,7 +420,7 @@ def log_samples(ID):
     # Get children
     if ID != 'addNew':
         ids = [ID]
-        children_list_of_dics = get_children_list_of_dics(DB, CRUISE_NUMBER, ids)
+        children_list_of_dics = get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids)
     else:
         children_list_of_dics = []
 
