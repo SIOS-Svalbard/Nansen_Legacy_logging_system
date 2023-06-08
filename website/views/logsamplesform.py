@@ -419,7 +419,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     for field, vals in personnel_details_dict.items():
                         fields_to_submit_dict['columns'][field] = vals
                         fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
-                        print(fields_to_submit_dict['columns'][field]['value'])
+
                     inherited_columns = df_to_submit.columns
 
                     for requirement in output_config_dict['Data'].keys():
