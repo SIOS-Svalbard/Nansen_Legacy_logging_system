@@ -182,7 +182,8 @@ def choose_sample_fields(parentID,sampleType):
                 config = config,
                 subconfig=subconfig,
                 metadata=False,
-                conversions=True
+                conversions=True,
+                split_personnel_columns=True
             )
 
             return send_file(filepath, as_attachment=True)

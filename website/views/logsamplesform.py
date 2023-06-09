@@ -536,12 +536,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     config = config,
                     subconfig=subconfig,
                     metadata=False,
-                    conversions=True
+                    conversions=True,
+                    split_personnel_columns=True
                 )
-
-                #df_to_submit.fillna('', inplace=True)
-
-                #write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
                 return send_file(filepath, as_attachment=True)
 
