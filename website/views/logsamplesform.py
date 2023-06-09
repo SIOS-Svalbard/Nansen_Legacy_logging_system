@@ -16,6 +16,8 @@ import yaml
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
 from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
 from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
+from website.lib.other_functions import combine_fields_dictionaries
+from website.Learnings_from_AeN_template_generator.website.lib.create_template import create_template
 
 logsamplesform = Blueprint('logsamplesform', __name__)
 
@@ -224,7 +226,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         if field in form_input:
                             vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                             if type(value) == list:
-                                df_to_submit[field] = value * len(df_to_submit)
+                                if len(value) == 1:
+                                    df_to_submit[field] = value * len(df_to_submit)
+                                else:
+                                    df_to_submit[field] = ' | '.join(value)
                             else:
                                 df_to_submit[field] = value
                         else:
@@ -257,7 +262,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 fields_to_submit_list.append(field)
                 vals['value'] = value = format_form_value(field, form_input[field], vals['format'])
                 if type(value) == list:
-                    df_to_submit[field] = value * len(df_to_submit)
+                    if len(value) == 1:
+                        df_to_submit[field] = value * len(df_to_submit)
+                    else:
+                        df_to_submit[field] = ' | '.join(value)
                 else:
                     df_to_submit[field] = value
 
@@ -295,6 +303,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
                                 df_to_submit[field][row] = formatted_value
+
+                    elif field in ['pi_details', 'recordedBy']:
+                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, vals['format']))
 
         # Populate dictionaries from df for fields whose values vary for each row
         fields_varied = list(set(fields_varied))
@@ -501,8 +512,36 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                 filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
-                df_to_submit.fillna('', inplace=True)
-                write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
+                for field, vals in output_config_dict['Data']['Required'].items():
+                    if vals['value'] in [[],['NULL'],'NULL']:
+                        vals['value'] = ['']
+                        df_to_submit[field] = ''
+                for field, vals in output_config_dict['Data']['Recommended'].items():
+                    if vals['value'] in [[],['NULL'],'NULL']:
+                        vals['value'] = ['']
+                        df_to_submit[field] = ''
+
+                template_fields_dict = combine_fields_dictionaries(
+                    output_config_dict,
+                    added_fields_dic,
+                    added_cf_names_dic,
+                    added_dwc_terms_dic,
+                    df_to_submit
+                )
+
+                create_template(
+                    filepath = filepath,
+                    template_fields_dict = template_fields_dict,
+                    fields_filepath = FIELDS_FILEPATH,
+                    config = config,
+                    subconfig=subconfig,
+                    metadata=False,
+                    conversions=True
+                )
+
+                #df_to_submit.fillna('', inplace=True)
+
+                #write_file(filepath, df_to_submit.columns, metadata=True, conversions=True, data=df_to_submit, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
 
                 return send_file(filepath, as_attachment=True)
 
