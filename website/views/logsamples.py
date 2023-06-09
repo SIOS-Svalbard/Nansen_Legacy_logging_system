@@ -151,7 +151,7 @@ def edit_activity_form(ID):
                                 added_dwc_terms_dic[sheet][term['id']]['value'] = ''
 
     for field, vals in extra_fields_dict.items():
-        if field not in ['source', 'history', 'modified', 'created']:
+        if field not in ['recordSource', 'history', 'modified', 'created']:
             for sheet in added_fields_dic.keys():
                 if sheet not in ['Required CSV', 'Source']:
                     if vals['id'] in sample_metadata_df.columns and vals['id'] not in output_config_fields:

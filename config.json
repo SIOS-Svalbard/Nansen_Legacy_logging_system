@@ -35,6 +35,7 @@
       "maximumDepthInMeters",
       "minimumElevationInMeters",
       "maximumElevationInMeters",
+      "sea_floor_depth_below_sea_surface",
       "comments1",
       "created",
       "modified",
@@ -57,7 +58,8 @@
       "endTime",
       "endDecimalLatitude",
       "endDecimalLongitude",
-      "shipSpeedInMetersPerSecond"
+      "shipSpeedInMetersPerSecond",
+      "sea_floor_depth_below_sea_surface"
     ],
     "fields_to_inherit_if_not_logged_for_children": [
       "gearType",
@@ -68,7 +70,7 @@
     ]
   },
   "toktlogger": {
-    "host": null
+    "host": "172.16.1.115"
   },
   "niskinBottles": {
     "dir": null

@@ -136,7 +136,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
 
             start_datetime = dt.strptime(activity['startTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
 
-            bottomdepthinmeters = get_bottom_depth(start_datetime,TOKTLOGGER)
+            sea_floor_depth_below_sea_surface = get_bottom_depth(start_datetime,TOKTLOGGER)
 
             start_datetime_seconds_precision = activity['startTime'].split('.')[0]
             eventDate = activity['startTime'].split('T')[0]
@@ -161,11 +161,10 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
             created = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
             modified = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
             history = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created by pulling from Toktlogger")
-            source = "Toktlogger"
+            recordSource = "Toktlogger"
 
             exe_str = f'''INSERT INTO metadata_catalogue_{CRUISE_NUMBER}
             (id,
-            eventid,
             catalognumber,
             statid,
             eventdate,
@@ -176,16 +175,16 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
             decimallongitude,
             enddecimallatitude,
             enddecimallongitude,
-            bottomdepthinmeters,
+            sea_floor_depth_below_sea_surface,
             comments1,
             geartype,
             created,
             modified,
             history,
-            source)
+            recordSource,
+            other)
             VALUES
             ('{activity["id"]}',
-            '{activity["id"]}',
             '{readable_id}',
             {activity["localstationNumber"]},
             '{eventDate}',
@@ -196,13 +195,15 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
             {decimalLongitude},
             {endDecimalLatitude},
             {endDecimalLongitude},
-            {bottomdepthinmeters},
+            {sea_floor_depth_below_sea_surface},
             '{activity["comment"]}',
             '{geartype}',
             '{created}',
             '{modified}',
             '{history}',
-            '{source}');'''
+            '{recordSource}',
+            hstore('eventID', '{activity["id"]}')
+            );'''
 
             cur.execute(exe_str)
 
