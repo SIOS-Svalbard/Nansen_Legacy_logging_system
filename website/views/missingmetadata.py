@@ -4,9 +4,10 @@ from website.lib.input_update_records import update_record_metadata_catalogue_df
 from website.lib.harvest_activities import harvest_activities
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list, combine_personnel_details
-from website import DB, TOKTLOGGER
+from website import DB, TOKTLOGGER, FIELDS_FILEPATH
 from datetime import datetime as dt
 from math import isnan
+from website.lib.get_setup_for_configuration import get_setup_for_configuration
 
 missingmetadata = Blueprint('missingmetadata', __name__)
 
@@ -21,16 +22,31 @@ def missing_metadata():
     activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
 
     # Loading fields
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
-
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+        groups
+    ) = get_setup_for_configuration(
+        fields_filepath=FIELDS_FILEPATH,
+        subconfig='activity',
+        CRUISE_NUMBER=CRUISE_NUMBER
+    )
     # Removing rows from dataframe where no missing values
-    check_for_missing = list(required_fields_dic.keys())
+    check_for_missing = list(output_config_dict['Data']['Required'].keys())
     check_for_missing = [c.lower() for c in check_for_missing]
     if 'pi_details' in check_for_missing:
         check_for_missing.remove('pi_details')
         check_for_missing = check_for_missing + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-    if 'recordedby_details' in check_for_missing:
-        check_for_missing.remove('recordedby_details')
+    if 'recordedby' in check_for_missing:
+        check_for_missing.remove('recordedby')
         check_for_missing = check_for_missing + ['recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']
 
     activities_df['bool'] = activities_df[check_for_missing].isna().any(axis = 1)
@@ -46,30 +62,30 @@ def missing_metadata():
 
     # Combining personnel details for use in single drop-down list
     activities_df['pi_details'] = activities_df.apply(lambda row : combine_personnel_details(row['pi_name'], row['pi_email']), axis=1)
-    activities_df['recordedby_details'] = activities_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
-    personnel = required_fields_dic['pi_details']['source']
+    activities_df['recordedby'] = activities_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
 
-    activity_fields_dic = required_fields_dic
-
-    if 'id' in required_fields_dic.keys():
+    if 'id' in output_config_dict['Data']['Required'].keys():
         pass
-    elif 'id' in recommended_fields_dic.keys():
-        activity_fields_dic['id'] = recommended_fields_dic['id']
-    elif 'id' in extra_fields_dic:
-        activity_fields_dic['id'] = extra_fields_dic['id']
+    elif 'id' in output_config_dict['Data']['Recommended'].keys():
+        output_config_dict['Data']['Required']['id'] = output_config_dict['Data']['Recommended']['id']
 
     # Writing values to dictionary
-    for key, val in activity_fields_dic.items():
+    for key, val in output_config_dict['Data']['Required'].items():
         activities_df.columns = activities_df.columns.str.replace(key.lower(), key)
         val['values'] = activities_df[key].values.tolist()
+
+    for key, val in output_config_dict['Data']['Required'].items():
+        print('\n******')
+        print(key)
+        print('***')
+        print(val)
 
     if request.method == 'GET':
         return render_template(
         "missingMetadata.html",
-        activity_fields_dic=activity_fields_dic,
+        required_fields_dic=output_config_dict['Data']['Required'],
         num_rows = num_rows,
         geartypes = geartypes,
-        personnel=personnel,
         isnan=isnan
         )
 
