@@ -57,7 +57,7 @@
           {% if field == 'id' %}
             <th scope="col"></th>
           {% else %}
-            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
+            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
           {% endif %}
         {% endfor %}
       </tr>
@@ -98,7 +98,7 @@
           {% elif field == 'id' %}
             <a
               class="btn btn-success"
-              href="/editActivity/form/{{value['values'][row_num]}}"
+              href="/editActivity/form/id={{value['values'][row_num]}}"
               role="button">
               View/edit all metadata
             </a><br><br>
