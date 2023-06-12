@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import uuid
 from website.lib.get_data import get_data, get_personnel_df
-from website.lib.input_update_records import insert_into_metadata_catalogue_df, update_record_metadata_catalogue_df
+from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list
 from website import DB, METADATA_CATALOGUE

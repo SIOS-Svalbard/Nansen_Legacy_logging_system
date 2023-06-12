@@ -6,7 +6,7 @@ import math
 from website.lib.get_data import get_registered_activities, get_all_ids
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from datetime import datetime as dt
-from website.lib.input_update_records import insert_into_metadata_catalogue_df
+from website.lib.input_update_records import insert_into_metadata_catalogue
 
 # from website.lib.checker import run as checker
 # from flask import flash

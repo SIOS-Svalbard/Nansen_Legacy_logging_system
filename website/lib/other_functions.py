@@ -66,6 +66,9 @@ def split_personnel_list(personnel, df_personnel):
     if type(personnel) == float:
         personnel = []
 
+    if not personnel:
+        personnel = [] 
+
     for person in personnel:
         if person != 'Choose...' and person != '' and type(person) == str:
             person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()

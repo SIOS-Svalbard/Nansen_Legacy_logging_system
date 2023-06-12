@@ -761,7 +761,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
 
             if col in required:
 
-                if val == '' and col not in ['pi_orcid', 'recordedBy_orcid']:
+                if val in ['', None] and col not in ['pi_orcid', 'recordedBy_orcid']:
                     blanks.append(rownum)
 
         if content_errors != []:

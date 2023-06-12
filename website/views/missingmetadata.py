@@ -1,13 +1,15 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from website.lib.get_data import get_personnel_df, get_cruise
-from website.lib.input_update_records import update_record_metadata_catalogue_df
+from website.lib.input_update_records import update_record_metadata_catalogue
 from website.lib.harvest_activities import harvest_activities
 from website.lib.checker import run as checker
-from website.lib.other_functions import split_personnel_list, combine_personnel_details
-from website import DB, TOKTLOGGER, FIELDS_FILEPATH
+from website.lib.other_functions import split_personnel_list, combine_personnel_details, format_form_value
+from website import DB, TOKTLOGGER, FIELDS_FILEPATH, CONFIG
 from datetime import datetime as dt
 from math import isnan
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
+from website.lib.propegate_parents_to_children import propegate_parents_to_children
 
 missingmetadata = Blueprint('missingmetadata', __name__)
 
@@ -74,16 +76,12 @@ def missing_metadata():
         activities_df.columns = activities_df.columns.str.replace(key.lower(), key)
         val['values'] = activities_df[key].values.tolist()
 
-    for key, val in output_config_dict['Data']['Required'].items():
-        print('\n******')
-        print(key)
-        print('***')
-        print(val)
+    required_fields_dic = output_config_dict['Data']['Required']
 
     if request.method == 'GET':
         return render_template(
         "missingMetadata.html",
-        required_fields_dic=output_config_dict['Data']['Required'],
+        required_fields_dic=required_fields_dic,
         num_rows = num_rows,
         geartypes = geartypes,
         isnan=isnan
@@ -93,8 +91,7 @@ def missing_metadata():
         form_input = request.form.to_dict(flat=False)
         df_personnel = get_personnel_df(DB=DB, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
 
-        required = list(activity_fields_dic.keys())
-        df_to_submit = activities_df[required]
+        required = list(required_fields_dic.keys())
 
         if 'pi_details' in required:
             required.remove('pi_details')
@@ -103,10 +100,10 @@ def missing_metadata():
             required.remove('recordedBy')
             required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
+        df_to_submit = activities_df[required]
         fields_to_submit = []
 
         if form_input['submit'] == ['bulk']:
-
             # Isolating df to selected gear type
             geartype = form_input['bulkgeartype']
             df_to_submit = df_to_submit.loc[df_to_submit['gearType'] == geartype[0]]
@@ -122,6 +119,7 @@ def missing_metadata():
                     fields_to_submit.append('pi_details')
 
         else:
+            df_to_submit['pi_details'] = df_to_submit['recordedBy'] = None
             if form_input['submit'] == ['all']:
                 rows = list(range(num_rows))
             else:
@@ -133,37 +131,28 @@ def missing_metadata():
                     fields_to_submit.append(field)
                     row = int(row)
                     if row in rows:
-                        if len(value) == 1 and key not in ['pi_details', 'recordedBy']:
-                            df_to_submit[field][row] = value[0]
-                        elif key in ['pi_details','recordedBy']:
-                            df_to_submit[field][row] = ' | '.join(value)
-                        elif len(value) == 0:
-                            df_to_submit[field][row] = ''
+                        if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
+                            for term, vals in output_config_dict['Data']['Required'].items():
+                                if term == field:
+                                    formatted_value = format_form_value(field, value, vals['format'])
+                                    df_to_submit[field][row] = formatted_value
+                        elif field in ['pi_details','recordedBy']:
+                            df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 
             df_to_submit = df_to_submit.iloc[rows]
 
         # Same check and submit steps regardless of which submit button pressed
         # after different preparations above
 
-        df_to_submit.replace('None','', inplace=True)
+        df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
-
-        if 'pi_details' in fields_to_submit:
-            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-            fields_to_submit.remove('pi_details')
-            fields_to_submit = fields_to_submit + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-        if 'recordedBy' in fields_to_submit:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-            fields_to_submit.remove('recordedBy')
-            fields_to_submit = fields_to_submit + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
-
-        for col in df_to_submit.columns:
-            if col not in fields_to_submit and col != 'id':
-                df_to_submit.drop(col, axis=1, inplace=True)
+        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
         good, errors = checker(
             data=df_to_submit,
-            required=fields_to_submit,
+            required=required,
             DB=DB,
             CRUISE_NUMBER=CRUISE_NUMBER,
             new=False,
@@ -175,28 +164,71 @@ def missing_metadata():
 
             return render_template(
             "missingMetadata.html",
-            activity_fields_dic=activity_fields_dic,
+            required_fields_dic=required_fields_dic,
             num_rows = num_rows,
             geartypes = geartypes,
-            personnel=personnel,
             isnan=isnan
             )
 
         else:
-            for field in fields.fields:
-                if field['name'] in fields_to_submit:
-                    if field['format'] in ['int', 'double precision', 'time', 'date']:
-                        df_to_submit[field['name']] = df_to_submit[field['name']].replace([''], 'NULL')
-                        df_to_submit[field['name']].fillna('NULL', inplace=True)
-                if field['format'] == 'time' and field['name'] in fields_to_submit:
-                    df_to_submit[field['name']] = df_to_submit[field['name']].astype('object')
-                    df_to_submit[field['name']].fillna('NULL', inplace=True)
 
-            ids = list(activities_df['id'])
-            df_to_submit['history'] = activities_df.loc[activities_df['id'].isin(ids), 'history'].iloc[0]
-            df_to_submit['history'] = df_to_submit['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities")
-            df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            update_record_metadata_catalogue_df(df_to_submit, metadata_df=False, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
+            if 'parentid' in df_to_submit.columns:
+                df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
+            df_to_submit.columns = df_to_submit.columns.str.lower()
+
+            fields_to_submit_dict = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
+            fields_to_submit_dict['columns'] = {}
+            fields_to_submit_dict['hstore'] = {}
+            metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+
+            personnel_details_dict = get_dict_for_list_of_fields(['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution', 'pi_name', 'pi_email', 'pi_orcid', 'pi_institution'],FIELDS_FILEPATH)
+            for field, vals in personnel_details_dict.items():
+                fields_to_submit_dict['columns'][field] = vals
+                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+
+            inherited_columns = df_to_submit.columns
+
+            for requirement in output_config_dict['Data'].keys():
+                if requirement not in ['Required CSV', 'Source']:
+                    for field, vals in output_config_dict['Data'][requirement].items():
+                        if field.lower() in df_to_submit.columns:
+                            if field in metadata_columns_list:
+                                fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
+                                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                            else:
+                                fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
+                                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                            inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+            inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
+            weak = CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+            inherited_columns = [field for field in inherited_columns if field not in ['pi_name', 'pi_institution', 'pi_orcid', 'pi_email', 'recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']]
+            inherited_columns = [field for field in inheritable+weak if field.lower() in inherited_columns]
+
+            inherited_fields_dict = get_dict_for_list_of_fields(inherited_columns, FIELDS_FILEPATH)
+
+            for field, vals in inherited_fields_dict.items():
+                if field.lower() in df_to_submit.columns:
+                    if field in metadata_columns_list:
+                        fields_to_submit_dict['columns'][field] = vals
+                        fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                    else:
+                        fields_to_submit_dict['hstore'][field] = vals
+                        fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+
+            record_details = get_dict_for_list_of_fields(['modified','history'],FIELDS_FILEPATH)
+            fields_to_submit_dict['columns']['modified'] = record_details['modified']
+            fields_to_submit_dict['columns']['history'] = record_details['history']
+
+            fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(len(df_to_submit))]
+            fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities") for n in range(len(df_to_submit))]
+
+            ids = list(df_to_submit['id'])
+            # df_to_submit['history'] = activities_df.loc[activities_df['id'].isin(ids), 'history'].iloc[0]
+            # df_to_submit['history'] = df_to_submit['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities")
+            # df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            update_record_metadata_catalogue(fields_to_submit_dict, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, IDs=ids)
 
             flash('Records updated successfully!', category='success')
 

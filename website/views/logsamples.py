@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 import uuid
 from website.lib.get_children_list_of_dics import get_children_list_of_dics
 from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_metadata_for_list_of_ids
-from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue, update_record_metadata_catalogue_df
+from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
 from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title, format_form_value
@@ -369,7 +369,8 @@ def edit_activity_form(ID):
                     fields_to_submit['columns']['history']['value'] = sample_metadata_df.loc[sample_metadata_df['id'] == ID, 'history'].iloc[0]
                     fields_to_submit['columns']['history']['value'] = fields_to_submit['columns']['history']['value'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record modified using edit activity page")
 
-                    update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, ID)
+                    IDs = [ID]
+                    update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, IDs)
 
                     flash('Activity edited!', category='success')
                     #

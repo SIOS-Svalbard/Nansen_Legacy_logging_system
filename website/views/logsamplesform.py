@@ -305,7 +305,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 df_to_submit[field][row] = formatted_value
 
                     elif field in ['pi_details', 'recordedBy']:
-                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, vals['format']))
+                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 
         # Populate dictionaries from df for fields whose values vary for each row
         fields_varied = list(set(fields_varied))
