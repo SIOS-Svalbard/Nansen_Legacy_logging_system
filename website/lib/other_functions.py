@@ -67,7 +67,7 @@ def split_personnel_list(personnel, df_personnel):
         personnel = []
 
     if not personnel:
-        personnel = [] 
+        personnel = []
 
     for person in personnel:
         if person != 'Choose...' and person != '' and type(person) == str:
@@ -203,8 +203,6 @@ def format_columns(df, output_config_dict, added_fields_dic, added_cf_names_dic,
 
     return df
 
-
-
 def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic, data_df=None):
     template_fields_dict = {}
     for sheet in output_config_dict.keys():
@@ -212,19 +210,19 @@ def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_n
         for requirement in output_config_dict[sheet].keys():
             if requirement not in ['Required CSV', 'Source']:
                 for field, vals in output_config_dict[sheet][requirement].items():
-                    if vals['checked'] != ['']:
+                    if 'checked' not in vals or vals['checked'] != ['']:
                         template_fields_dict[sheet][field] = vals
     for sheet in added_fields_dic.keys():
         for field, vals in added_fields_dic[sheet].items():
-            if vals['checked'] != ['']:
+            if 'checked' not in vals or vals['checked'] != ['']:
                 template_fields_dict[sheet][field] = vals
     for sheet in added_cf_names_dic.keys():
         for field, vals in added_cf_names_dic[sheet].items():
-            if vals['checked'] != ['']:
+            if 'checked' not in vals or vals['checked'] != ['']:
                 template_fields_dict[sheet][field] = vals
     for sheet in added_dwc_terms_dic.keys():
         for field, vals in added_dwc_terms_dic[sheet].items():
-            if vals['checked'] != ['']:
+            if 'checked' not in vals or vals['checked'] != ['']:
                 template_fields_dict[sheet][field] = vals
 
     if data_df is not None:
