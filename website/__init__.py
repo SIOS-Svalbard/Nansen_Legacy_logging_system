@@ -42,7 +42,7 @@ else:
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = str(uuid.uuid1())
+    app.config['SECRET_KEY'] = str(uuid.uuid4())
 
     from .views.home import home
     from .views.registrations import registrations

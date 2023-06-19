@@ -117,7 +117,7 @@ def submit_spreadsheet():
                                 data_df[field['name']].fillna('', inplace=True)
                                 for idx, row in data_df.iterrows():
                                     if row[field['name']] == '':
-                                        data_df[field['name']][idx] = str(uuid.uuid1())
+                                        data_df[field['name']][idx] = str(uuid.uuid4())
                         if field['format'] == 'time' and field['name'] in data_df.columns:
                             data_df[field['name']] = data_df[field['name']].astype('object')
                             data_df[field['name']].fillna('NULL', inplace=True)

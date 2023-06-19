@@ -125,7 +125,7 @@ def homepage():
                     conn.close()
                     flash('Cruise with this cruise number already exists. Please select a new cruise number or resume the cruise.', category='error')
                 else:
-                    id = str(uuid.uuid1())
+                    id = str(uuid.uuid4())
                     cur.execute(f"INSERT INTO cruises (id, cruise_number, vessel_name, current, created) VALUES ('{id}','{CRUISE_NUMBER}','{VESSEL_NAME}',true,CURRENT_TIMESTAMP);")
                     conn.commit()
                     cur.close()

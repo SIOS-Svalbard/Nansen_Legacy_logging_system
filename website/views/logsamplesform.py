@@ -641,7 +641,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
             #                             df_to_submit[field['name']].fillna('', inplace=True)
             #                             for idx, row in df_to_submit.iterrows():
             #                                 if row[field['name']] == '':
-            #                                     df_to_submit[field['name']][idx] = str(uuid.uuid1())
+            #                                     df_to_submit[field['name']][idx] = str(uuid.uuid4())
             #                         else:
             #                             df_to_submit[field['name']].fillna('', inplace=True)
             #                     if field['format'] == 'time' and field['name'] in df_to_submit.columns:

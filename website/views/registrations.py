@@ -131,7 +131,7 @@ def institutions():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{uuid.uuid1()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{uuid.uuid4()}', '{institutionShort}', '{institutionFull}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -164,7 +164,7 @@ def sampleTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, created) VALUES ('{uuid.uuid1()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, created) VALUES ('{uuid.uuid4()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -197,7 +197,7 @@ def gearTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO geartype (id, gearType, comment, created) VALUES ('{uuid.uuid1()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO geartype (id, gearType, comment, created) VALUES ('{uuid.uuid4()}', '{gear_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -230,7 +230,7 @@ def intendedMethods():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO intendedmethod (id, intendedMethod, comment, created) VALUES ('{uuid.uuid1()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO intendedmethod (id, intendedMethod, comment, created) VALUES ('{uuid.uuid4()}', '{intended_method}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -280,7 +280,7 @@ def stations():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid1()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) VALUES ('{uuid.uuid4()}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -348,7 +348,7 @@ def personnel():
         else:
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
-            cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid1()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -381,7 +381,7 @@ def sex():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{uuid.uuid1()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sex (id, sex, comment, created) VALUES ('{uuid.uuid4()}', '{sex}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -414,7 +414,7 @@ def kingdoms():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid1()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid4()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -447,7 +447,7 @@ def filters():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid1()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid4()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -480,7 +480,7 @@ def registeredprojects():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{uuid.uuid1()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO projects (id, project, comment, created) VALUES ('{uuid.uuid4()}', '{project}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -513,7 +513,7 @@ def storageTemps():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO storagetemperature (id, storageTemp, comment, created) VALUES ('{uuid.uuid1()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO storagetemperature (id, storageTemp, comment, created) VALUES ('{uuid.uuid4()}', '{storageTemp}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
