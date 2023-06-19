@@ -70,9 +70,9 @@
     ]
   },
   "toktlogger": {
-    "host": "172.16.1.115"
+    "host": "172.16.1.142"
   },
   "niskinBottles": {
-    "dir": null
+    "dir": "/home/lukem/Documents/Testing/btl_files/"
   }
 }

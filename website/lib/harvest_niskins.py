@@ -7,38 +7,10 @@ from website.lib.get_data import get_registered_activities, get_all_ids
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from datetime import datetime as dt
 from website.lib.input_update_records import insert_into_metadata_catalogue
-
-# from website.lib.checker import run as checker
-# from flask import flash
-
-def get_fields_lists(DB, CRUISE_NUMBER):
-    '''
-    Returns the fields required
-    Parameters
-    ----------
-    DB: dict
-        PSQL database details
-    CRUISE_NUMBER: string
-        Cruise number
-    Returns
-    ----------
-    columns: list
-        List of fields to be column headers
-    required: list
-        List of fields that are required to be logged. A subset of columns
-
-    '''
-    required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB, CRUISE_NUMBER=CRUISE_NUMBER)
-    niskin_fields = {**required_fields_dic, **recommended_fields_dic} # Merging dictionarys
-    columns = list(niskin_fields.keys())
-    required = list(required_fields_dic.keys())
-
-    if 'pi_details' in required:
-        required.remove('pi_details')
-    if 'recordedBy' in required:
-        required.remove('recordedBy')
-
-    return columns, required
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
+from website import FIELDS_FILEPATH, CONFIG
+from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.lib.other_functions import format_form_value
 
 def generate_UUID(id_url):
     '''
@@ -129,7 +101,25 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
 
     METADATA_CATALOGUE = 'metadata_catalogue_'+CRUISE_NUMBER
 
-    columns, required = get_fields_lists(DB, CRUISE_NUMBER)
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+        groups
+    ) = get_setup_for_configuration(
+        fields_filepath=FIELDS_FILEPATH,
+        subconfig='Niskin',
+        CRUISE_NUMBER=CRUISE_NUMBER
+    )
+
+    columns = list(output_config_dict['Data']['Required'].keys()) + list(output_config_dict['Data']['Recommended'].keys())
     df_cruise = pd.DataFrame(columns=columns)
     df_activities = get_registered_activities(DB, CRUISE_NUMBER)
     registered_statids = list(set(df_activities['statid']))
@@ -157,39 +147,87 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
         for col in ['recordedBy', 'pi_details']:
             df_cruise.drop(col, axis=1, inplace=True)
 
-        df_cruise = propegate_parents_to_children(df_cruise, DB, METADATA_CATALOGUE)
+        df_to_submit = propegate_parents_to_children(df_cruise, DB, CRUISE_NUMBER)
 
-        for field in fields.fields:
-            if field['name'] in df_cruise.columns:
-                if field['format'] in ['int', 'double precision', 'time', 'date']:
-                    df_cruise[field['name']] = df_cruise[field['name']].replace([None, 'NULL'])
-                    df_cruise[field['name']].fillna('NULL', inplace=True)
-                if field['format'] == 'time':
-                    df_cruise[field['name']] = df_cruise[field['name']].astype('object')
-                    df_cruise[field['name']].fillna('NULL', inplace=True)
-                elif field['format'] == 'int':
-                    df_cruise[field['name']] = df_cruise[field['name']].astype(int)
+        df_to_submit.columns = df_to_submit.columns.str.lower()
 
-        # good, errors = checker(
-        #     data=df_cruise,
-        #     metadata=False,
-        #     required=required,
-        #     DB=DB,
-        #     METADATA_CATALOGUE=METADATA_CATALOGUE,
-        #     new=True
-        #     )
-        #
-        # if good == False:
-        #     for error in errors:
-        #         flash(error, category='error')
-        # else:
+        fields_to_submit_dict = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
+        fields_to_submit_dict['columns'] = {}
+        fields_to_submit_dict['hstore'] = {}
+        metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
 
+        inherited_columns = df_to_submit.columns
 
-        df_cruise['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        df_cruise['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        df_cruise['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created from metadata in btl files")
-        df_cruise['source'] = "Record created from metadata in btl files"
+        for requirement in output_config_dict['Data'].keys():
+            if requirement not in ['Required CSV', 'Source']:
+                for field, vals in output_config_dict['Data'][requirement].items():
+                    if field.lower() in df_to_submit.columns:
+                        if field in metadata_columns_list:
+                            fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
+                            #print(field,df_to_submit[field.lower()])
+                            fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                        else:
+                            fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
+                            fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                        inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
-        insert_into_metadata_catalogue_df(df_cruise, metadata_df=False, DB=DB, METADATA_CATALOGUE=METADATA_CATALOGUE)
+        for field, vals in added_fields_dic['Data'].items():
+            if field.lower() in df_to_submit.columns:
+                if field in metadata_columns_list:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                else:
+                    fields_to_submit_dict['hstore'][field] = vals
+                    fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                inherited_columns = [col for col in inherited_columns if col != field.lower()]
 
-        # flash('Niskin bottle metadata harvested', category='success')
+        for field, vals in added_dwc_terms_dic['Data'].items():
+            if field.lower() in df_to_submit.columns:
+                if field in metadata_columns_list:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                else:
+                    fields_to_submit_dict['hstore'][field] = vals
+                    fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+        for field, vals in added_cf_names_dic['Data'].items():
+            if field.lower() in df_to_submit.columns:
+                if field in metadata_columns_list:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                else:
+                    fields_to_submit_dict['hstore'][field] = vals
+                    fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+        inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
+        weak = CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+        inherited_columns = [field for field in inherited_columns if field not in ['pi_name', 'pi_institution', 'pi_orcid', 'pi_email', 'recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']]
+        inherited_columns = [field for field in inheritable+weak if field.lower() in inherited_columns]
+
+        inherited_fields_dict = get_dict_for_list_of_fields(inherited_columns, FIELDS_FILEPATH)
+
+        for field, vals in inherited_fields_dict.items():
+            if field.lower() in df_to_submit.columns:
+                if field in metadata_columns_list:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                else:
+                    fields_to_submit_dict['hstore'][field] = vals
+                    fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+
+        record_details = get_dict_for_list_of_fields(['created','modified','history','recordSource'],FIELDS_FILEPATH)
+        fields_to_submit_dict['columns']['created'] = record_details['created']
+        fields_to_submit_dict['columns']['modified'] = record_details['modified']
+        fields_to_submit_dict['columns']['history'] = record_details['history']
+        fields_to_submit_dict['columns']['recordSource'] = record_details['recordSource']
+
+        num_samples = len(df_to_submit)
+
+        fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
+        fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
+        fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Metadata for Niskin bottle harvested from .btl file and parent CTD") for n in range(int(num_samples))]
+        fields_to_submit_dict['columns']['recordSource']['value'] = ["Metadata for Niskin bottle harvested from .btl file and parent CTD" for n in range(int(num_samples))]
+
+        insert_into_metadata_catalogue(fields_to_submit_dict, int(num_samples), DB, CRUISE_NUMBER)

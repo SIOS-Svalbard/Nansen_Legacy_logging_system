@@ -84,7 +84,7 @@ def export_data():
             subconfig = sampleType
         else:
             subconfig = 'activity'
-        
+
         (
             output_config_dict,
             output_config_fields,
@@ -141,8 +141,6 @@ def export_data():
             added_dwc_terms_dic,
             df_to_export
         )
-
-        # NEED TO REMOVE PI_DETAILS AND RECORDED_BY AND ADD SEPARATED TERMS TO TEMPLATE_FIELDS_DICT BUT HOW?
 
         create_template(
             filepath = filepath,

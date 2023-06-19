@@ -499,7 +499,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                     fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
                     fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
-                    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record created manually from add activity page") for n in range(int(num_samples))]
+                    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form for logging samples") for n in range(int(num_samples))]
                     fields_to_submit_dict['columns']['recordSource']['value'] = ["Record uploaded from GUI form for logging samples" for n in range(int(num_samples))]
 
                     insert_into_metadata_catalogue(fields_to_submit_dict, int(num_samples), DB, CRUISE_NUMBER)

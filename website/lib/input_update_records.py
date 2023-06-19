@@ -77,6 +77,8 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, IDs):
                     v = criteria['value'][n]
                     if not v:
                         v = 'NULL'
+                else:
+                    v = criteria['value']
                 if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
                     string_2 = f"{string_2} {field} = '{v}', "
                 else:
@@ -110,9 +112,14 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, IDs):
 
         # Removing hstore fields when value deleted when updating the record
         for field, criteria in fields_to_submit['hstore'].items():
-            if criteria['value'][n] in ['', 'NULL', None]:
-                exe_str = f"UPDATE metadata_catalogue_{CRUISE_NUMBER} SET other = delete(other, '{field}')"
-                cur.execute(exe_str)
+            if type(criteria['value']) == list:
+                if criteria['value'][n] in ['', 'NULL', None]:
+                    exe_str = f"UPDATE metadata_catalogue_{CRUISE_NUMBER} SET other = delete(other, '{field}')"
+                    cur.execute(exe_str)
+            else:
+                if criteria['value'] in ['', 'NULL', None]:
+                    exe_str = f"UPDATE metadata_catalogue_{CRUISE_NUMBER} SET other = delete(other, '{field}')"
+                    cur.execute(exe_str)
 
     conn.commit()
     cur.close()
