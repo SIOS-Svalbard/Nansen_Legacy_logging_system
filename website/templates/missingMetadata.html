@@ -7,7 +7,7 @@
 <form method="POST">
   <div class="row">
     <div class="col">
-        <h3>If Gear Type =</h3>
+        <h4>If Gear Type =</h4>
     </div>
     <div class="col">
       <select class="custom-select" id="bulkgeartype" name="bulkgeartype" aria-label="Default select example">
@@ -17,21 +17,22 @@
       </select>
     </div>
     <div class="col">
-      <h3>Recorded By = </h3>
+      <h4>Recorded By = </h4>
     </div>
     <div class="col">
       <select multiple class="custom-select" id="bulkrecordedby" name="bulkrecordedby" aria-label="Default select example">
-        {% for option in personnel %}
+        {% for option in required_fields_dic['recordedBy']['valid']['source'] %}
+          option
           <option>{{option}}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col">
-      <h3>and PI Details = </h3>
+      <h4>and PI Details = </h4>
     </div>
     <div class="col">
       <select multiple class="custom-select" id="bulkpidetails" name="bulkpidetails" aria-label="Default select example">
-        {% for option in personnel %}
+        {% for option in required_fields_dic['pi_details']['valid']['source'] %}
           <option>{{option}}</option>
         {% endfor %}
       </select>
@@ -46,17 +47,17 @@
 <h4>Register more options for you drop-down lists <a class="btn btn-warning btn-lg" href="/register" role="button">here</a></h4>
 
 <br>
-<h1>All events with missing metadata</h1>
+<h1>All activities with missing metadata</h1>
 
 <form method="POST">
   <table class="table">
     <thead class="thead-dark">
       <tr>
-        {% for field, value in activity_fields_dic.items() %}
+        {% for field, value in required_fields_dic.items() %}
           {% if field == 'id' %}
             <th scope="col"></th>
           {% else %}
-            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
+            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
           {% endif %}
         {% endfor %}
       </tr>
@@ -64,14 +65,14 @@
     <tbody>
       {% for row_num in range(num_rows) %}
       <tr>
-        {% for field, value in activity_fields_dic.items() %}
+        {% for field, value in required_fields_dic.items() %}
           <td>
-          {% if 'source' in activity_fields_dic[field].keys() %}
-            {% if field in ['recordedBy_details', 'pi_details'] %}
+          {% if 'source' in required_fields_dic[field]['valid'].keys() %}
+            {% if field in ['recordedBy', 'pi_details'] %}
               {% if value['values'][row_num] == [None] %}
                 <div class="container bg-danger">
                   <select multiple class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
-                    {% for person in value['source'] %}
+                    {% for person in value['valid']['source'] %}
                       <option>{{person}}</option>
                     {% endfor %}
                   </select>
@@ -80,11 +81,11 @@
                 {{value['values'][row_num]}}
               {% endif %}
             {% else %}
-              {% if value['values'][row_num] == None %}
+              {% if value['values'][row_num] in [None,''] %}
                 <div class="container bg-danger">
                   <select class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
                     <option selected="selected">None</option>
-                    {% for option in value['source'] %}
+                    {% for option in value['valid']['source'] %}
                       <option>{{option}}</option>
                     {% endfor %}
                   </select>
@@ -97,7 +98,7 @@
           {% elif field == 'id' %}
             <a
               class="btn btn-success"
-              href="/editActivity/form/{{value['values'][row_num]}}"
+              href="/editActivity/form/id={{value['values'][row_num]}}"
               role="button">
               View/edit all metadata
             </a><br><br>

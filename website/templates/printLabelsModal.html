@@ -28,15 +28,19 @@
         <h3>Choose fields to include on label:</h3>
         <p>Choose up to 4 for medium labels and 5 for large labels (excluding 'ID' field)</p>
         <div class="container">
-          {% for field, value in setup_fields_dic.items() %}
-            {% if field == 'id' %}
-              <input class="form-check-input" type="checkbox" name="label_{{ field }}" value="y" checked disabled>
-            {% else %}
-              <input class="form-check-input" type="checkbox" name="label_{{ field }}" value="y">
+          {% for requirement in output_config_dict['Data'].keys() %}
+            {% if requirement not in ['Required CSV', 'Source'] %}
+              {% for field, value in output_config_dict['Data'][requirement].items() %}
+                {% if field == 'id' %}
+                  <input class="form-check-input" type="checkbox" name="label_{{ field }}" value="y" checked disabled>
+                {% else %}
+                  <input class="form-check-input" type="checkbox" name="label_{{ field }}" value="y">
+                {% endif %}
+                <label class="form-check-label">
+                  {{ value['disp_name'] }}
+                </label><br>
+              {% endfor %}
             {% endif %}
-            <label class="form-check-label">
-              {{ value['disp_name'] }}
-            </label><br>
           {% endfor %}
         </div>
       </div>

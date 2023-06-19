@@ -1,8 +1,11 @@
 <tr>
-  <td>
+  <td
+  {% include 'fields_colours.html' %}
+  >
+    {% include 'denote_required_fields.html' %}
     {{field['disp_name']}}
     <img
-      src="{{ url_for('static', filename='images/info.png')}}"
+      src="{{ url_for('static', filename='info.png')}}"
       alt="..."
       height="20"
       title="{{ field['description'] }}"

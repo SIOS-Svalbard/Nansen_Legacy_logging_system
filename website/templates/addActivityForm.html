@@ -6,132 +6,35 @@
 {% block content %}
 
 <div class="container">
-  {{ breadcrumb(trace) }}
-  {% if ID == '' %}
-  <h2>Add activity</h2>
-  {% else %}
-  <h2>Edit record</h2>
+  {% if not trace.empty: %}
+    {{ breadcrumb(trace) }}
   {% endif %}
+  <h1>Form to register an activity</h1><br>
+  {% include 'fields_key.html' %}
 
-  <p class="form-text" id="eventtime_help"><span style="color:#ff0000">*</span>Required fields</p>
 
   <form method="POST">
-    {% for key, value in activity_metadata.items() %}
-    <div class="form-row">
-      {% if key == 'minimumDepthInMeters' %}
-        <div class="col-sm-12">
-          Enter either depth or elevation, but not both. Enter minimum and maximum if known, even if they are the same value.
-        </div>
+    {% for requirement in output_config_dict['Data'].keys() %}
+      {% if requirement not in ['Required CSV', 'Source'] %}
+        {% for id, field in output_config_dict['Data'][requirement].items() %}
+          {% include 'add_field_form_row.html' %}
+        {% endfor %}
       {% endif %}
-      <label class="col-sm-3 col-form-label">{% if value['required'] == True %}<span style="color:#ff0000">*</span>{% endif %}{{ value['disp_name'] }}  <img src="{{ url_for('static', filename='images/info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></label>
+    {% endfor %}<br>
 
-      {% if value['format'] == 'date' %}
-      <div class="col-sm-9">
-        <input type="date" class="form-control" id="{{ key }}" name="{{ key }}" value="{{value['value']}}"> <!--value={{endDate}}-->
-      </div>
+    {% include 'add_fields_not_in_config.html' %}
 
-      {% elif value['format'] == 'time' %}
-      <div class="col-sm-9">
-        <input type="time" class="form-control" id="{{ key }}" name="{{ key }}" value="{{value['value']}}">
-        <button type="button" onclick="document.getElementById('{{ key }}').value = ''">Remove time</button>
-      </div>
-
-      {% elif value['format'] == 'text' %}
-        {% if key == 'stationName' %}
-        <div class="col-sm-7">
-          <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
-            <option selected>{{value['value']}}</option>
-            {% for station in value['source'] %}
-              <option>{{station}}</option>
-            {% endfor %}
-          </select>
-          <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-        </div>
-        <div class="col-sm-2">
-          <a class="btn btn-info" href="/register/stations" role="button">Register new</a>
-        </div>
-        {% elif key == 'gearType' %}
-        <div class="col-sm-7">
-          <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
-            <option selected>{{value['value']}}</option>
-            {% for gearType in value['source'] %}
-              <option>{{gearType}}</option>
-            {% endfor %}
-          </select>
-          <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-        </div>
-        <div class="col-sm-2">
-          <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
-        </div>
-        {% elif key == 'pi_details' %}
-        <div class="col-sm-7">
-          <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
-            {% for person in value['source'] %}
-              {% if person in value['value'] %}
-                <option selected="selected">{{person}}</option>
-              {% else %}
-                <option>{{person}}</option>
-              {% endif %}
-            {% endfor %}
-          </select>
-          <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
-        </div>
-        <div class="col-sm-2">
-          <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-        </div>
-        {% elif key == 'recordedBy_details' %}
-        <div class="col-sm-7">
-          <select multiple class="custom-select" id="recordedBy_details" name="recordedBy_details" aria-label="Default select example">
-            {% for person in value['source'] %}
-              {% if person in value['value'] %}
-                <option selected="selected">{{person}}</option>
-              {% else %}
-                <option>{{person}}</option>
-              {% endif %}
-            {% endfor %}
-          </select>
-          <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
-        </div>
-        <div class="col-sm-2">
-          <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-        </div>
-        {% else %}
-        <div class="col-sm-9">
-          <input type="text" class="form-control" name="{{ key }}" id="{{ key }}" placeholder="{{ key }}" value="{{value['value']}}">
-        </div>
-        {% endif %}
-
-      {% elif value['format'] == 'double precision' %}
-      <div class="col-sm-9">
-        {% if key in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
-        <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-        {% elif key in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
-        <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-        {% elif key in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
-        <input type="number" step=0.0001 min=0 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-        {% else %}
-        <input type="number" step=0.0001 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-        {% endif %}
-      </div>
-      {% elif value['format'] == 'int' %}
-      <div class="col-sm-9">
-        <input type="number" step=1 class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      </div>
-
-      {% else %}
-      <div class="col-sm-9">
-        <input type="text" class="form-control" name="{{ key }}" id="{{ key }}" value="{{value['value']}}">
-      </div>
-
-      {% endif %}
-
-    </div>
-    <br>
+    {% for id, field in added_fields_dic['Data'].items() %}
+      {% include 'add_field_form_row.html' %}
     {% endfor %}
 
-    {% include 'addfields.html' %}
+    {% for id, field in added_cf_names_dic['Data'].items() %}
+      {% include 'add_field_form_row.html' %}
+    {% endfor %}
 
-    <br>
+    {% for id, field in added_dwc_terms_dic['Data'].items() %}
+      {% include 'add_field_form_row.html' %}
+    {% endfor %}
 
     <button type="submit" class="btn btn-primary btn-lg btn-block" name="submitbutton" value="submit">Submit</button>
   </form>

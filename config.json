@@ -5,10 +5,74 @@
     "password": "postgres",
     "dbname": "lfnl_db"
   },
+  "metadata_catalogue": {
+    "fields_to_use_as_columns": [
+      "id",
+      "parentID",
+      "catalogNumber",
+      "bottleNumber",
+      "eventDate",
+      "eventTime",
+      "stationName",
+      "statID",
+      "decimalLatitude",
+      "decimalLongitude",
+      "sampleType",
+      "gearType",
+      "pi_name",
+      "pi_email",
+      "pi_institution",
+      "pi_orcid",
+      "recordedBy_name",
+      "recordedBy_email",
+      "recordedBy_institution",
+      "recordedBy_orcid",
+      "endDate",
+      "endTime",
+      "endDecimalLatitude",
+      "endDecimalLongitude",
+      "minimumDepthInMeters",
+      "maximumDepthInMeters",
+      "minimumElevationInMeters",
+      "maximumElevationInMeters",
+      "sea_floor_depth_below_sea_surface",
+      "comments1",
+      "created",
+      "modified",
+      "history",
+      "recordSource"
+    ],
+    "fields_to_inherit": [
+      "bottleNumber",
+      "eventDate",
+      "eventTime",
+      "stationName",
+      "statID",
+      "decimalLatitude",
+      "decimalLongitude",
+      "middleDate",
+      "middleTime",
+      "middleDecimalLatitude",
+      "middleDecimalLongitude",
+      "endDate",
+      "endTime",
+      "endDecimalLatitude",
+      "endDecimalLongitude",
+      "shipSpeedInMetersPerSecond",
+      "sea_floor_depth_below_sea_surface"
+    ],
+    "fields_to_inherit_if_not_logged_for_children": [
+      "gearType",
+      "minimumDepthInMeters",
+      "maximumDepthInMeters",
+      "minimumElevationInMeters",
+      "maximumElevationInMeters"
+    ]
+  },
   "toktlogger": {
-    "host": null
+    "host": "172.16.1.142"
   },
   "niskinBottles": {
-    "dir": null
+    "dir": "/home/lukem/Documents/Testing/btl_files/"
   }
 }

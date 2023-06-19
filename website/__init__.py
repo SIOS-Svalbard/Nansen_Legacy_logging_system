@@ -1,13 +1,15 @@
 from flask import Flask
 import uuid
-from website.database.init_db import run as init_db
-from website.database.init_cruise_tables import run as init_cruise_tables
-from website.database.get_data import get_cruise
+from website.lib.init_db import run as init_db
+from website.lib.init_cruise_tables import run as init_cruise_tables
+from website.lib.get_data import get_cruise
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 import pandas as pd
 import json
 import os
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+CONFIG_PATH = 'website/Learnings_from_AeN_template_generator/website/config/template_configurations.yaml'
 
 with open(os.path.join(BASE_PATH, "config.json"), "r") as fp:
     CONFIG = json.load(fp)
@@ -17,8 +19,6 @@ DB = CONFIG["database"]
 init_db(DB)
 DBNAME = DB["dbname"]
 
-#TOKTLOGGER = '172.16.0.210' # IP of VM of toktlogger"
-#TOKTLOGGER = 'toktlogger-sars.hi.no'
 TOKTLOGGER = CONFIG["toktlogger"]["host"]
 if TOKTLOGGER:
     url = f"http://{TOKTLOGGER}/api/cruises/current?format=json"
@@ -26,15 +26,15 @@ else:
     url = None
 
 BTL_FILES_FOLDER = CONFIG["niskinBottles"]["dir"]
+FIELDS_FILEPATH = 'website/Learnings_from_AeN_template_generator/website/config/fields'
 
-# GET CRUISE DETAILS, RETURNS FALSE IF NO CRUISE
+# GET CRUISE DETAILS, RETURNS NONE IF NO CRUISE
 cruise_details_df = get_cruise(DB)
 
-if isinstance(cruise_details_df, pd.DataFrame):
+if cruise_details_df is not None:
     CRUISE_NUMBER = cruise_details_df['cruise_number'].item()
     VESSEL_NAME = cruise_details_df['vessel_name'].item()
     METADATA_CATALOGUE = 'metadata_catalogue_'+str(CRUISE_NUMBER)
-    init_cruise_tables(DB, CRUISE_NUMBER, VESSEL_NAME)
 else:
     CRUISE_NUMBER = None
     VESSEL_NAME = None
@@ -44,17 +44,17 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = str(uuid.uuid1())
 
-    from .views import views
-    from .registrations import registrations
-    from .logsamples import logsamples
-    from .generatetemplates import generatetemplates
-    from .submitspreadsheets import submitspreadsheets
-    from .missingmetadata import missingmetadata
-    from .choosesamplefields import choosesamplefields
-    from .logsamplesform import logsamplesform
-    from .exportdata import exportdata
+    from .views.home import home
+    from .views.registrations import registrations
+    from .views.logsamples import logsamples
+    from .views.generatetemplates import generatetemplates
+    from .views.submitspreadsheets import submitspreadsheets
+    from .views.missingmetadata import missingmetadata
+    from .views.choosesamplefields import choosesamplefields
+    from .views.logsamplesform import logsamplesform
+    from .views.exportdata import exportdata
 
-    app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
     app.register_blueprint(generatetemplates, url_prefix='/')
