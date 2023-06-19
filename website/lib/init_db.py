@@ -77,18 +77,19 @@ def init_institutions(cur):
         cur.execute(f"INSERT INTO institutions (id, short_name, full_name, comment, created) VALUES ('{id}', '{short_name}', '{full_name}', '{comment}', CURRENT_TIMESTAMP);")
 
 def init_sample_types(cur):
-    cur.execute("CREATE TABLE sampletype (id uuid PRIMARY KEY, sampleType text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
+    cur.execute("CREATE TABLE sampletype (id uuid PRIMARY KEY, sampleType text, subconfig text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
 
     df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sampleType.csv')
 
     for idx, row in df.iterrows():
         ID = row['id']
         sampleType = row['sampleType']
+        subconfig = row['LFNL_subconfig']
         comment = row['comment']
         group = row['group']
         vocabLabel = row['vocabLabel']
         vocabURI = row['vocabURI']
-        cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
+        cur.execute(f"INSERT INTO sampletype (id, sampleType, subconfig, comment, grouping, vocabLabel, vocabURI, created) VALUES ('{ID}','{sampleType}','{subconfig}','{comment}','{group}','{vocabLabel}','{vocabURI}', CURRENT_TIMESTAMP);")
 
 def init_gear_types(cur):
     cur.execute("CREATE TABLE geartype (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")

@@ -115,7 +115,7 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
         groups
     ) = get_setup_for_configuration(
         fields_filepath=FIELDS_FILEPATH,
-        subconfig='Niskin',
+        subconfig='Niskin bottles',
         CRUISE_NUMBER=CRUISE_NUMBER
     )
 

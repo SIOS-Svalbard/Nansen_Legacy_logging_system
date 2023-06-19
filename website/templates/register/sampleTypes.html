@@ -7,6 +7,7 @@
     <thead>
       <tr>
         <th scope="col">Sample type</th>
+        <th scope="col">Sub-configuration</th>
         <th scope="col">Comment</th>
       </tr>
     </thead>
@@ -14,6 +15,7 @@
       {% for i in range(0, len) %}
       <tr>
         <td>{{registered_sample_types[i]}}</td>
+        <td>{{registered_subconfigs[i]}}</td>
         <td>{{comments[i]}}</td>
       </tr>
       {% endfor %}
@@ -34,6 +36,15 @@
         name="sample_type"
         placeholder="Should describe the physical thing you are labelling (if applicable) and logging.">
         <small class="form-text text-muted" id="sample_type_help">If there is no physical sample, use 'Data: no physical sample'</small>
+    </div>
+    <div class="form-group">
+      <select class="custom-select" id="subconfig" name="subconfig" aria-label="Default select example">
+        <label for="subconfig">Sub-configuration</label>
+        {% for subconfig in subconfigs %}
+          <option>{{subconfig}}</option>
+        {% endfor %}
+      </select>
+      <small class="form-text text-muted" id="subconfig_help">Select from dropdown list</small>
     </div>
     <div class="form-group">
       <label for="comment">Comments</label>
