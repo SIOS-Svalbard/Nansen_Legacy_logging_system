@@ -471,6 +471,6 @@ def find_recommended_child_sample_types(gearType, gear_types_df):
     if recommended_child_samples == "":
         recommended_child_samples_list = []
     else:
-        recommended_child_samples_list = recommended_child_samples.split(', ')
+        recommended_child_samples_list = recommended_child_samples.split('; ')
 
     return recommended_child_samples_list
