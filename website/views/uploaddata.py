@@ -8,12 +8,12 @@ from website import DB, METADATA_CATALOGUE
 from datetime import datetime as dt
 import pandas as pd
 
-submitspreadsheets = Blueprint('submitspreadsheets', __name__)
+uploaddata = Blueprint('uploaddata', __name__)
 
-@submitspreadsheets.route('/editActivity/submitSpreadsheet', methods=['GET', 'POST'])
-def submit_spreadsheet():
+@uploaddata.route('/uploadData', methods=['GET', 'POST'])
+def upload_data():
     '''
-    Generate template html page code
+    Upload data logged in Excel templates
     '''
     if request.method == 'POST':
 
