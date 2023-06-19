@@ -135,3 +135,11 @@ def get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype):
     conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where sampletype = '{sampletype}'", con=conn)
     return df
+
+def get_subconfig_for_sampletype(sampleType, DB):
+    try:
+        df = get_data(DB, 'sampletype')
+        subconfig = df.loc[df['sampletype'] == sampleType, 'subconfig'].iloc[0]
+        return subconfig
+    except:
+        return 'Other'

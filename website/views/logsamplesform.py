@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list
+from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list, get_subconfig_for_sampletype
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from website.lib.input_update_records import insert_into_metadata_catalogue
 from website.lib.checker import run as checker
@@ -32,11 +32,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
     config = 'Learnings from Nansen Legacy logging system'
     list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
-
-    if sampleType in list_of_subconfigs:
-        subconfig = sampleType
-    else:
-        subconfig = 'default'
+    subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
     gear_list = get_gears_list(DB)
     if sampleType in gear_list:

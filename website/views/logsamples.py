@@ -29,7 +29,7 @@ def edit_activity_form(ID):
 
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
-    subconfig = 'activity'
+    subconfig = 'Activities'
     list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
 
     (
