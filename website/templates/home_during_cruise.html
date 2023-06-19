@@ -92,7 +92,8 @@
       <tbody>
         {% for row in row_data %}
         <tr>
-          {% for col, row_ in zip(column_names, row) %}
+          {% set rowdict = dict(zip(column_names, row)) %}
+          {% for col, row_ in rowdict.items() %}
           {% if col == link_column %}
             <td>
               <a
@@ -103,7 +104,12 @@
               </a>
             </td>
             <td>
-              <a class="btn btn-warning" href="/logSamples/parentid={{row_}}" role="button">Log samples</a>
+              <a class="btn btn-warning w-100" href="/logSamples/parentid={{row_}}" role="button">
+                Log samples
+                {% if rowdict["number_of_children"] > 0 %}
+                  ({{ rowdict["number_of_children"] }})
+                {% endif %}
+              </a>
             </td>
           {% elif col == 'message' %}
             <td>
@@ -113,6 +119,7 @@
               <strong class="text-danger">{{ row_ }}</strong>
             {% endif %}
             </td>
+          {% elif col == 'number_of_children' %}
           {% else %}
             <td>{{ row_ }}</td>
           {% endif %}

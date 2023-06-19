@@ -34,8 +34,18 @@ def get_all_ids(DB, CRUISE_NUMBER):
 
 def get_registered_activities(DB, CRUISE_NUMBER):
     conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid is NULL;', con=conn)
-    return df
+    sql = f"""
+    SELECT
+        *,
+        (
+            SELECT COUNT(*)
+            FROM metadata_catalogue_{CRUISE_NUMBER} ch
+            WHERE p.id=ch.parentid
+        ) AS number_of_children
+    FROM metadata_catalogue_{CRUISE_NUMBER} p
+    WHERE parentid is NULL;
+    """
+    return pd.read_sql(sql, con=conn)
 
 def get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, ids):
     conn = psycopg2.connect(**DB)
