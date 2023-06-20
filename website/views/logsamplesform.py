@@ -40,9 +40,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     else:
         gearType = None
 
-    cruise_details_df = get_cruise(DB)
-    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
-
     (
         output_config_dict,
         output_config_fields,

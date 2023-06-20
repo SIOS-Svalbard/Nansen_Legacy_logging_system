@@ -138,8 +138,13 @@ def get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype):
 
 def get_subconfig_for_sampletype(sampleType, DB):
     try:
-        df = get_data(DB, 'sampletype')
-        subconfig = df.loc[df['sampletype'] == sampleType, 'subconfig'].iloc[0]
-        return subconfig
+        if type(sampleType) != str:
+            return 'Activities'
+        if sampleType in ['','NULL','nan']:
+            return 'Activities'
+        else:
+            df = get_data(DB, 'sampletype')
+            subconfig = df.loc[df['sampletype'] == sampleType, 'subconfig'].iloc[0]
+            return subconfig
     except:
         return 'Other'

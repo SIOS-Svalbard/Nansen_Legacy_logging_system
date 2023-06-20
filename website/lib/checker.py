@@ -9,12 +9,23 @@ Checks data before they can be imported into the metadata catalogue
 import pandas as pd
 import datetime
 import numpy as np
-from website.lib.get_data import get_data, get_all_ids
+from website.lib.get_data import get_data, get_all_ids, get_personnel_df
 import uuid
 from website.Learnings_from_AeN_template_generator.website.lib.pull_cf_standard_names import cf_standard_names_to_dic
 from website.Learnings_from_AeN_template_generator.website.lib.pull_other_fields import other_fields_to_dic
 from website.Learnings_from_AeN_template_generator.website.lib.pull_darwin_core_terms import dwc_terms_to_dic, dwc_extension_to_dic
 from website import FIELDS_FILEPATH
+
+def is_number(s):
+    try:
+        float(s)
+        if np.isnan(float(s)):
+            return False
+        else:
+            return True
+    except ValueError:
+        return False
+
 
 def make_valid_dict(DB, CRUISE_NUMBER, all_fields):
     """
@@ -628,7 +639,14 @@ def check_value(value, checker):
     else:
         return checker.validator.evaluate(value)
 
-def check_array(data, checker_list, registered_ids, required, new, firstrow, old_id):
+def is_valid_uuid(val):
+    try:
+        uuid.UUID(str(val))
+        return True
+    except ValueError:
+        return False
+
+def check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_id):
     """
     Checks the data according to the validators in the checker_list
     Returns True if the data is good, as well as an empty string
@@ -642,6 +660,8 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     required: List of required columns
     registered_ids: List of UUIDS
         This is a list of UUIDS already registered in the metadata catalogue,so we can check for duplicates
+    registered_emails: List of personnel
+        This is a list of personnel emails already registered in the system, e.g. ['lukem@unis.no', 'johnd@npolar.no']
     new: Boolean
         Whether the record(s) is being logged for the first time or not
         Influences whether we check whether id already registered
@@ -698,6 +718,7 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     duplicate_ids = []
     parent_child = []
     missing_parents = []
+    invalid_parents = []
 
     for idx, row in data.iterrows():
         if row['id'] != '' and type(row['id']) == str:
@@ -707,16 +728,28 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
             if row['id'] in registered_ids and new == True:
                 good = False
                 already_registered_ids.append(rownum)
-            elif not data['id'].is_unique:
-                duplicate_ids.append(rownum)
-                good = False
             elif 'parentID' in data.columns:
                 if row['id'] == row['parentID']:
                     parent_child.append(rownum)
                     good = False
-        if 'parentID' in data.columns:
-            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
+        if 'parentID' in data.columns and 'parentID' in required:
+            if is_valid_uuid(row['parentID']) == False:
+                invalid_parents.append(rownum)
+        elif row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
                 missing_parents.append(rownum)
+
+    # Find rows with duplicate 'id' values
+    duplicate_rows = data[data.duplicated(subset='id', keep=False)]
+
+    # Generate string with duplicate rows and IDs
+    n = 0
+    output_string = ""
+    for id_value in duplicate_rows['id'].unique():
+        duplicate_row_indices = duplicate_rows[duplicate_rows['id'] == id_value].index + firstrow
+        output_string += f"<br>Rows {', '.join(map(str, duplicate_row_indices))} include the same id: {id_value}"
+    if len(output_string) > 0:
+        output_string = "Rows with Duplicate 'id' Values:" + output_string
+        errors.append(output_string)
 
     if already_registered_ids != []:
         good = False
@@ -724,11 +757,6 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
             errors.append(f'ID(s) already registered in the system, Rows: {already_registered_ids}')
         else:
             errors.append('ID already registered in the system')
-
-    if duplicate_ids != []:
-        good = False
-        if len(data) > 1:
-            errors.append(f'ID(s) registered more than once in same upload, Rows: {duplicate_ids}')
 
     if parent_child != []:
         good = False
@@ -740,9 +768,45 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
     if missing_parents != []:
         good = False
         if len(data) > 1:
-            errors.append(f'ParentID not registered, Rows {missing_parents}')
+            errors.append(f'ParentID not registered in the system nor in this file, Rows {missing_parents}')
         else:
-            errors.append('ParentID not registered in system')
+            errors.append('ParentID not registered in the system')
+
+    if invalid_parents != []:
+        good = False
+        if len(data) > 1:
+            errors.append(f'ParentID logged is not recognised as a UUID, Rows {invalid_parents}')
+        else:
+            errors.append('ParentID logged is not recognised as a UUID')
+
+
+    # Check if PI or recordedBy registered in system
+    for col in data.columns:
+        unregistered_pi_emails = []
+        unregistered_recordedBy_emails = []
+        checker = checker_list[col]
+        for idx, row in data.iterrows():
+            rownum = idx + firstrow
+            if col == 'pi_email':
+                if row[col] not in registered_emails:
+                    unregistered_pi_emails.append(rownum)
+            if col == 'recordedBy_email':
+                if row[col] not in registered_emails:
+                    unregistered_recordedBy_emails.append(rownum)
+        if unregistered_pi_emails != []:
+            good = False
+            if len(data) > 1:
+                errors.append(checker.disp_name + ' ('+checker.name + ')'+", Rows: " +
+                              to_ranges_str(unregistered_pi_emails) + ' Error: A person with this email address has not been registered in the system')
+            else:
+                errors.append(f'A person with this email address has not been registered in the system ({checker.disp_name})')
+        if unregistered_recordedBy_emails != []:
+            good = False
+            if len(data) > 1:
+                errors.append(checker.disp_name + ' ('+checker.name + ')'+", Rows: " +
+                              to_ranges_str(unregistered_recordedBy_emails) + ' Error: A person with this email address has not been registered in the system')
+            else:
+                errors.append(f'A person with this email address has not been registered in the system ({checker.disp_name})')
 
     minmaxdepths = []
     minmaxelevations = []
@@ -785,8 +849,8 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 rownum = idx + firstrow
                 mindepth = row[col]
                 maxdepth = row['maximumDepthInMeters']
-                if maxdepth not in ['', None, 'NULL'] and mindepth not in ['', None, 'NULL']:
-                    if mindepth > float(maxdepth):
+                if maxdepth not in ['', None, 'NULL'] and mindepth not in ['', None, 'NULL'] and is_number(mindepth) and is_number(maxdepth):
+                    if float(mindepth) > float(maxdepth):
                         minmaxdepths.append(rownum)
 
         if col == 'minimumElevationInMeters' and 'minimumElevationInMeters' in data.columns:
@@ -794,8 +858,8 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
                 rownum = idx + firstrow
                 minelevation = row[col]
                 maxelevation = row['maximumElevationInMeters']
-                if maxelevation not in ['', None, 'NULL'] and minelevation not in ['', None, 'NULL']:
-                    if minelevation > float(maxelevation):
+                if maxelevation not in ['', None, 'NULL'] and minelevation not in ['', None, 'NULL'] and is_number(minelevation) and is_number(maxelevation):
+                    if float(minelevation) > float(maxelevation):
                         minmaxelevations.append(rownum)
 
     if minmaxdepths != []:
@@ -819,17 +883,19 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
         n = 0
         for col in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
             if col in data.columns:
-                if row[col] == '':
+                if row[col] == '' or not is_number(row[col]):
                     n = n + 1
-        if n == 4:
+            else:
+                n = n + 1
+        if n > 2:
             missingdepths.append(rownum)
 
     if missingdepths != []:
         good = False
         if len(data) > 1:
-            errors.append(f'Please include an elevation or depth (preferably both minimum and maximum, they can be the same), Rows: {missingdepths}')
+            errors.append(f'Please include an elevation or depth (both minimum and maximum, they can be the same), Rows: {missingdepths}')
         else:
-            errors.append('Please include an elevation or depth (preferably both minimum and maximum, they can be the same)')
+            errors.append('Please include an elevation or depth (both minimum and maximum, they can be the same)')
 
     recordedBy_field_count = 0
     pi_field_count = 0
@@ -847,7 +913,6 @@ def check_array(data, checker_list, registered_ids, required, new, firstrow, old
         else:
             errors_tmp.append(error)
     errors = errors_tmp
-
 
     for req in required:
         if req not in data.columns:
@@ -964,11 +1029,14 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
 
     if DB and CRUISE_NUMBER:
         registered_ids = get_all_ids(DB, CRUISE_NUMBER)
+        df_personnel = get_personnel_df(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
+        registered_emails = df_personnel['email'].values.tolist()
     else:
         registered_ids = []
+        registered_emails = []
 
     # Check the data array
-    good, errors = check_array(data, checker_list, registered_ids, required, new, firstrow, old_id)
+    good, errors = check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_id)
 
     g = True
     e = []

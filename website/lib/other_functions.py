@@ -47,7 +47,7 @@ def distanceCoordinates(lat1,lon1,lat2, lon2):
 
 def split_personnel_list(personnel, df_personnel):
     '''
-    personnel: list of personnel from html form input, in the format ['Joe Blogg (jblogg@emai.com)', 'Luke Marsden (lukem@unis.no)']
+    personnel: list of personnel from html form input, in the format ['Joe Blogg (jblogg@email.com)', 'Luke Marsden (lukem@unis.no)']
     df_personnel: pandas dataframe of the personnel from the personnel table in PSQL.
 
     returns pipe delimited string of personnel names, emails and institutions
@@ -71,17 +71,23 @@ def split_personnel_list(personnel, df_personnel):
 
     for person in personnel:
         if person != 'Choose...' and person != '' and type(person) == str:
-            person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()
-            person_last_name = df_personnel.loc[df_personnel['personnel'] == person, 'last_name'].item()
-            person_name = person_first_name + ' ' + person_last_name
-            person_email = df_personnel.loc[df_personnel['personnel'] == person, 'email'].item()
-            person_orcid = df_personnel.loc[df_personnel['personnel'] == person, 'orcid'].item()
-            person_institution = df_personnel.loc[df_personnel['personnel'] == person, 'institution'].item()
+            if person in df_personnel['personnel'].values:
+                person_first_name = df_personnel.loc[df_personnel['personnel'] == person, 'first_name'].item()
+                person_last_name = df_personnel.loc[df_personnel['personnel'] == person, 'last_name'].item()
+                person_name = person_first_name + ' ' + person_last_name
+                person_email = df_personnel.loc[df_personnel['personnel'] == person, 'email'].item()
+                person_orcid = df_personnel.loc[df_personnel['personnel'] == person, 'orcid'].item()
+                person_institution = df_personnel.loc[df_personnel['personnel'] == person, 'institution'].item()
 
-            personnel_names_list.append(person_name)
-            personnel_emails_list.append(person_email)
-            personnel_orcids_list.append(person_orcid)
-            personnel_institutions_list.append(person_institution)
+                personnel_names_list.append(person_name)
+                personnel_emails_list.append(person_email)
+                personnel_orcids_list.append(person_orcid)
+                personnel_institutions_list.append(person_institution)
+            else:
+                personnel_names_list.append('NULL')
+                personnel_emails_list.append('NULL')
+                personnel_orcids_list.append('NULL')
+                personnel_institutions_list.append('NULL')
 
     if type(personnel) == float:
         personnel_names = ''
