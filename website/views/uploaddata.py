@@ -37,6 +37,86 @@ def group_rows(numbers):
 
     return ', '.join(groups)
 
+def prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row):
+
+    df_subconfig = data_df.loc[data_df['subconfig'] == subconfig]
+
+    # 3. Get setup for subconfiguration and check all dfs based on subconfiguration
+    (
+        output_config_dict,
+        output_config_fields,
+        extra_fields_dict,
+        cf_standard_names,
+        dwc_terms,
+        dwc_terms_not_in_config,
+        all_fields_dict,
+        added_fields_dic,
+        added_cf_names_dic,
+        added_dwc_terms_dic,
+        groups
+    ) = get_setup_for_configuration(
+        fields_filepath=FIELDS_FILEPATH,
+        subconfig=subconfig,
+        CRUISE_NUMBER=CRUISE_NUMBER
+    )
+
+    required = list(output_config_dict['Data']['Required'].keys())
+
+    if 'pi_details' in required:
+        required.remove('pi_details')
+        required = required + ['pi_name', 'pi_email', 'pi_institution']
+    if 'recordedBy' in required:
+        required.remove('recordedBy')
+        required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
+
+    df_subconfig.drop('subconfig', axis=1, inplace=True)
+
+    if 'id' not in df_subconfig.columns:
+        df_subconfig['id'] = [str(uuid.uuid4()) for ii in range(len(df_subconfig))]
+    else:
+        df_subconfig['id'] = df_subconfig['id'].apply(lambda x: str(uuid.uuid4()) if x == '' else x)
+
+    firstrow = header_row + 2
+    good, errors = checker(
+        data=df_subconfig,
+        required=required,
+        DB=DB,
+        CRUISE_NUMBER=CRUISE_NUMBER,
+        new=True,
+        firstrow = firstrow
+        )
+    # Is checker checking PI and recordedBy properly?
+
+    rows = df_subconfig.index.values.tolist()
+    rows = [row + firstrow for row in rows]
+
+    # Grouping errors
+    # A: Required fields missing
+    missing_fields = []
+    other_errors = []
+    for error in errors:
+        if 'Required field' in error and 'is missing' in error:
+            missing_field = error.split('"')[1]
+            missing_fields.append(missing_field)
+        else:
+            other_errors.append(error)
+    errors = other_errors
+    missing_field_rows = group_rows(rows)
+
+    if len(missing_fields) > 0:
+        errors.append(f"Required fields missing for rows {missing_field_rows}:<br> {missing_fields}<br>Could alternatively be that 'sampleType' has not been provided, so this has been assumed to be an activity")
+
+    if good == False:
+        for error in errors:
+            flash(f"{error}", category='error')
+            # OR WHERE THERE IS NO SAMPLE TYPE
+            # GROUP TOGETHER THE ERRORS HERE FOR REQUIRED FIELDS MISSING
+            # SOMEHOW BREAK DOWN BY SUBCONFIG, AND STATE WHICH SAMPLES TYPES FALL WITHIN THIS
+    else:
+        flash(f'No errors for row(s): {missing_field_rows}', category='success')
+
+    return df_subconfig
+
 uploaddata = Blueprint('uploaddata', __name__)
 
 @uploaddata.route('/uploadData', methods=['GET', 'POST'])
@@ -133,94 +213,21 @@ def upload_data():
                     subconfigs_included = list(set(data_df['subconfig']))
 
                     for subconfig in subconfigs_included:
-                        df_subconfig = data_df.loc[data_df['subconfig'] == subconfig]
 
-                        # 3. Get setup for subconfiguration and check all dfs based on subconfiguration
-                        (
-                            output_config_dict,
-                            output_config_fields,
-                            extra_fields_dict,
-                            cf_standard_names,
-                            dwc_terms,
-                            dwc_terms_not_in_config,
-                            all_fields_dict,
-                            added_fields_dic,
-                            added_cf_names_dic,
-                            added_dwc_terms_dic,
-                            groups
-                        ) = get_setup_for_configuration(
-                            fields_filepath=FIELDS_FILEPATH,
-                            subconfig=subconfig,
-                            CRUISE_NUMBER=CRUISE_NUMBER
-                        )
-
-                        required = list(output_config_dict['Data']['Required'].keys())
-
-                        if 'pi_details' in required:
-                            required.remove('pi_details')
-                            required = required + ['pi_name', 'pi_email', 'pi_institution']
-                        if 'recordedBy' in required:
-                            required.remove('recordedBy')
-                            required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
-
-                        df_subconfig.drop('subconfig', axis=1, inplace=True)
-
-                        if 'id' not in df_subconfig.columns:
-                            df_subconfig['id'] = [str(uuid.uuid4()) for ii in range(len(df_subconfig))]
-                        else:
-                            df_subconfig['id'] = df_subconfig['id'].apply(lambda x: str(uuid.uuid4()) if x == '' else x)
-
-                        firstrow = header_row + 2
-                        good, errors = checker(
-                            data=df_subconfig,
-                            required=required,
-                            DB=DB,
-                            CRUISE_NUMBER=CRUISE_NUMBER,
-                            new=True,
-                            firstrow = firstrow
-                            )
-                        # Is checker checking PI and recordedBy properly?
-
-                        rows = df_subconfig.index.values.tolist()
-                        rows = [row + firstrow for row in rows]
-
-                        # Grouping errors
-                        # A: Required fields missing
-                        missing_fields = []
-                        other_errors = []
-                        for error in errors:
-                            if 'Required field' in error and 'is missing' in error:
-                                missing_field = error.split('"')[1]
-                                missing_fields.append(missing_field)
-                            else:
-                                other_errors.append(error)
-                        errors = other_errors
-                        missing_field_rows = group_rows(rows)
-
-                        if len(missing_fields) > 0:
-                            errors.append(f"Required fields missing for rows {missing_field_rows}:<br> {missing_fields}<br>Could alternatively be that 'sampleType' has not been provided, so this has been assumed to be an activity")
-
-                        if good == False:
-                            for error in errors:
-                                flash(f"{error}", category='error')
-                                # OR WHERE THERE IS NO SAMPLE TYPE
-                                # GROUP TOGETHER THE ERRORS HERE FOR REQUIRED FIELDS MISSING
-                                # SOMEHOW BREAK DOWN BY SUBCONFIG, AND STATE WHICH SAMPLES TYPES FALL WITHIN THIS
-                        else:
-                            flash(f'No errors for rows {missing_field_rows}', category='success')
+                        df_subconfig = prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row)
 
                     for subconfig in subconfigs_included:
                         if subconfig == 'Niskin bottles':
                             df_subconfig['eventID'] = df_subconfig['id']
                         # 4. Only upload records once checker passed for all dfs (the whole sheet)
-                        print(subconfig)
 
                         # Need to reassign personnel details based on email address and content of df_personnel
                         # This is because someone might enter a different version of the name and we need consistency.
                 else:
                     subconfig = 'Activities'
+                    data_df['subconfig'] = subconfig
+                    df_subconfig = prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row)
                     df_subconfig['eventID'] = df_subconfig['id']
-
 
 
 

@@ -735,7 +735,8 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
         if 'parentID' in data.columns and 'parentID' in required:
             if is_valid_uuid(row['parentID']) == False:
                 invalid_parents.append(rownum)
-        elif row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
+        elif 'parentID' in data.columns:
+            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
                 missing_parents.append(rownum)
 
     # Find rows with duplicate 'id' values
