@@ -162,7 +162,7 @@ def upload_data():
                         if 'recordedBy' in required:
                             required.remove('recordedBy')
                             required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
-                            
+
                         df_subconfig.drop('subconfig', axis=1, inplace=True)
 
                         if 'id' not in df_subconfig.columns:
@@ -208,80 +208,25 @@ def upload_data():
                                 # SOMEHOW BREAK DOWN BY SUBCONFIG, AND STATE WHICH SAMPLES TYPES FALL WITHIN THIS
                         else:
                             flash(f'No errors for rows {missing_field_rows}', category='success')
+
                     for subconfig in subconfigs_included:
+                        if subconfig == 'Niskin bottles':
+                            df_subconfig['eventID'] = df_subconfig['id']
+                        # 4. Only upload records once checker passed for all dfs (the whole sheet)
                         print(subconfig)
-                        # 4. Only upload records once checker passed for all dfs
+
+                        # Need to reassign personnel details based on email address and content of df_personnel
+                        # This is because someone might enter a different version of the name and we need consistency.
                 else:
                     subconfig = 'Activities'
+                    df_subconfig['eventID'] = df_subconfig['id']
 
 
 
 
-                # required_fields_dic, recommended_fields_dic, extra_fields_dic, groups = get_fields(configuration='activity', DB=DB)
-                # required = list(required_fields_dic.keys())
-                # recommended = list(recommended_fields_dic.keys())
-                #
-                # # Merging multiple pi details columns and recordedBy details columns
-                # pi_cols = []
-                # recordedBy_cols = []
-                # for col in data_df.columns:
-                #     if col.startswith('pi_details'):
-                #         pi_cols.append(col)
-                #     elif col.startswith('recordedBy'):
-                #         recordedBy_cols.append(col)
-                #
-                # data_df['pi_details'] = data_df[pi_cols].values.tolist()
-                # data_df['recordedBy'] = data_df[recordedBy_cols].values.tolist()
-                #
-                # df_personnel = get_personnel_df(DB=DB, table='personnel')
-                # data_df[['pi_name','pi_email','pi_orcid', 'pi_institution']] = data_df.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                # data_df[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = data_df.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-                #
-                # for col in data_df.columns:
-                #     if col.startswith('pi_details') or col.startswith('recordedBy'):
-                #         data_df.drop(col, axis=1, inplace=True)
-                #
-                # if 'pi_details' in required:
-                #     required.remove('pi_details')
-                #     required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-                # if 'recordedBy' in required:
-                #     required.remove('recordedBy')
-                #     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
-                #
-                # good, errors = checker(
-                #     data=data_df,
-                #     metadata=metadata_df,
-                #     required=required,
-                #     DB=DB,
-                #     METADATA_CATALOGUE=METADATA_CATALOGUE,
-                #     new=new,
-                #     firstrow=4
-                #     )
-                #
-                # if good == False:
-                #     for error in errors:
-                #         flash(error, category='error')
-                # else:
-                #
-                #     for field in fields.fields:
-                #         if field['name'] in data_df.columns:
-                #             if field['format'] in ['int', 'double precision', 'time', 'date']:
-                #                 data_df[field['name']] = data_df[field['name']].replace('', 'NULL')
-                #                 data_df[field['name']].fillna('NULL', inplace=True)
-                #             elif field['name'] == 'id':
-                #                 data_df[field['name']].fillna('', inplace=True)
-                #                 for idx, row in data_df.iterrows():
-                #                     if row[field['name']] == '':
-                #                         data_df[field['name']][idx] = str(uuid.uuid4())
-                #         if field['format'] == 'time' and field['name'] in data_df.columns:
-                #             data_df[field['name']] = data_df[field['name']].astype('object')
-                #             data_df[field['name']].fillna('NULL', inplace=True)
-                #
-                #     # How should I assign eventids if using spreadsheets?
-                #     if 'parentID' not in data_df.columns and 'eventID' not in data_df.columns:
-                #         data_df['eventID'] = data_df['id']
-                #     elif 'parentID' not in data_df.columns:
-                #         pass
+
+
+
                 #
                 #     try:
                 #
