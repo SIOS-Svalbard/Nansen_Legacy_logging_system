@@ -20,7 +20,7 @@ def insert_into_metadata_catalogue(fields_to_submit, num_records, DB, CRUISE_NUM
             string_2 = string_2 + field +", "
             if type(criteria['value']) == list:
                 v = criteria['value'][n]
-                if not v:
+                if not v and v != 0:
                     v = 'NULL'
             else:
                 v = criteria['value']
@@ -75,7 +75,7 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, IDs):
             if 'value' in criteria:
                 if type(criteria['value']) == list:
                     v = criteria['value'][n]
-                    if not v:
+                    if not v and v != 0:
                         v = 'NULL'
                 else:
                     v = criteria['value']

@@ -34,7 +34,10 @@ def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
     try:
         parentIDs = list(df_children['parentID'])
     except:
-        parentIDs = list(df_children['parentid'])
+        try:
+            parentIDs = list(df_children['parentid'])
+        except:
+            return df_children
     df_parents = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, parentIDs)
 
     # Check if every row in each column contains None

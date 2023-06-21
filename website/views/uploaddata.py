@@ -3,12 +3,14 @@ import uuid
 from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_subconfig_for_sampletype
 from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
-from website.lib.other_functions import split_personnel_list
-from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH
+from website.lib.other_functions import split_personnel_list, format_form_value
+from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH, CONFIG
 from datetime import datetime as dt
 import pandas as pd
 import numpy as np
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
+from website.lib.propegate_parents_to_children import propegate_parents_to_children
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 
 def group_rows(numbers):
     groups = []
@@ -37,30 +39,7 @@ def group_rows(numbers):
 
     return ', '.join(groups)
 
-def prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row):
-
-    df_subconfig = data_df.loc[data_df['subconfig'] == subconfig]
-
-    # 3. Get setup for subconfiguration and check all dfs based on subconfiguration
-    (
-        output_config_dict,
-        output_config_fields,
-        extra_fields_dict,
-        cf_standard_names,
-        dwc_terms,
-        dwc_terms_not_in_config,
-        all_fields_dict,
-        added_fields_dic,
-        added_cf_names_dic,
-        added_dwc_terms_dic,
-        groups
-    ) = get_setup_for_configuration(
-        fields_filepath=FIELDS_FILEPATH,
-        subconfig=subconfig,
-        CRUISE_NUMBER=CRUISE_NUMBER
-    )
-
-    required = list(output_config_dict['Data']['Required'].keys())
+def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row):
 
     if 'pi_details' in required:
         required.remove('pi_details')
@@ -85,7 +64,6 @@ def prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row):
         new=True,
         firstrow = firstrow
         )
-    # Is checker checking PI and recordedBy properly?
 
     rows = df_subconfig.index.values.tolist()
     rows = [row + firstrow for row in rows]
@@ -109,13 +87,99 @@ def prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row):
     if good == False:
         for error in errors:
             flash(f"{error}", category='error')
-            # OR WHERE THERE IS NO SAMPLE TYPE
-            # GROUP TOGETHER THE ERRORS HERE FOR REQUIRED FIELDS MISSING
-            # SOMEHOW BREAK DOWN BY SUBCONFIG, AND STATE WHICH SAMPLES TYPES FALL WITHIN THIS
-    else:
-        flash(f'No errors for row(s): {missing_field_rows}', category='success')
 
     return df_subconfig
+
+def df_to_dict_to_submit(df_to_submit, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, filename):
+
+    df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
+    df_to_submit.columns = df_to_submit.columns.str.lower()
+
+    fields_to_submit_dict = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
+    fields_to_submit_dict['columns'] = {}
+    fields_to_submit_dict['hstore'] = {}
+    metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+
+    personnel_details_dict = get_dict_for_list_of_fields(['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution', 'pi_name', 'pi_email', 'pi_orcid', 'pi_institution'],FIELDS_FILEPATH)
+    for field, vals in personnel_details_dict.items():
+        fields_to_submit_dict['columns'][field] = vals
+        if field.lower() in df_to_submit.columns:
+            fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+        else:
+            fields_to_submit_dict['columns'][field]['value'] = ['NULL' for value in range(len(df_to_submit))]
+
+    inherited_columns = df_to_submit.columns
+
+    for requirement in output_config_dict['Data'].keys():
+        if requirement not in ['Required CSV', 'Source']:
+            for field, vals in output_config_dict['Data'][requirement].items():
+                if field.lower() in df_to_submit.columns:
+                    if field in metadata_columns_list:
+                        fields_to_submit_dict['columns'][field] = output_config_dict['Data'][requirement][field]
+                        fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                    else:
+                        fields_to_submit_dict['hstore'][field] = output_config_dict['Data'][requirement][field]
+                        fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                    inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+    for field, vals in extra_fields_dict.items():
+        if field.lower() in df_to_submit.columns:
+            if field in metadata_columns_list:
+                fields_to_submit_dict['columns'][field] = vals
+                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+            else:
+                fields_to_submit_dict['hstore'][field] = vals
+                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+            inherited_columns = [col for col in inherited_columns if col != field.lower()]
+
+    for dwc_term in dwc_terms:
+        if dwc_term['id'].lower() in df_to_submit.columns and dwc_term['id'] not in fields_to_submit_dict['columns'].keys() and dwc_term['id'] not in fields_to_submit_dict['hstore'].keys():
+            if dwc_term['id'] in metadata_columns_list:
+                fields_to_submit_dict['columns'][dwc_term['id']] = dwc_term
+                fields_to_submit_dict['columns'][dwc_term['id']]['value'] = [format_form_value(field, [value], dwc_term['format']) for value in list(df_to_submit[dwc_term['id'].lower()])]
+            else:
+                fields_to_submit_dict['hstore'][dwc_term['id']] = dwc_term
+                fields_to_submit_dict['hstore'][dwc_term['id']]['value'] = [format_form_value(field, [value], dwc_term['format']) for value in list(df_to_submit[dwc_term['id'].lower()])]
+            inherited_columns = [col for col in inherited_columns if col != dwc_term['id'].lower()]
+
+    for cf_standard_name in cf_standard_names:
+        if cf_standard_name['id'].lower() in df_to_submit.columns and cf_standard_name['id'] not in fields_to_submit_dict['columns'].keys() and cf_standard_name['id'] not in fields_to_submit_dict['hstore'].keys():
+            if cf_standard_name['id'] in metadata_columns_list:
+                fields_to_submit_dict['columns'][cf_standard_name['id']] = cf_standard_name
+                fields_to_submit_dict['columns'][cf_standard_name['id']]['value'] = [format_form_value(field, [value], cf_standard_name['format']) for value in list(df_to_submit[cf_standard_name['id'].lower()])]
+            else:
+                fields_to_submit_dict['hstore'][cf_standard_name['id']] = cf_standard_name
+                fields_to_submit_dict['hstore'][cf_standard_name['id']]['value'] = [format_form_value(field, [value], cf_standard_name['format']) for value in list(df_to_submit[cf_standard_name['id'].lower()])]
+            inherited_columns = [col for col in inherited_columns if col != cf_standard_name['id'].lower()]
+
+    inheritable = CONFIG["metadata_catalogue"]["fields_to_inherit"]
+    weak = CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+    inherited_columns = [field for field in inherited_columns if field not in ['pi_name', 'pi_institution', 'pi_orcid', 'pi_email', 'recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']]
+    inherited_columns = [field for field in inheritable+weak if field.lower() in inherited_columns]
+
+    inherited_fields_dict = get_dict_for_list_of_fields(inherited_columns, FIELDS_FILEPATH)
+
+    for field, vals in inherited_fields_dict.items():
+        if field.lower() in df_to_submit.columns:
+            if field in metadata_columns_list:
+                fields_to_submit_dict['columns'][field] = vals
+                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+            else:
+                fields_to_submit_dict['hstore'][field] = vals
+                fields_to_submit_dict['hstore'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+
+    record_details = get_dict_for_list_of_fields(['created','modified','history','recordSource'],FIELDS_FILEPATH)
+    fields_to_submit_dict['columns']['created'] = record_details['created']
+    fields_to_submit_dict['columns']['modified'] = record_details['modified']
+    fields_to_submit_dict['columns']['history'] = record_details['history']
+    fields_to_submit_dict['columns']['recordSource'] = record_details['recordSource']
+
+    fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(len(df_to_submit))]
+    fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(len(df_to_submit))]
+    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + filename) for n in range(len(df_to_submit))]
+    fields_to_submit_dict['columns']['recordSource']['value'] = ["Record uploaded from spreadsheet, filename " + filename for n in range(len(df_to_submit))]
+
+    return fields_to_submit_dict
 
 uploaddata = Blueprint('uploaddata', __name__)
 
@@ -211,10 +275,35 @@ def upload_data():
                     data_df.loc[data_df['sampleType'].isna(), 'subconfig'] = 'Activities'
 
                     subconfigs_included = list(set(data_df['subconfig']))
+                    output_config_dicts = {}
 
                     for subconfig in subconfigs_included:
 
-                        df_subconfig = prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row)
+                        df_subconfig = data_df.loc[data_df['subconfig'] == subconfig]
+
+                        # 3. Get setup for subconfiguration and check all dfs based on subconfiguration
+                        (
+                            output_config_dict,
+                            output_config_fields,
+                            extra_fields_dict,
+                            cf_standard_names,
+                            dwc_terms,
+                            dwc_terms_not_in_config,
+                            all_fields_dict,
+                            added_fields_dic,
+                            added_cf_names_dic,
+                            added_dwc_terms_dic,
+                            groups
+                        ) = get_setup_for_configuration(
+                            fields_filepath=FIELDS_FILEPATH,
+                            subconfig=subconfig,
+                            CRUISE_NUMBER=CRUISE_NUMBER
+                        )
+
+                        required = list(output_config_dict['Data']['Required'].keys())
+                        df_subconfig = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row)
+
+                        output_config_dicts[subconfig] = output_config_dict
 
                     for subconfig in subconfigs_included:
                         if subconfig == 'Niskin bottles':
@@ -226,45 +315,39 @@ def upload_data():
                 else:
                     subconfig = 'Activities'
                     data_df['subconfig'] = subconfig
-                    df_subconfig = prepare_and_check(data_df, subconfig, CRUISE_NUMBER, header_row)
+                    df_subconfig = data_df.loc[data_df['subconfig'] == subconfig]
+
+                    # 3. Get setup for subconfiguration and check all dfs based on subconfiguration
+                    (
+                        output_config_dict,
+                        output_config_fields,
+                        extra_fields_dict,
+                        cf_standard_names,
+                        dwc_terms,
+                        dwc_terms_not_in_config,
+                        all_fields_dict,
+                        added_fields_dic,
+                        added_cf_names_dic,
+                        added_dwc_terms_dic,
+                        groups
+                    ) = get_setup_for_configuration(
+                        fields_filepath=FIELDS_FILEPATH,
+                        subconfig=subconfig,
+                        CRUISE_NUMBER=CRUISE_NUMBER
+                    )
+
+                    required = list(output_config_dict['Data']['Required'].keys())
+                    df_subconfig = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row)
+
                     df_subconfig['eventID'] = df_subconfig['id']
 
-
-
-
-
-
-                #
-                #     try:
-                #
-                #         if new == True:
-                #
-                #             data_df['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                #             data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                #             data_df['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-                #             data_df['source'] = "Record uploaded from spreadsheet, filename " + f.filename
-                #
-                #             insert_into_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE)
-                #
-                #             flash('Data from file uploaded successfully!', category='success')
-                #
-                #         else:
-                #
-                #             df_metadata_catalogue = get_data(DB, METADATA_CATALOGUE)
-                #             ids = list(data_df['id'])
-                #             data_df['history'] = df_metadata_catalogue.loc[df_metadata_catalogue['id'].isin(ids), 'history'].iloc[0]
-                #             data_df['history'] = data_df['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ New version submitted from spreadsheet, source filename " + f.filename)
-                #             data_df['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-                #             update_record_metadata_catalogue_df(data_df, metadata_df, DB, METADATA_CATALOGUE)
-                #
-                #             [flash(f'Record with ID {id} not registered in metadata catalogue so will be ignored', category='warning') for id in ids if id not in df_metadata_catalogue['id'].values]
-                #
-                #             flash('Data from file updated successfully!', category='success')
-                #
-                #             return redirect(url_for('views.home'))
-                #
-                #     except:
-                #         flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+                    try:
+                        fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
+                        insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+                        flash('Data from file uploaded successfully!', category='success')
+                        return redirect('/')
+                    except:
+                        flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     return render_template(
     "submitSpreadsheet.html"

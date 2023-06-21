@@ -149,7 +149,7 @@ def format_form_value(field, value, format):
     else:
         if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
             if format == 'double precision' and value != ['']:
-                if value[0]:
+                if value[0] or value[0] == 0:
                     return float(value[0])
                 else:
                     return 'NULL'
