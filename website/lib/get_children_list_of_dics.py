@@ -1,4 +1,4 @@
-from website.lib.get_data import get_children
+from website.lib.get_data import get_children, get_subconfig_for_sampletype
 from website.lib.expand_hstore import expand_hstore
 from website.lib.other_functions import combine_personnel_details
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
@@ -24,7 +24,6 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
     ---------
     children_samples_list_of_dics: list
         List of dictionaries (json)
-
     '''
 
     children_df = get_children(DB, CRUISE_NUMBER, ids)
@@ -32,6 +31,8 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
     children_samples_list_of_dics = []
 
     for sampleType in sampleTypes:
+
+        subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
         try:
             (
@@ -48,7 +49,7 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
                 groups
             ) = get_setup_for_configuration(
                 fields_filepath=FIELDS_FILEPATH,
-                subconfig=sampleType,
+                subconfig=subconfig,
                 CRUISE_NUMBER=CRUISE_NUMBER
             )
         except:
@@ -66,7 +67,7 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
                 groups
             ) = get_setup_for_configuration(
                 fields_filepath=FIELDS_FILEPATH,
-                subconfig='default',
+                subconfig='Other',
                 CRUISE_NUMBER=CRUISE_NUMBER
             )
 

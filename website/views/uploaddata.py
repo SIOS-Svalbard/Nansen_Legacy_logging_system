@@ -276,6 +276,7 @@ def upload_data():
 
                     subconfigs_included = list(set(data_df['subconfig']))
                     output_config_dicts = {}
+                    extra_fields_dicts = {}
 
                     for subconfig in subconfigs_included:
 
@@ -304,12 +305,18 @@ def upload_data():
                         df_subconfig = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row)
 
                         output_config_dicts[subconfig] = output_config_dict
+                        extra_fields_dicts[subconfig] = extra_fields_dicts
 
                     for subconfig in subconfigs_included:
                         if subconfig == 'Niskin bottles':
                             df_subconfig['eventID'] = df_subconfig['id']
-                        # 4. Only upload records once checker passed for all dfs (the whole sheet)
 
+                        # 4. Only upload records once checker passed for all dfs (the whole sheet)
+                        fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dicts[subconfig], extra_fields_dicts[subconfig], cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
+                        insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+
+                    flash('Data from file uploaded successfully!', category='success')
+                    return redirect('/')
                         # Need to reassign personnel details based on email address and content of df_personnel
                         # This is because someone might enter a different version of the name and we need consistency.
                 else:
@@ -349,6 +356,8 @@ def upload_data():
                     except:
                         flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
+            # WHAT ABOUT UPDATES
+            # CHECK IF FILENAME SAME, THEN SHOULD BE AN UPDATE. REJECT NEW SUBMISSIONS FROM SAME FILENAME
     return render_template(
     "submitSpreadsheet.html"
     )
