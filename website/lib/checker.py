@@ -646,7 +646,7 @@ def is_valid_uuid(val):
     except ValueError:
         return False
 
-def check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_id):
+def check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_ids):
     """
     Checks the data according to the validators in the checker_list
     Returns True if the data is good, as well as an empty string
@@ -669,7 +669,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
         Row number of first row in source data that includes data.
         If data are submitted from the GUI form, this should be 0 or not provided.
         If data are submitted from the Excel templates this should be 4.
-    old_id: string
+    old_ids: list of strings (UUIDs)
         If UUID has been updated using the GUI form, this is the ID previously used
         for that record. If ID has been changed, checking as if it is a new ID.
         Default = False, for use when submitting multiple records, e.g. from spreadsheet
@@ -719,12 +719,14 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
     parent_child = []
     missing_parents = []
     invalid_parents = []
+    not_registered_ids = []
 
     for idx, row in data.iterrows():
         if row['id'] != '' and type(row['id']) == str:
-            if row['id'] != old_id and old_id != False:
-                new = True
             rownum = idx + firstrow
+            if new == False and row['id'] not in registered_ids and old_ids == False:
+                not_registered_ids.append(rownum)
+
             if row['id'] in registered_ids and new == True:
                 good = False
                 already_registered_ids.append(rownum)
@@ -758,6 +760,13 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
             errors.append(f'ID(s) already registered in the system, Rows: {already_registered_ids}')
         else:
             errors.append('ID already registered in the system')
+
+    if not_registered_ids != []:
+        good = False
+        if len(data) > 1:
+            errors.append(f"ID(s) not already registered in the system, so can't update, Rows: {not_registered_ids}")
+        else:
+            errors.append("ID not already registered in the system, so can't update")
 
     if parent_child != []:
         good = False
@@ -969,7 +978,7 @@ def check_meta(metadata, metadata_checker_list):
 
     return good, errors
 
-def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True, firstrow=0, old_id=False):
+def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True, firstrow=0, old_ids=False):
     """
     Method for running the checker on the given input.
     If importing in another program, this should be called instead of the main
@@ -999,7 +1008,7 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
         Row number of first row in source data that includes data.
         If data are submitted from the GUI form, this should be 0 or not provided.
         If data are submitted from the Excel templates this should be 4.
-    old_id: string
+    old_ids: list of strings (UUIDs)
         If UUID has been updated using the GUI form, this is the ID previously used
         for that record. If ID has been changed, checking as if it is a new ID.
         Default = False, for use when submitting multiple records, e.g. from spreadsheet
@@ -1037,7 +1046,7 @@ def run(data, metadata=False, required=[], DB=None, CRUISE_NUMBER=None, new=True
         registered_emails = []
 
     # Check the data array
-    good, errors = check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_id)
+    good, errors = check_array(data, checker_list, registered_ids, registered_emails, required, new, firstrow, old_ids)
 
     g = True
     e = []

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import uuid
-from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_subconfig_for_sampletype
+from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_subconfig_for_sampletype, get_all_sources
 from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
 from website.lib.other_functions import split_personnel_list, format_form_value
@@ -39,7 +39,7 @@ def group_rows(numbers):
 
     return ', '.join(groups)
 
-def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row):
+def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row, new, goods):
 
     if 'pi_details' in required:
         required.remove('pi_details')
@@ -61,8 +61,9 @@ def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row):
         required=required,
         DB=DB,
         CRUISE_NUMBER=CRUISE_NUMBER,
-        new=True,
-        firstrow = firstrow
+        new=new,
+        firstrow = firstrow,
+        old_ids = False
         )
 
     rows = df_subconfig.index.values.tolist()
@@ -88,7 +89,9 @@ def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row):
         for error in errors:
             flash(f"{error}", category='error')
 
-    return df_subconfig
+    goods.append(good)
+
+    return df_subconfig, goods
 
 def df_to_dict_to_submit(df_to_submit, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, filename):
 
@@ -226,6 +229,21 @@ def upload_data():
                 errors.append('File must be an "XLSX" file.')
                 good = False
 
+            if request.form['submitbutton'] == 'new':
+                new = True
+            elif request.form['submitbutton'] == 'update':
+                new = False
+
+            already_uploaded_files = get_all_sources(DB, CRUISE_NUMBER)
+
+            if str(f.filename) in already_uploaded_files and new == True:
+                errors.append(f'''A file called {f.filename} has already been uploaded.<br>
+                Have these records already been registered?<br>
+                If so, please select to update existing records instead<br>
+                If these records have not been registered already, please rename your file.
+                ''')
+                good = False
+
             if warnings != []:
                 for warning in warnings:
                     flash(warning, category='warning')
@@ -234,10 +252,6 @@ def upload_data():
                     flash(error, category='error')
 
             else:
-                if request.form['submitbutton'] == 'new':
-                    new = True
-                elif request.form['submitbutton'] == 'update':
-                    new = False
 
                 # Merging multiple pi details columns and recordedBy details columns
                 pi_cols = []
@@ -277,6 +291,7 @@ def upload_data():
                     subconfigs_included = list(set(data_df['subconfig']))
                     output_config_dicts = {}
                     extra_fields_dicts = {}
+                    goods = []
 
                     for subconfig in subconfigs_included:
 
@@ -302,23 +317,35 @@ def upload_data():
                         )
 
                         required = list(output_config_dict['Data']['Required'].keys())
-                        df_subconfig = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row)
+
+                        df_subconfig, goods = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row, new, goods)
 
                         output_config_dicts[subconfig] = output_config_dict
                         extra_fields_dicts[subconfig] = extra_fields_dicts
 
-                    for subconfig in subconfigs_included:
-                        if subconfig == 'Niskin bottles':
-                            df_subconfig['eventID'] = df_subconfig['id']
+                    if False in goods:
+                        if new == False:
+                            flash('No records were uploaded', category='error')
+                        else:
+                            flash('No records were updated', category='error')
+                    else:
 
-                        # 4. Only upload records once checker passed for all dfs (the whole sheet)
-                        fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dicts[subconfig], extra_fields_dicts[subconfig], cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
-                        insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+                        for subconfig in subconfigs_included:
+                            if subconfig == 'Niskin bottles':
+                                df_subconfig['eventID'] = df_subconfig['id']
 
-                    flash('Data from file uploaded successfully!', category='success')
-                    return redirect('/')
-                        # Need to reassign personnel details based on email address and content of df_personnel
-                        # This is because someone might enter a different version of the name and we need consistency.
+                            # 4. Only upload records once checker passed for all dfs (the whole sheet)
+                            fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dicts[subconfig], extra_fields_dicts[subconfig], cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
+
+                            if new == True:
+                                insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+                            elif new == False:
+                                IDs = df_subconfig['id'].values.tolist()
+                                update_record_metadata_catalogue(fields_to_submit_dict, DB, CRUISE_NUMBER, IDs)
+
+                        flash('Data from file uploaded successfully!', category='success')
+                        return redirect('/')
+
                 else:
                     subconfig = 'Activities'
                     data_df['subconfig'] = subconfig
@@ -344,20 +371,34 @@ def upload_data():
                     )
 
                     required = list(output_config_dict['Data']['Required'].keys())
-                    df_subconfig = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row)
+                    goods = []
+                    df_subconfig, goods = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row, new, goods)
 
-                    df_subconfig['eventID'] = df_subconfig['id']
+                    if False in goods:
+                        if new == False:
+                            flash('No records were uploaded', category='error')
+                        else:
+                            flash('No records were updated', category='error')
+                    else:
 
-                    try:
-                        fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
-                        insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
-                        flash('Data from file uploaded successfully!', category='success')
-                        return redirect('/')
-                    except:
-                        flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+                        df_subconfig['eventID'] = df_subconfig['id']
 
-            # WHAT ABOUT UPDATES
-            # CHECK IF FILENAME SAME, THEN SHOULD BE AN UPDATE. REJECT NEW SUBMISSIONS FROM SAME FILENAME
+                        try:
+                            fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
+
+                            if new == True:
+                                insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+                                flash('Data from file uploaded successfully!', category='success')
+                            elif new == False:
+                                IDs = df_subconfig['id'].values.tolist()
+                                update_record_metadata_catalogue(fields_to_submit_dict, DB, CRUISE_NUMBER, IDs)
+                                flash('Records successfully updated using data from file!', category='success')
+                            return redirect('/')
+                        except:
+                            flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
+
+            # Need to reassign personnel details based on email address and content of df_personnel
+            # This is because someone might enter a different version of the name and we need consistency.
     return render_template(
     "submitSpreadsheet.html"
     )

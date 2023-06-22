@@ -288,7 +288,7 @@ def edit_activity_form(ID):
                 DB=DB,
                 CRUISE_NUMBER=CRUISE_NUMBER,
                 new=new,
-                old_id=ID
+                old_ids=[ID]
                 )
 
             if good == False:

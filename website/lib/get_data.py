@@ -32,6 +32,15 @@ def get_all_ids(DB, CRUISE_NUMBER):
     df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER};', con=conn)
     return df['id'].tolist()
 
+def get_all_sources(DB, CRUISE_NUMBER):
+    conn = psycopg2.connect(**DB)
+    df = pd.read_sql(f'SELECT recordsource FROM metadata_catalogue_{CRUISE_NUMBER} GROUP BY recordsource;', con=conn)
+    sources = df['recordsource'].tolist()
+    print(sources)
+    files = [source.split('filename ')[1] for source in sources if 'filename' in source]
+    print(files)
+    return files
+
 def get_registered_activities(DB, CRUISE_NUMBER):
     conn = psycopg2.connect(**DB)
     sql = f"""
