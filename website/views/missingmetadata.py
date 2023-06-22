@@ -38,7 +38,7 @@ def missing_metadata():
         groups
     ) = get_setup_for_configuration(
         fields_filepath=FIELDS_FILEPATH,
-        subconfig='activity',
+        subconfig='Activities',
         CRUISE_NUMBER=CRUISE_NUMBER
     )
     # Removing rows from dataframe where no missing values

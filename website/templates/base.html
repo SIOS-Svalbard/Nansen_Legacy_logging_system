@@ -28,6 +28,9 @@
             <a class="nav-link" href="/generateTemplate">Generate Template</a>
           </li>
           <li class="nav-item active">
+            <a class="nav-link" href="/uploadData">Upload data from template</a>
+          </li>
+          <li class="nav-item active">
             <a class="nav-link" href="/exportData">Export Data</a>
           </li>
         </ul>
@@ -38,7 +41,7 @@
     messages %} {% for category, message in messages %} {% if category ==
     'error' %}
     <div class="alert alert-danger alter-dismissable fade show" role="alert">
-      {{ message }}
+      {{ message|safe }}
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>

@@ -149,11 +149,13 @@ def sampleTypes():
     df = get_data(DB, 'sampletype')
     df.sort_values(by='sampletype', inplace=True)
     sample_types = list(df['sampletype'])
+    subconfigs = list(df['subconfig'])
     comments = list(df['comment'])
 
     if request.method == 'POST':
 
         sample_type = request.form.get('sample_type').capitalize()
+        subconfig = request.form.get('subconfig').capitalize()
         comment = request.form.get('comment')
 
         if sample_type in sample_types:
@@ -164,7 +166,7 @@ def sampleTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sampletype (id, sampleType, comment, created) VALUES ('{uuid.uuid4()}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sampletype (id, sampleType, subconfig, comment, created) VALUES ('{uuid.uuid4()}', '{subconfig}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -174,7 +176,7 @@ def sampleTypes():
 
             return redirect(url_for('registrations.sampleTypes'))
 
-    return render_template("register/sampleTypes.html", registered_sample_types=sample_types, comments=comments, len=len(sample_types))
+    return render_template("register/sampleTypes.html", registered_sample_types=sample_types, registered_subconfigs=subconfigs, subconfigs=list(set(subconfigs)), comments=comments, len=len(sample_types))
 
 @registrations.route('/register/gearTypes', methods=['GET', 'POST'])
 def gearTypes():

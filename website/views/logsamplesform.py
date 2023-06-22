@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, send_fil
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list
+from website.lib.get_data import get_cruise, get_user_setup, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_personnel_df, get_gears_list, get_subconfig_for_sampletype
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from website.lib.input_update_records import insert_into_metadata_catalogue
 from website.lib.checker import run as checker
@@ -32,20 +32,13 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
     config = 'Learnings from Nansen Legacy logging system'
     list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
-
-    if sampleType in list_of_subconfigs:
-        subconfig = sampleType
-    else:
-        subconfig = 'default'
+    subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
     gear_list = get_gears_list(DB)
     if sampleType in gear_list:
         gearType = sampleType
     else:
         gearType = None
-
-    cruise_details_df = get_cruise(DB)
-    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     (
         output_config_dict,
@@ -541,126 +534,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 )
 
                 return send_file(filepath, as_attachment=True)
-
-            # elif form_input['submit'] == ['submitExcel']:
-            #
-            #     f = request.files['file']
-            #
-            #     if f.filename == '':
-            #         flash('No file selected', category='error')
-            #
-            #     else:
-            #
-            #         filepath = '/tmp/'+f.filename
-            #         f.save(filepath)
-            #
-            #         errors = []
-            #         warnings = []
-            #         good = True
-            #
-            #         if filepath.endswith(".xlsx"):
-            #             try:
-            #                 df_to_submit = pd.read_excel(filepath, sheet_name = 'Data', header=2)
-            #             except:
-            #                 errors.append('No sheet named "Data" found. Did you upload the correct file?')
-            #                 good = False
-            #             try:
-            #                 metadata_df = pd.read_excel(filepath, sheet_name = 'Metadata', header=6, usecols='B:C', index_col=0)
-            #                 metadata_df = metadata_df.transpose()
-            #                 metadata_df.fillna('NULL', inplace=True)
-            #             except:
-            #                 metadata_df = False
-            #                 warnings.append('No sheet named "Metadata" found. Uploading the data without it.')
-            #
-            #         else:
-            #             errors.append('File must be an "XLSX" file.')
-            #             good = False
-            #
-            #         if good == False:
-            #             for error in errors:
-            #                 flash(error, category='error')
-            #         if warnings != []:
-            #             for warning in warnings:
-            #                 flash(warning, category='warning')
-            #
-            #         else:
-            #             new=True
-            #
-            #             # Merging multiple pi details columns and recordedBy details columns
-            #             pi_cols = []
-            #             recordedBy_cols = []
-            #             for col in df_to_submit.columns:
-            #                 if col.startswith('pi_details'):
-            #                     pi_cols.append(col)
-            #                 elif col.startswith('recordedBy'):
-            #                     recordedBy_cols.append(col)
-            #
-            #             df_to_submit['pi_details'] = df_to_submit[pi_cols].values.tolist()
-            #             df_to_submit['recordedBy'] = df_to_submit[recordedBy_cols].values.tolist()
-            #
-            #             df_personnel = get_personnel_df(DB=DB, table='personnel')
-            #             df_to_submit[['pi_name','pi_email','pi_orcid', 'pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-            #             df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-            #
-            #             for col in df_to_submit.columns:
-            #                 if col.startswith('pi_details') or col.startswith('recordedBy'):
-            #                     df_to_submit.drop(col, axis=1, inplace=True)
-            #
-            #             if 'pi_details' in required:
-            #                 required.remove('pi_details')
-            #                 required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
-            #             if 'recordedBy' in required:
-            #                 required.remove('recordedBy')
-            #                 required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
-            #
-            #             good, errors = checker(
-            #                 data=df_to_submit,
-            #                 metadata=metadata_df,
-            #                 required=required,
-            #                 DB=DB,
-            #                 CRUISE_NUMBER=CRUISE_NUMBER,
-            #                 new=new,
-            #                 firstrow=4
-            #                 )
-            #
-            #             if good == False:
-            #                 for error in errors:
-            #                     flash(error, category='error')
-            #             else:
-            #
-            #                 df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
-            #                 # How should I assign eventids if using spreadsheets?
-            #
-            #                 # Write to function? Used multiple times
-            #                 for field in fields.fields:
-            #                     if field['name'] in df_to_submit.columns:
-            #                         if field['format'] in ['int', 'double precision', 'time', 'date']:
-            #                             df_to_submit[field['name']] = df_to_submit[field['name']].replace([''], 'NULL')
-            #                             df_to_submit[field['name']].fillna('NULL', inplace=True)
-            #                         elif field['name'] == 'id':
-            #                             df_to_submit[field['name']].fillna('', inplace=True)
-            #                             for idx, row in df_to_submit.iterrows():
-            #                                 if row[field['name']] == '':
-            #                                     df_to_submit[field['name']][idx] = str(uuid.uuid4())
-            #                         else:
-            #                             df_to_submit[field['name']].fillna('', inplace=True)
-            #                     if field['format'] == 'time' and field['name'] in df_to_submit.columns:
-            #                         df_to_submit[field['name']] = df_to_submit[field['name']].astype('object')
-            #                         df_to_submit[field['name']].fillna('NULL', inplace=True)
-            #                 try:
-            #
-            #                     df_to_submit['created'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            #                     df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            #                     df_to_submit['history'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from spreadsheet, filename " + f.filename)
-            #                     df_to_submit['source'] = "Record uploaded from spreadsheet, filename " + f.filename
-            #
-            #                     insert_into_metadata_catalogue_df(df_to_submit, metadata_df, DB, CRUISE_NUMBER)
-            #
-            #                     flash('Data from file uploaded successfully!', category='success')
-            #                     return redirect(f'/logSamples/parentid={parentID}')
-            #
-            #                 except:
-            #                     flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
     trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, parentID)
 

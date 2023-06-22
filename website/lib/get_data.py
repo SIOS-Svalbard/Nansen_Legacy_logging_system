@@ -32,6 +32,15 @@ def get_all_ids(DB, CRUISE_NUMBER):
     df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER};', con=conn)
     return df['id'].tolist()
 
+def get_all_sources(DB, CRUISE_NUMBER):
+    conn = psycopg2.connect(**DB)
+    df = pd.read_sql(f'SELECT recordsource FROM metadata_catalogue_{CRUISE_NUMBER} GROUP BY recordsource;', con=conn)
+    sources = df['recordsource'].tolist()
+    print(sources)
+    files = [source.split('filename ')[1] for source in sources if 'filename' in source]
+    print(files)
+    return files
+
 def get_registered_activities(DB, CRUISE_NUMBER):
     conn = psycopg2.connect(**DB)
     sql = f"""
@@ -135,3 +144,16 @@ def get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype):
     conn = psycopg2.connect(**DB)
     df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where sampletype = '{sampletype}'", con=conn)
     return df
+
+def get_subconfig_for_sampletype(sampleType, DB):
+    try:
+        if type(sampleType) != str:
+            return 'Activities'
+        if sampleType in ['','NULL','nan']:
+            return 'Activities'
+        else:
+            df = get_data(DB, 'sampletype')
+            subconfig = df.loc[df['sampletype'] == sampleType, 'subconfig'].iloc[0]
+            return subconfig
+    except:
+        return 'Other'

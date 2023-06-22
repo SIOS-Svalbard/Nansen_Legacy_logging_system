@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, send_file, redirect
+from flask import Blueprint, redirect
+from website import CONFIG
 
 generatetemplates = Blueprint('generatetemplates', __name__)
 
@@ -10,4 +11,4 @@ def generate_template():
     The redirect below doesn't work but serves as a reminder for later.
     '''
 
-    return redirect("/config=Learnings from Nansen Legacy logging system")
+    return redirect(CONFIG['template_generator']['url'])

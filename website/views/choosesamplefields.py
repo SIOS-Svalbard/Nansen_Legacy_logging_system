@@ -1,13 +1,12 @@
 from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-from website.lib.get_data import get_cruise, get_user_setup, get_gears_list
+from website.lib.get_data import get_cruise, get_user_setup, get_gears_list, get_subconfig_for_sampletype
 from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH, CRUISE_NUMBER
 import numpy as np
 import pandas as pd
 import os
 import yaml
-from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
 from website.Learnings_from_AeN_template_generator.website.lib.create_template import create_template
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
 from website.lib.other_functions import combine_fields_dictionaries
@@ -23,12 +22,7 @@ def choose_sample_fields(parentID,sampleType):
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     config = 'Learnings from Nansen Legacy logging system'
-    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
-
-    if sampleType in list_of_subconfigs:
-        subconfig = sampleType
-    else:
-        subconfig = 'default'
+    subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
