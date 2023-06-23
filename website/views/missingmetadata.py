@@ -123,10 +123,10 @@ def missing_metadata():
 
         if 'pi_details' in required:
             required.remove('pi_details')
-            required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
+            required = required + ['pi_name', 'pi_email', 'pi_institution']
         if 'recordedBy' in required:
             required.remove('recordedBy')
-            required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
+            required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_institution']
 
         df_to_submit = activities_df[required]
         fields_to_submit = []
@@ -178,6 +178,9 @@ def missing_metadata():
         df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
+        for field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
+            required.remove(field)
+            
         good, errors = checker(
             data=df_to_submit,
             required=required,
@@ -252,9 +255,6 @@ def missing_metadata():
             fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities") for n in range(len(df_to_submit))]
 
             ids = list(df_to_submit['id'])
-            # df_to_submit['history'] = activities_df.loc[activities_df['id'].isin(ids), 'history'].iloc[0]
-            # df_to_submit['history'] = df_to_submit['history'] + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities")
-            # df_to_submit['modified'] = dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
             update_record_metadata_catalogue(fields_to_submit_dict, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, IDs=ids)
 
