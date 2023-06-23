@@ -169,18 +169,20 @@ def missing_metadata():
 
             df_to_submit = df_to_submit.iloc[rows]
 
-        # Same check and submit steps regardless of which submit button pressed
-        # after different preparations above
-
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
-        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        if 'pi_email' not in df_to_submit.columns:
+            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+        if 'recordedBy_email' not in df_to_submit.columns:
+            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
         for field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
             required.remove(field)
-            
+
+        # Same check and submit steps regardless of which submit button pressed
+        # after different preparations above
+
         good, errors = checker(
             data=df_to_submit,
             required=required,
