@@ -12,6 +12,80 @@ from website.lib.get_setup_for_configuration import get_setup_for_configuration
 from website.lib.propegate_parents_to_children import propegate_parents_to_children
 from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 
+def reassign_personnel_based_on_email(data_df, df_personnel):
+    '''
+    Reassigning personnel name, institution and OrcID (if registered) based on email
+    This is because when uploading from a spreadsheet, someone might use a different version/spelling
+    of a name or institution
+
+    data_df: Pandas dataframe
+    The dataframe including the records to upload
+
+    df_personnel: Pandas dataframe
+    The dataframe including details of all the personnel registered in the system
+    '''
+    if 'recordedBy_email' in data_df.columns:
+        if 'recordedBy_name' in data_df.columns:
+            data_df['recordedBy_name'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'name', df_personnel, row['recordedBy_name']), axis = 1, result_type = 'expand')
+        else:
+            data_df['recordedBy_name'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'name', df_personnel), axis = 1, result_type = 'expand')
+
+        if 'recordedBy_institution' in data_df.columns:
+            data_df['recordedBy_institution'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'institution', df_personnel, row['recordedBy_institution']), axis = 1, result_type = 'expand')
+        else:
+            data_df['recordedBy_institution'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'institution', df_personnel), axis = 1, result_type = 'expand')
+
+        if 'recordedBy_orcid' in data_df.columns:
+            data_df['recordedBy_orcid'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'orcid', df_personnel, row['recordedBy_orcid']), axis = 1, result_type = 'expand')
+        else:
+            data_df['recordedBy_orcid'] = data_df.apply(lambda row : get_personnel_details_from_email(row['recordedBy_email'], 'orcid', df_personnel), axis = 1, result_type = 'expand')
+
+    if 'pi_email' in data_df.columns:
+        if 'pi_name' in data_df.columns:
+            data_df['pi_name'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'name', df_personnel, row['pi_name']), axis = 1, result_type = 'expand')
+        else:
+            data_df['pi_name'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'name', df_personnel), axis = 1, result_type = 'expand')
+
+        if 'pi_institution' in data_df.columns:
+            data_df['pi_institution'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'institution', df_personnel, row['pi_institution']), axis = 1, result_type = 'expand')
+        else:
+            data_df['pi_institution'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'institution', df_personnel), axis = 1, result_type = 'expand')
+
+        if 'pi_orcid' in data_df.columns:
+            data_df['pi_orcid'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'orcid', df_personnel, row['pi_orcid']), axis = 1, result_type = 'expand')
+        else:
+            data_df['pi_orcid'] = data_df.apply(lambda row : get_personnel_details_from_email(row['pi_email'], 'orcid', df_personnel), axis = 1, result_type = 'expand')
+
+    return data_df
+
+def get_personnel_details_from_email(email, setup, df_personnel, current_value='NULL'):
+    '''
+    email: string
+    Email address to
+
+    setup: string
+    'institution', 'name' or 'orcid'. What you want to retrieve.
+
+    df_personnel: Pandas dataframe
+    The dataframe including details of all the personnel registered in the system
+    Columns: id, first_name, last_name, institution, email, orcid, comment, created
+
+    current_value: string. Default = 'NULL'
+    Current value in dataframe.
+    If the email is not registered in df_personnl, this won't work.
+    In this case, the current_value is returned
+    '''
+    if email in df_personnel['email'].values:
+        if setup in ['orcid', 'institution']:
+            value = df_personnel.loc[df_personnel['email'] == email, setup].item()
+        elif setup == 'name':
+            first_name = df_personnel.loc[df_personnel['email'] == email, 'first_name'].item()
+            last_name = df_personnel.loc[df_personnel['email'] == email, 'last_name'].item()
+            value = first_name + ' ' + last_name
+        return value
+    else:
+        return current_value
+
 def group_rows(numbers):
     groups = []
     start = None
@@ -262,8 +336,7 @@ def upload_data():
                     elif col.startswith('recordedBy') and col not in ['recordedBy_name','recordedBy_email','recordedBy_institution','recordedBy_orcid']:
                         recordedBy_cols.append(col)
 
-                if len(pi_cols) + len(recordedBy_cols) > 0:
-                    df_personnel = get_personnel_df(DB=DB, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
+                df_personnel = get_personnel_df(DB=DB, table='personnel', CRUISE_NUMBER=CRUISE_NUMBER)
 
                 if len(pi_cols) > 0:
                     data_df['pi_details'] = data_df[pi_cols].values.tolist()
@@ -277,6 +350,9 @@ def upload_data():
                     for col in data_df.columns:
                         if col.startswith('recordedBy') and col not in ['recordedBy_name','recordedBy_email','recordedBy_institution','recordedBy_orcid']:
                             data_df.drop(col, axis=1, inplace=True)
+
+                if 'recordedBy_email' in data_df.columns or 'pi_email' in data_df.columns:
+                    data_df = reassign_personnel_based_on_email(data_df, df_personnel)
 
                 # 1. Divide df based on subconfig
                 data_df['subconfig'] = ''
@@ -397,8 +473,6 @@ def upload_data():
                         except:
                             flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')
 
-            # Need to reassign personnel details based on email address and content of df_personnel
-            # This is because someone might enter a different version of the name and we need consistency.
     return render_template(
     "submitSpreadsheet.html"
     )
