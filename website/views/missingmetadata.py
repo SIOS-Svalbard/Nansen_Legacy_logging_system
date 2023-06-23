@@ -41,18 +41,40 @@ def missing_metadata():
         subconfig='Activities',
         CRUISE_NUMBER=CRUISE_NUMBER
     )
+
     # Removing rows from dataframe where no missing values
+
+    # Checking rows logged without either depth NOR elevation (only one required)
+    # Minimum and maximum both required
+
+    # If min or max depth missing, depths_recorded = False
+    if 'minimumDepthInMeters' in output_config_dict['Data']['Recommended'].keys() and 'maximumDepthInMeters' in output_config_dict['Data']['Recommended'].keys():
+        activities_df['depths_recorded'] = ~activities_df[['minimumdepthinmeters','maximumdepthinmeters']].isna().any(axis = 1)
+    else:
+        activities_df['depths_recorded'] = True # So rows are not dropped later based on depth
+    # If min or max elevation missing, elevations_recorded = False
+    if 'minimumElevationInMeters' in output_config_dict['Data']['Recommended'].keys() and 'maximumElevationInMeters' in output_config_dict['Data']['Recommended'].keys():
+        activities_df['elevations_recorded'] = ~activities_df[['minimumelevationinmeters','maximumelevationinmeters']].isna().any(axis = 1)
+    else:
+        activities_df['elevations_recorded'] = True # So rows are not dropped later based on depth# If depths_recorded is True or elevations_recorded is True, then it okay.
+    # So keep if both are False
+
+    # Other fields
     check_for_missing = list(output_config_dict['Data']['Required'].keys())
     check_for_missing = [c.lower() for c in check_for_missing]
     if 'pi_details' in check_for_missing:
         check_for_missing.remove('pi_details')
-        check_for_missing = check_for_missing + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
+        check_for_missing = check_for_missing + ['pi_name', 'pi_email', 'pi_institution']
     if 'recordedby' in check_for_missing:
         check_for_missing.remove('recordedby')
-        check_for_missing = check_for_missing + ['recordedby_name', 'recordedby_email', 'recordedby_orcid', 'recordedby_institution']
+        check_for_missing = check_for_missing + ['recordedby_name', 'recordedby_email', 'recordedby_institution']
 
-    activities_df['bool'] = activities_df[check_for_missing].isna().any(axis = 1)
-    activities_df = activities_df.loc[activities_df['bool'] == True]
+    # If any required columns are missing, then 'all_required_present' = False
+    activities_df['all_required_present'] = ~activities_df[check_for_missing].isna().any(axis = 1)
+
+    # Keep all rows where all required_present is False AND
+    # EITHER depths recorded is False OR elevations recorded is False
+    activities_df = activities_df[(activities_df['all_required_present'] == False) | (activities_df['depths_recorded'] == False) & (activities_df['elevations_recorded'] == False)]
 
     # Sorting dataframe
     activities_df.sort_values(by=['eventdate', 'eventtime'], ascending=False, inplace=True)
@@ -66,17 +88,23 @@ def missing_metadata():
     activities_df['pi_details'] = activities_df.apply(lambda row : combine_personnel_details(row['pi_name'], row['pi_email']), axis=1)
     activities_df['recordedby'] = activities_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
 
+    required_fields_dic = output_config_dict['Data']['Required']
+    if 'minimumDepthInMeters' in output_config_dict['Data']['Recommended'].keys() and 'maximumDepthInMeters' in output_config_dict['Data']['Recommended'].keys():
+        required_fields_dic['minimumDepthInMeters'] = output_config_dict['Data']['Recommended']['minimumDepthInMeters']
+        required_fields_dic['maximumDepthInMeters'] = output_config_dict['Data']['Recommended']['maximumDepthInMeters']
+    if 'minimumElevationInMeters' in output_config_dict['Data']['Recommended'].keys() and 'maximumElevationInMeters' in output_config_dict['Data']['Recommended'].keys():
+        required_fields_dic['minimumElevationInMeters'] = output_config_dict['Data']['Recommended']['minimumElevationInMeters']
+        required_fields_dic['maximumElevationInMeters'] = output_config_dict['Data']['Recommended']['maximumElevationInMeters']
+
     if 'id' in output_config_dict['Data']['Required'].keys():
         pass
     elif 'id' in output_config_dict['Data']['Recommended'].keys():
         output_config_dict['Data']['Required']['id'] = output_config_dict['Data']['Recommended']['id']
 
     # Writing values to dictionary
-    for key, val in output_config_dict['Data']['Required'].items():
+    for key, val in required_fields_dic.items():
         activities_df.columns = activities_df.columns.str.replace(key.lower(), key)
         val['values'] = activities_df[key].values.tolist()
-
-    required_fields_dic = output_config_dict['Data']['Required']
 
     if request.method == 'GET':
         return render_template(
