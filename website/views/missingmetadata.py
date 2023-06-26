@@ -131,43 +131,43 @@ def missing_metadata():
         df_to_submit = activities_df[required]
         fields_to_submit = []
 
-        if form_input['submit'] == ['bulk']:
-            # Isolating df to selected gear type
-            geartype = form_input['bulkgeartype']
-            df_to_submit = df_to_submit.loc[df_to_submit['gearType'] == geartype[0]]
-
-            fields_to_submit.append('gearType')
-
-            for key, val in form_input.items():
-                if key == 'bulkrecordedby':
-                    df_to_submit['recordedBy'] = ' | '.join(val)
-                    fields_to_submit.append('recordedBy')
-                elif key == 'bulkpidetails':
-                    df_to_submit['pi_details'] = ' | '.join(val)
-                    fields_to_submit.append('pi_details')
-
+        # if form_input['submit'] == ['bulk']:
+        #     # Isolating df to selected gear type
+        #     geartype = form_input['bulkgeartype']
+        #     df_to_submit = df_to_submit.loc[df_to_submit['gearType'] == geartype[0]]
+        #
+        #     fields_to_submit.append('gearType')
+        #
+        #     for key, val in form_input.items():
+        #         if key == 'bulkrecordedby':
+        #             df_to_submit['recordedBy'] = ' | '.join(val)
+        #             fields_to_submit.append('recordedBy')
+        #         elif key == 'bulkpidetails':
+        #             df_to_submit['pi_details'] = ' | '.join(val)
+        #             fields_to_submit.append('pi_details')
+        #
+        # else:
+        df_to_submit['pi_details'] = df_to_submit['recordedBy'] = None
+        if form_input['submit'] == ['all']:
+            rows = list(range(num_rows))
         else:
-            df_to_submit['pi_details'] = df_to_submit['recordedBy'] = None
-            if form_input['submit'] == ['all']:
-                rows = list(range(num_rows))
-            else:
-                rows = [int(r) for r in form_input['submit']]
+            rows = [int(r) for r in form_input['submit']]
 
-            for key, value in form_input.items():
-                if '|' in key and value != ['None']:
-                    field, row = key.split('|')
-                    fields_to_submit.append(field)
-                    row = int(row)
-                    if row in rows:
-                        if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
-                            for term, vals in output_config_dict['Data']['Required'].items():
-                                if term == field:
-                                    formatted_value = format_form_value(field, value, vals['format'])
-                                    df_to_submit[field][row] = formatted_value
-                        elif field in ['pi_details','recordedBy']:
-                            df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
+        for key, value in form_input.items():
+            if '|' in key and value != ['None']:
+                field, row = key.split('|')
+                fields_to_submit.append(field)
+                row = int(row)
+                if row in rows:
+                    if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
+                        for term, vals in output_config_dict['Data']['Required'].items():
+                            if term == field:
+                                formatted_value = format_form_value(field, value, vals['format'])
+                                df_to_submit[field][row] = formatted_value
+                    elif field in ['pi_details','recordedBy']:
+                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 
-            df_to_submit = df_to_submit.iloc[rows]
+        df_to_submit = df_to_submit.iloc[rows]
 
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
