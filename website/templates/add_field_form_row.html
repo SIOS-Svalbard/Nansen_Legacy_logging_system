@@ -25,68 +25,55 @@
   </div>
 
   {% elif field['format'] == 'text' %}
-    {% if id == 'stationName' %}
-    <div class="col-sm-7">
-      <select class="custom-select" id="stationName" name="stationName" aria-label="Default select example">
-        <option selected>{{field['value']}}</option>
-        {% for station in field['valid']['source'] %}
-          <option>{{station}}</option>
-        {% endfor %}
-      </select>
-      <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-    </div>
-    <div class="col-sm-2">
-      <a class="btn btn-info" href="/register/stations" role="button">Register new</a>
-    </div>
-    {% elif id == 'gearType' %}
-    <div class="col-sm-7">
-      <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
-        <option selected>{{field['value']}}</option>
-        {% for gearType in field['valid']['source'] %}
-          <option>{{gearType}}</option>
-        {% endfor %}
-      </select>
-      <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
-    </div>
-    <div class="col-sm-2">
-      <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
-    </div>
-    {% elif id == 'pi_details' %}
-    <div class="col-sm-7">
-      <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
+    {% if id == 'pi_details' %}
+      <div class="col-sm-7">
+        <select multiple class="custom-select" id="pi_details" name="pi_details" aria-label="Default select example">
         {% for person in field['valid']['source'] %}
           {% if person in field['value'] %}
-            <option selected="selected">{{person}}</option>
+          <option selected="selected">{{person}}</option>
           {% else %}
-            <option>{{person}}</option>
+          <option>{{person}}</option>
           {% endif %}
         {% endfor %}
-      </select>
-      <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
-    </div>
-    <div class="col-sm-2">
-      <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-    </div>
+        </select>
+        <small class="form-text text-muted" id="pi_help">Select multiple by holding down CTRL or Fn</small>
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
+      </div>
     {% elif id == 'recordedBy' %}
-    <div class="col-sm-7">
-      <select multiple class="custom-select" id="recordedBy" name="recordedBy" aria-label="Default select example">
+      <div class="col-sm-7">
+        <select multiple class="custom-select" id="recordedBy" name="recordedBy" aria-label="Default select example">
         {% for person in field['valid']['source'] %}
           {% if person in field['value'] %}
-            <option selected="selected">{{person}}</option>
+          <option selected="selected">{{person}}</option>
           {% else %}
-            <option>{{person}}</option>
+          <option>{{person}}</option>
           {% endif %}
         {% endfor %}
-      </select>
-      <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
-    </div>
-    <div class="col-sm-2">
-      <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
-    </div>
+        </select>
+        <small class="form-text text-muted" id="recordedBy_help">Select multiple by holding down CTRL or Fn</small>
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-info" href="/register/personnel" role="button">Register new</a>
+      </div>
+    {% elif 'source' in field['valid'] %}
+      <div class="col-sm-7">
+        <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
+        <option selected>{{field['value']}}</option>
+        {% for item in field['valid']['source'] %}
+          <option>{{item}}</option>
+        {% endfor %}
+        </select>
+        <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
+      </div>
+      <div class="col-sm-2">
+        <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
+      </div>
     {% else %}
-    <div class="col-sm-9">
-      <input type="text" class="form-control" name="{{ id }}" id="{{ id }}" placeholder="{{ id }}" value="{{field['value']}}">
-    </div>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" name="{{ id }}" id="{{ id }}" placeholder="{{ id }}" value="{{field['value']}}">
+      </div>
     {% endif %}
 
   {% elif field['format'] == 'double precision' %}
