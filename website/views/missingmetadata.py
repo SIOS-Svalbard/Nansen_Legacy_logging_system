@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from website.lib.get_data import get_personnel_df, get_cruise
+from website.lib.get_data import get_personnel_df, get_cruise, get_metadata_for_list_of_ids
 from website.lib.input_update_records import update_record_metadata_catalogue
 from website.lib.harvest_activities import harvest_activities
 from website.lib.checker import run as checker
@@ -171,12 +171,11 @@ def missing_metadata():
 
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
-        if 'pi_email' not in df_to_submit.columns:
-            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-        if 'recordedBy_email' not in df_to_submit.columns:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-        df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
+        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+
+        df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
         for field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
             required.remove(field)
 
@@ -253,10 +252,11 @@ def missing_metadata():
             fields_to_submit_dict['columns']['modified'] = record_details['modified']
             fields_to_submit_dict['columns']['history'] = record_details['history']
 
-            fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(len(df_to_submit))]
-            fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities") for n in range(len(df_to_submit))]
-
             ids = list(df_to_submit['id'])
+
+            fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(len(df_to_submit))]
+            fields_to_submit_dict['columns']['history']['value'] = list(activities_df.loc[activities_df['id'].isin(ids), 'history'])
+            fields_to_submit_dict['columns']['history']['value'] = [n + '\n' + dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Updated using missingMetadata page for activities") for n in fields_to_submit_dict['columns']['history']['value']]
 
             update_record_metadata_catalogue(fields_to_submit_dict, DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, IDs=ids)
 
