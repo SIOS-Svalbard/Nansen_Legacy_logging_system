@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 import uuid
 from website.lib.get_children_list_of_dics import get_children_list_of_dics
-from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_metadata_for_list_of_ids
+from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_metadata_for_list_of_ids, get_sampleType, get_subconfig_for_sampletype
 from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
 from website.lib.propegate_parents_to_children import find_all_children, propegate_parents_to_children
@@ -29,7 +29,12 @@ def edit_activity_form(ID):
 
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
-    subconfig = 'Activities'
+    if ID == 'addNew':
+        subconfig = 'Activities'
+    else:
+        sampleType = get_sampleType(DB, CRUISE_NUMBER, ID)
+        subconfig = get_subconfig_for_sampletype(sampleType, DB)
+
     list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
 
     (
@@ -393,7 +398,7 @@ def edit_activity_form(ID):
         trace = get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, ID)
 
     return render_template(
-    "addActivityForm.html",
+    "editOneRecord.html",
     ID=ID,
     output_config_dict=output_config_dict,
     extra_fields_dict=extra_fields_dict,

@@ -121,7 +121,11 @@
             </td>
           {% elif col == 'number_of_children' %}
           {% else %}
-            <td>{{ row_ }}</td>
+            <td>
+              {% if row_ %}
+                {{ row_ }}
+              {% endif %}
+            </td>
           {% endif %}
           {% endfor %}
         </tr>

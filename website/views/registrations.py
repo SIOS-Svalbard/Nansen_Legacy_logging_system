@@ -104,7 +104,7 @@ def cruiseDetails():
     current_cruise_comment=current_cruise_comment,
     )
 
-@registrations.route('/register/institutions', methods=['GET', 'POST'])
+@registrations.route('/register/institution', methods=['GET', 'POST'])
 def institutions():
 
     df = get_data(DB, 'institutions')
@@ -143,7 +143,7 @@ def institutions():
 
     return render_template("register/institutions.html", short_names = short_names, full_names = full_names, comments = comments, len = len(full_names))
 
-@registrations.route('/register/sampleTypes', methods=['GET', 'POST'])
+@registrations.route('/register/sampleType', methods=['GET', 'POST'])
 def sampleTypes():
 
     df = get_data(DB, 'sampletype')
@@ -178,7 +178,7 @@ def sampleTypes():
 
     return render_template("register/sampleTypes.html", registered_sample_types=sample_types, registered_subconfigs=subconfigs, subconfigs=list(set(subconfigs)), comments=comments, len=len(sample_types))
 
-@registrations.route('/register/gearTypes', methods=['GET', 'POST'])
+@registrations.route('/register/gearType', methods=['GET', 'POST'])
 def gearTypes():
 
     df = get_data(DB, 'geartype')
@@ -211,7 +211,7 @@ def gearTypes():
 
     return render_template("register/gearTypes.html", registered_gear_types=gear_types, comments=comments, len=len(gear_types))
 
-@registrations.route('/register/intendedMethods', methods=['GET', 'POST'])
+@registrations.route('/register/intendedMethod', methods=['GET', 'POST'])
 def intendedMethods():
 
     df = get_data(DB, 'intendedmethod')
@@ -244,7 +244,7 @@ def intendedMethods():
 
     return render_template("register/intendedMethods.html", registered_intended_methods=intended_methods, comments=comments, len=len(intended_methods))
 
-@registrations.route('/register/stations', methods=['GET', 'POST'])
+@registrations.route('/register/stationName', methods=['GET', 'POST'])
 def stations():
 
     cruise_details_df = get_cruise(DB)
@@ -395,7 +395,7 @@ def sex():
 
     return render_template("register/sex.html", sexes=sexes, comments=comments, len=len(sexes))
 
-@registrations.route('/register/kingdoms', methods=['GET', 'POST'])
+@registrations.route('/register/kingdom', methods=['GET', 'POST'])
 def kingdoms():
 
     df = get_data(DB, 'kingdoms')
@@ -428,7 +428,7 @@ def kingdoms():
 
     return render_template("register/kingdoms.html", kingdoms=kingdoms, comments=comments, len=len(kingdoms))
 
-@registrations.route('/register/filters', methods=['GET', 'POST'])
+@registrations.route('/register/filter', methods=['GET', 'POST'])
 def filters():
 
     df = get_data(DB, 'filters')
@@ -461,7 +461,7 @@ def filters():
 
     return render_template("register/filters.html", filters=filters, comments=comments, len=len(filters))
 
-@registrations.route('/register/projects', methods=['GET', 'POST'])
+@registrations.route('/register/project', methods=['GET', 'POST'])
 def registeredprojects():
 
     df = get_data(DB, 'projects')
@@ -494,7 +494,7 @@ def registeredprojects():
 
     return render_template("register/projects.html", projects=projects, comments=comments, len=len(projects))
 
-@registrations.route('/register/storageTemps', methods=['GET', 'POST'])
+@registrations.route('/register/storageTemp', methods=['GET', 'POST'])
 def storageTemps():
 
     df = get_data(DB, 'storagetemperature')

@@ -147,8 +147,9 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
 
             if activity['activityTypeName'] in gear_df['imr_name'].values:
                 geartype = gear_df.loc[gear_df['imr_name'] == activity['activityTypeName'], 'geartype'].item()
+                geartype = f"'{geartype}'"
             else:
-                geartype = ''
+                geartype = "NULL"
 
             count = activity['activityNumber']
             readable_id = 'Activity_'+str(count)
@@ -197,7 +198,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
             {endDecimalLongitude},
             {sea_floor_depth_below_sea_surface},
             '{activity["comment"]}',
-            '{geartype}',
+            {geartype},
             '{created}',
             '{modified}',
             '{history}',
