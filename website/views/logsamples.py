@@ -108,6 +108,12 @@ def edit_activity_form(ID):
 
         for parent_field in parent_fields:
             parent_details[parent_field]['value'] = parent_df[parent_field.lower()][0]
+
+        # Removing inherited fields from form so user can't edit them.
+        # The user should edit the parent field instead
+        for col in sample_metadata_df.columns:
+            if col in CONFIG["metadata_catalogue"]["fields_to_inherit"]:
+                sample_metadata_df = sample_metadata_df.drop(columns = [col])
     else:
         parent_details = None
 
