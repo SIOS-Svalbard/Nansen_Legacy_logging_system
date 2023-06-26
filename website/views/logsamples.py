@@ -66,6 +66,9 @@ def edit_activity_form(ID):
          .replace('', np.nan)
          )
 
+    print('***** 1')
+    print(sample_metadata_df[['eventdate','geartype', 'stationname']])
+
     other_columns = []
     # Splitting hstore to get column names
     if len(sample_metadata_df) == 1:
