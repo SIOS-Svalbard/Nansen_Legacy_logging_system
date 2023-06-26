@@ -59,16 +59,16 @@
       </div>
     {% elif 'source' in field['valid'] %}
       <div class="col-sm-7">
-        <select class="custom-select" id="gearType" name="gearType" aria-label="Default select example">
+        <select class="custom-select" id="{{ field['id'] }}" name="{{ field['id'] }}" aria-label="Default select example">
         <option selected>{{field['value']}}</option>
         {% for item in field['valid']['source'] %}
           <option>{{item}}</option>
         {% endfor %}
         </select>
-        <small class="form-text text-muted" id="pi_help">Select from dropdown list</small>
+        <small class="form-text text-muted">Select from dropdown list</small>
       </div>
       <div class="col-sm-2">
-        <a class="btn btn-info" href="/register/gearTypes" role="button">Register new</a>
+        <a class="btn btn-info" href="/register/{{ field['id'] }}" role="button">Register new</a>
       </div>
     {% else %}
       <div class="col-sm-9">
