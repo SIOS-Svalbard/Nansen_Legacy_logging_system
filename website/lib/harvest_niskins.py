@@ -82,7 +82,7 @@ def find_parentID(statID, df_activities):
     '''
 
     df_tmp = df_activities.loc[df_activities['statid'] == int(statID)]
-    return df_tmp.loc[df_tmp['geartype'] == 'CTD w/bottles', 'id'].item()
+    return df_tmp.loc[df_tmp['geartype'].isin(['CTD w/bottles','CTD']), 'id'].item()
 
 
 def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):

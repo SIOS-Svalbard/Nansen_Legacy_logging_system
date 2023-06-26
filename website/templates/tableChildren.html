@@ -39,7 +39,11 @@
             </a>
 
           {% else %}
-            {{value['values'][row_num]}}
+            {% if value['values'][row_num] %}
+              {% if value['values'][row_num] != [None] %}
+                {{value['values'][row_num]}}
+              {% endif %}
+            {% endif %}
 
           {% endif %}
           </td>
