@@ -17,15 +17,7 @@
       <h2>{{ sampleType }}</h2>
       {% include 'fields_key.html' %}
     </div>
-    <div class="col-4 border border-secondary">
-      <div class="container">
-        <br>
-        <h3>Parent</h3>
-        {% for parent_field, val in parent_details.items() %}
-          {{val['disp_name']}}: <span class="text-primary">{{val['value']}}</span><br>
-        {% endfor %}<br>
-      </div>
-    </div>
+    {% include 'parent_details.html' %}
   </div><br><br>
 </div>
 

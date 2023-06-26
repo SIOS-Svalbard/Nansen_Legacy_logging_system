@@ -88,6 +88,35 @@ def edit_activity_form(ID):
                                 if field == field_name:
                                     added_fields_dic['Data'][field] = vals
 
+    # Getting metadata for parent if applicable
+    parentID = sample_metadata_df['parentid'][0]
+    if parentID:
+        parent_df = get_metadata_for_id(DB, CRUISE_NUMBER, parentID)
+        parent_fields = [
+            'id',
+            'gearType',
+            'sampleType',
+            'stationName',
+            'decimalLatitude',
+            'decimalLongitude',
+            'eventDate',
+            'eventTime',
+            'minimumDepthInMeters',
+            'maximumDepthInMeters'
+        ]
+        parent_details = get_dict_for_list_of_fields(parent_fields,FIELDS_FILEPATH)
+
+        for parent_field in parent_fields:
+            parent_details[parent_field]['value'] = parent_df[parent_field.lower()][0]
+
+        # Removing inherited fields from form so user can't edit them.
+        # The user should edit the parent field instead
+        for col in sample_metadata_df.columns:
+            if col in CONFIG["metadata_catalogue"]["fields_to_inherit"]:
+                sample_metadata_df = sample_metadata_df.drop(columns = [col])
+    else:
+        parent_details = None
+
     # Assigning values already registered in database for output_config_dict
     for sheet in output_config_dict.keys():
         for requirement in output_config_dict[sheet].keys():
@@ -414,7 +443,8 @@ def edit_activity_form(ID):
     children_list_of_dics=children_list_of_dics,
     len=len,
     isnan=isnan,
-    get_title=get_title
+    get_title=get_title,
+    parent_details=parent_details,
     )
 
 @logsamples.route('/logSamples/parentid=<ID>', methods=['GET', 'POST'])

@@ -9,9 +9,15 @@
   {% if not trace.empty: %}
     {{ breadcrumb(trace) }}
   {% endif %}
-  <h1>Form to register an activity</h1><br>
-  {% include 'fields_key.html' %}
+  <h1>Form to register/edit one record</h1><br>
 
+  <div class="row">
+    <div class="col-8">
+      <h2>{{ sampleType }}</h2>
+      {% include 'fields_key.html' %}
+    </div>
+    {% include 'parent_details.html' %}
+  </div><br><br>
 
   <form method="POST">
     {% for requirement in output_config_dict['Data'].keys() %}
