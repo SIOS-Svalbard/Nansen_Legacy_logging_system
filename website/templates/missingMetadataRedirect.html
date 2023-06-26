@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %}Missing Metadata{% endblock %} {% block content
+%}
+<div class="container">
+  <h1>Missing metadata</h1><br>
+  <p>Required metadata is missing for the following categories:</p><br>
+  {% if missing_activities == True %}
+  <a class="btn btn-danger btn-lg" role="button" href="/missingMetadata/Activities">Activities</a>
+  {% endif %}
+  {% if missing_niskins == True %}
+  <a class="btn btn-danger btn-lg" role="button" href="/missingMetadata/Niskin_bottles">Niskin bottles</a>
+  {% endif %}
+</div>
+
+{% endblock %}

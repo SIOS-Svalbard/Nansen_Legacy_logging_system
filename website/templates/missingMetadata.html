@@ -1,8 +1,9 @@
 {% extends "base.html" %} {% block title %}Missing Metadata{% endblock %} {% block content
 %}
-
+<!--
 <h1>Fill in multiple activities by gear type</h1>
 <p>What you fill in here will only apply to the activities in the table below.</p>
+
 
 <form method="POST">
   <div class="row">
@@ -43,12 +44,15 @@
   </div>
 
 </form>
+-->
 
-<h4>Register more options for you drop-down lists <a class="btn btn-warning btn-lg" href="/register" role="button">here</a></h4>
+<p>Register more options for drop-down lists <a class="btn btn-warning" href="/register" role="button">here</a></p>
 
 <br>
-<h1>All activities with missing metadata</h1>
-
+<h4>Records with missing metadata</h4>
+{% if 'minimumDepthInMeters' in required_fields_dic and 'minimumElevationInMeters' in required_fields_dic.keys() %}
+<p>Please enter either a depth range or an elevation range. Minimum and maximum can be the same if neccessary.</p>
+{% endif %}
 <form method="POST">
   <table class="table">
     <thead class="thead-dark">
@@ -124,20 +128,42 @@
             {% endif %}
 
           {% elif value['format'] == 'double precision' %}
-            {% if isnan(value['values'][row_num]) %}
+            {% if value['values'][row_num] %}
+              {% if isnan(value['values'][row_num]) %}
+                {% if field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters'] %}
+                <div class="container bg-warning">
+                {% else %}
+                <div class="container bg-danger">
+                {% endif %}
+                  {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
+                  <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                  {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
+                  <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                  {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters'] %}
+                  <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                  {% else %}
+                  <input type="number" step=0.0001 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
+                  {% endif %}
+                </div>
+              {% else %}
+                {{value['values'][row_num]}}
+              {% endif %}
+            {% else %}
+              {% if field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters'] %}
+              <div class="container bg-warning">
+              {% else %}
               <div class="container bg-danger">
+              {% endif %}
                 {% if field in ['decimalLatitude', 'middleDecimalLatitude', 'endDecimalLatitude'] %}
                 <input type="number" step=0.0001 min=-90 max=90 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
                 {% elif field in ['decimalLongitude', 'middleDecimalLongitude', 'endDecimalLongitude'] %}
                 <input type="number" step=0.0001 min=-180 max=180 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
-                {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters', 'bottomDepthInMeters'] %}
+                {% elif field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters'] %}
                 <input type="number" step=0.0001 min=0 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
                 {% else %}
                 <input type="number" step=0.0001 class="form-control" name="{{ field }}|{{ row_num }}" id="{{ field }}|{{ row_num }}" value="{{value['values'][row_num]}}">
                 {% endif %}
               </div>
-            {% else %}
-              {{value['values'][row_num]}}
             {% endif %}
 
           {% elif value['format'] == 'int' %}

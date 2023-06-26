@@ -56,6 +56,21 @@ def get_registered_activities(DB, CRUISE_NUMBER):
     """
     return pd.read_sql(sql, con=conn)
 
+def get_registered_niskins(DB, CRUISE_NUMBER):
+    conn = psycopg2.connect(**DB)
+    sql = f"""
+    SELECT
+        *,
+        (
+            SELECT COUNT(*)
+            FROM metadata_catalogue_{CRUISE_NUMBER} ch
+            WHERE p.id=ch.parentid
+        ) AS number_of_children
+    FROM metadata_catalogue_{CRUISE_NUMBER} p
+    WHERE sampletype = 'Niskin';
+    """
+    return pd.read_sql(sql, con=conn)
+
 def get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, ids):
     conn = psycopg2.connect(**DB)
     if len(ids) > 1:

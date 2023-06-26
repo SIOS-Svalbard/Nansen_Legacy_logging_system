@@ -2,7 +2,7 @@
 
 Learnings from AeN logging system designed based on experiences gained during the Nansen Legacy project (Arven etter Nansen - AeN). Metadata logging system to be deployed on vessels, to log multidisciplinary marine data.
 
-The software is a locally-hosted Flask Python web server that should be deployed on a virtual machine. Users access a GUI via an IP address (or DNS?) when plugged into the network. Metadata related to onboard activities and samples are logged in a PostgreSQL database table. 
+The software is a locally-hosted Flask Python web server that should be deployed on a virtual machine. Users access a GUI via an IP address (or DNS?) when plugged into the network. Metadata related to onboard activities and samples are logged in a PostgreSQL database table.
 
 Metadata are logged in a hierarchical way. Metadata related to activities sit at the top of the pyramid, and  are pulled from the API of an onboard 'Toktlogger' developed by the Institute of Marine Research. Metadata related to Niskin bottles are pulled from .btl files stored on the network. Samples must be logged manually by the users.  
 
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ```
 ./main.py
 ```
-  
+
 ## Viewing the application
-  
-Go to http://127.0.0.1:5000 in your web browser
+
+Go to http://127.0.0.1:5001 in your web browser
