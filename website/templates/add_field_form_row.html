@@ -60,7 +60,11 @@
     {% elif 'source' in field['valid'] %}
       <div class="col-sm-7">
         <select class="custom-select" id="{{ field['id'] }}" name="{{ field['id'] }}" aria-label="Default select example">
-        <option selected>{{field['value']}}</option>
+        {% if field['value'] %}
+          <option selected>{{field['value']}}</option>
+        {% else %}
+          <option selected></option>
+        {% endif %}
         {% for item in field['valid']['source'] %}
           <option>{{item}}</option>
         {% endfor %}
