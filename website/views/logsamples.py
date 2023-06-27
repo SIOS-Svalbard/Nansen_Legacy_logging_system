@@ -89,7 +89,11 @@ def edit_activity_form(ID):
                                     added_fields_dic['Data'][field] = vals
 
     # Getting metadata for parent if applicable
-    parentID = sample_metadata_df['parentid'][0]
+    if ID == 'addNew':
+        parentID = None
+    else:
+        parentID = sample_metadata_df['parentid'][0]
+
     if parentID:
         parent_df = get_metadata_for_id(DB, CRUISE_NUMBER, parentID)
         parent_fields = [
@@ -413,9 +417,7 @@ def edit_activity_form(ID):
                     ii = 0
                     while len(children_IDs) > 0:
                         df_children = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, children_IDs)
-                        print('****\n',1,'\n',df_children['stationname'])
                         df_children = propegate_parents_to_children(df_children,DB, CRUISE_NUMBER)
-                        print('****\n',2,'\n',df_children['stationname'])
                         df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
                         metadata_df = False
 

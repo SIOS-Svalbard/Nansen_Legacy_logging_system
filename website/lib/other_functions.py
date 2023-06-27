@@ -7,6 +7,7 @@ Created on Tue May 03 08:56:15 2022
 """
 
 from math import sin, cos, sqrt, atan2, radians
+import numpy as np
 
 def distanceCoordinates(lat1,lon1,lat2, lon2):
     '''
@@ -156,12 +157,18 @@ def format_form_value(field, value, format):
                 return 'NULL'
             elif format == 'double precision':
                 if value[0] or value[0] == 0:
-                    return float(value[0])
+                    if np.isnan(float(value[0])):
+                        return 'NULL'
+                    else:
+                        return float(value[0])
                 else:
                     return 'NULL'
             elif format == 'int':
                 if value[0]:
-                    return int(value[0])
+                    if np.isnan(float(value[0])):
+                        return 'NULL'
+                    else:
+                        return int(value[0])
                 else:
                     return 'NULL'
             else:

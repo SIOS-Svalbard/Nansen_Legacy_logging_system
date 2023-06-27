@@ -854,7 +854,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
             else:
                 errors.append(f'Required value missing ({checker.disp_name})')
 
-        if col == 'minimumDepthInMeters' and 'minimumDepthInMeters' in data.columns:
+        if col == 'minimumDepthInMeters' and 'minimumDepthInMeters' in data.columns and 'minimumDepthInMeters' in required:
             for idx, row in data.iterrows():
                 rownum = idx + firstrow
                 mindepth = row[col]
@@ -863,7 +863,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
                     if float(mindepth) > float(maxdepth):
                         minmaxdepths.append(rownum)
 
-        if col == 'minimumElevationInMeters' and 'minimumElevationInMeters' in data.columns:
+        if col == 'minimumElevationInMeters' and 'minimumElevationInMeters' in data.columns and 'minimumElevationInMeters' in required:
             for idx, row in data.iterrows():
                 rownum = idx + firstrow
                 minelevation = row[col]
@@ -896,7 +896,8 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
                 if row[col] == '' or not is_number(row[col]):
                     n = n + 1
             else:
-                n = n + 1
+                if col in required:
+                    n = n + 1
         if n > 2:
             missingdepths.append(rownum)
 

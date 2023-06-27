@@ -395,8 +395,9 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                 if 'id' not in df_to_submit.columns:
                     df_to_submit['id'] = [str(uuid.uuid4()) for ii in range(len(df_to_submit))]
                 else:
-                    df_to_submit['id'] = df_to_submit['id'].apply(lambda x: str(uuid.uuid4()) if x == 'NULL' else x)
-
+                    df_to_submit['id'] = df_to_submit['id'].apply(lambda x: str(uuid.uuid4()) if x in ['NULL',np.nan] else x)
+                print('\nREQUIRED:')
+                print(required)
                 good, errors = checker(
                     data=df_to_submit,
                     required=required,
