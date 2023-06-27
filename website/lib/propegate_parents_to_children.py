@@ -123,3 +123,38 @@ def find_all_children(IDs,DB, CRUISE_NUMBER):
             moreChildren = False
 
     return children_IDs
+
+def find_direct_children(IDs,DB, CRUISE_NUMBER):
+    '''
+    Return a list of child IDs for parent IDs provided.
+    Grandchildren etc are NOT included in the returned list
+    This is useful for when samples are updated. In this case, the children must also be updated
+    for fields that should be inherited
+
+    Parameters
+    ----------
+    IDs : list
+        List of IDs whose children you want to find
+    DB: str
+        Name of PSQL database that hosts the metadata catalogue
+        and other tables where lists of values for certain fields are registered
+    CRUISE_NUMBER: str
+        Cruise number, used in some PSQL table names
+
+    Returns
+    -------
+    children_IDs : list
+        List of IDs for all the children, grandchildren etc.
+
+    '''
+
+    conn = psycopg2.connect(**DB)
+
+    children_IDs = []
+
+    if len(IDs) == 1:
+        df = pd.read_sql(f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';", con=conn)
+    else:
+        df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};', con=conn)
+
+    return df['id'].to_list()

@@ -172,7 +172,13 @@ def format_form_value(field, value, format):
                 else:
                     return 'NULL'
             else:
-                return value[0]
+                if format not in ['double precision', 'int'] and type(value[0]) == float:
+                    if np.isnan(float(value[0])):
+                        return 'NULL'
+                    else:
+                        return float(value[0])
+                else:
+                    return value[0]
         elif field in ['pi_details', 'recordedBy']:
             return value
         elif len(value) == 0:
