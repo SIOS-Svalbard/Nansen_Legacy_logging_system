@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-from website.lib.get_data import get_cruise, get_user_setup, get_gears_list, get_subconfig_for_sampletype
+from website.lib.get_data import get_cruise, get_user_setup, get_gears_list, get_subconfig_for_sampletype, df_from_database
 from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH, CRUISE_NUMBER
 import numpy as np
 import pandas as pd
@@ -234,8 +234,8 @@ def choose_sample_fields(parentID,sampleType):
             else:
                 setupName = form_input['setupName'][0]
 
-            conn = psycopg2.connect(**DB)
-            df = pd.read_sql(f'SELECT setupName FROM user_field_setups_{CRUISE_NUMBER};', con=conn)
+            query = f'SELECT setupName FROM user_field_setups_{CRUISE_NUMBER};'
+            df = df_from_database(query,DB)
             existing_user_setups = df['setupname'].tolist()
 
             if setupName in existing_user_setups and setupName != 'temporary':
@@ -304,8 +304,8 @@ def choose_sample_fields(parentID,sampleType):
                         current_setup = 'temporary'
                     return redirect(f'/logSamples/parentid={parentID}/form/sampletype={sampleType}&num={num_samples}&setup={current_setup}')
 
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName != 'temporary';", con=conn)
+    query = f"SELECT setupName FROM user_field_setups_{CRUISE_NUMBER} WHERE setupName != 'temporary';"
+    df = df_from_database(query,DB)
     existing_user_setups = sorted(df['setupname'].tolist())
 
     return render_template(

@@ -280,25 +280,26 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                 for term, vals in output_config_dict['Data'][requirement].items():
                                     if term == field:
                                         formatted_value = format_form_value(field, value, vals['format'])
-                                        df_to_submit[field][row] = formatted_value
+                                        df_to_submit.loc[row, field] = formatted_value
+
 
                         for term, vals in added_cf_names_dic['Data'].items():
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit[field][row] = formatted_value
+                                df_to_submit.loc[row, field] = formatted_value
 
                         for term, vals in added_dwc_terms_dic['Data'].items():
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit[field][row] = formatted_value
+                                df_to_submit.loc[row, field] = formatted_value
 
                         for term, vals in added_fields_dic['Data'].items():
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit[field][row] = formatted_value
+                                df_to_submit.loc[row, field] = formatted_value
 
                     elif field in ['pi_details', 'recordedBy']:
-                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
+                        df_to_submit.loc[row, field] = ' | '.join(format_form_value(field, value, 'text'))
 
         # Populate dictionaries from df for fields whose values vary for each row
         fields_varied = list(set(fields_varied))
@@ -396,8 +397,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     df_to_submit['id'] = [str(uuid.uuid4()) for ii in range(len(df_to_submit))]
                 else:
                     df_to_submit['id'] = df_to_submit['id'].apply(lambda x: str(uuid.uuid4()) if x in ['NULL',np.nan] else x)
-                print('\nREQUIRED:')
-                print(required)
+
                 good, errors = checker(
                     data=df_to_submit,
                     required=required,

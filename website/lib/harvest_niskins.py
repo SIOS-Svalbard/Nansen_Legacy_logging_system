@@ -57,7 +57,7 @@ def pull_columns(df_ctd,ctd_file, METADATA_CATALOGUE, BTL_FILES_FOLDER, register
     for index, row in data.iterrows():
         id_url = f'File {ctd_file} niskin bottle {row["Bottle"]} metadata catalogue {METADATA_CATALOGUE}'
         ID = generate_UUID(id_url)
-        df_ctd['id'].iloc[index] = ID
+        df_ctd.at[index, 'id'] = ID
 
     registered_niskins = df_ctd[df_ctd['id'].isin(registered_ids)].index
 
@@ -135,7 +135,7 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
                 df_ctd = pull_columns(df_ctd, ctd_file, METADATA_CATALOGUE, BTL_FILES_FOLDER, registered_ids)
                 df_ctd['dataFilename'] = ctd_file
                 df_ctd['parentID'] = find_parentID(statID, df_activities)
-                df_cruise = df_cruise.append(df_ctd, ignore_index=True)
+                df_cruise = pd.concat([df_cruise, df_ctd], ignore_index=True)
 
     # Only proceed if unregistered Niskin bottles. Registered bottles removed in pull_columns
     if len(df_cruise) > 0:

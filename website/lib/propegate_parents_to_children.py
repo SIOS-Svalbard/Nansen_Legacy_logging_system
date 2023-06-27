@@ -1,7 +1,7 @@
 from website.lib.get_data import get_metadata_for_list_of_ids
-import psycopg2
 import pandas as pd
 from website import CONFIG
+from website.lib.get_data import df_from_database
 
 def copy_from_parent(parentID, col, df_parents, child_value=None, inherit=False):
     if inherit == True:
@@ -105,16 +105,15 @@ def find_all_children(IDs,DB, CRUISE_NUMBER):
 
     '''
 
-    conn = psycopg2.connect(**DB)
-
     moreChildren = True
     children_IDs = []
 
     while moreChildren == True:
         if len(IDs) == 1:
-            df = pd.read_sql(f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';", con=conn)
+            query = f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';"
         else:
-            df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};', con=conn)
+            query = f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};'
+        df = df_from_database(query, DB)
         newChildren = df['id'].to_list()
         newChildren = [p for p in newChildren if p not in IDs]
         [children_IDs.append(p) for p in newChildren if type(p) == str]
@@ -148,13 +147,13 @@ def find_direct_children(IDs,DB, CRUISE_NUMBER):
 
     '''
 
-    conn = psycopg2.connect(**DB)
-
     children_IDs = []
 
     if len(IDs) == 1:
-        df = pd.read_sql(f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';", con=conn)
+        query = f"SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{IDs[0]}';"
     else:
-        df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};', con=conn)
+        query = f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(IDs)};'
+
+    df = df_from_database(query, DB)
 
     return df['id'].to_list()

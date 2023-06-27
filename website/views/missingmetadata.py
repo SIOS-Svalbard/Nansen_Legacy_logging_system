@@ -136,7 +136,7 @@ def missing_metadata_activities():
                         for term, vals in output_config_dict['Data']['Required'].items():
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit[field][row] = formatted_value
+                                df_to_submit.loc[row, field] = formatted_value
                     elif field in ['pi_details','recordedBy']:
                         df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 
@@ -324,7 +324,7 @@ def missing_metadata_niskins():
                         for term, vals in output_config_dict['Data']['Required'].items():
                             if term == field:
                                 formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit[field][row] = formatted_value
+                                df_to_submit.loc[row, field] = formatted_value
                     elif field in ['pi_details','recordedBy']:
                         df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 

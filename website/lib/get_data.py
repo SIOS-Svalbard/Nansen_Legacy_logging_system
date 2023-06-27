@@ -2,9 +2,26 @@ import psycopg2
 import psycopg2.extras
 import pandas as pd
 
-def get_cruise(DB):
+def df_from_database(query, DB):
     conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT * FROM cruises WHERE current = true', con=conn)
+    cursor = conn.cursor()
+    cursor.execute(query)
+    # Fetch all the rows from the result set
+    rows = cursor.fetchall()
+
+    # Get the column names from the cursor description
+    column_names = [desc[0] for desc in cursor.description]
+
+    # Create a DataFrame from the fetched rows
+    df = pd.DataFrame(rows, columns=column_names)
+    # Close the cursor and the database connection
+    cursor.close()
+    conn.close()
+    return df
+
+def get_cruise(DB):
+    query = f'SELECT * FROM cruises WHERE current = true'
+    df = df_from_database(query, DB)
 
     if len(df) == 0:
         return None
@@ -16,34 +33,31 @@ def get_cruise(DB):
         return df
 
 def get_cruises(DB):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT cruise_number FROM cruises', con=conn)
+    query = f'SELECT cruise_number FROM cruises'
+    df = df_from_database(query, DB)
     return df['cruise_number'].astype(str).values
 
 def get_data(DB, table):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT * FROM {table}', con=conn)
+    query = f'SELECT * FROM {table}'
+    df = df_from_database(query, DB)
     if "comment" in list(df.columns):
-        df["comment"].loc[df["comment"] == "nan"] = ""
+        df.loc[df["comment"] == "nan", "comment"] = ""
     return df
 
 def get_all_ids(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER};', con=conn)
+    query = f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER};'
+    df = df_from_database(query, DB)
     return df['id'].tolist()
 
 def get_all_sources(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f'SELECT recordsource FROM metadata_catalogue_{CRUISE_NUMBER} GROUP BY recordsource;', con=conn)
+    query = f'SELECT recordsource FROM metadata_catalogue_{CRUISE_NUMBER} GROUP BY recordsource;'
+    df = df_from_database(query, DB)
     sources = df['recordsource'].tolist()
-    print(sources)
     files = [source.split('filename ')[1] for source in sources if 'filename' in source]
-    print(files)
     return files
 
 def get_registered_activities(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(**DB)
-    sql = f"""
+    query = f"""
     SELECT
         *,
         (
@@ -54,11 +68,11 @@ def get_registered_activities(DB, CRUISE_NUMBER):
     FROM metadata_catalogue_{CRUISE_NUMBER} p
     WHERE parentid is NULL;
     """
-    return pd.read_sql(sql, con=conn)
+    df = df_from_database(query, DB)
+    return df
 
 def get_registered_niskins(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(**DB)
-    sql = f"""
+    query = f"""
     SELECT
         *,
         (
@@ -69,26 +83,28 @@ def get_registered_niskins(DB, CRUISE_NUMBER):
     FROM metadata_catalogue_{CRUISE_NUMBER} p
     WHERE sampletype = 'Niskin';
     """
-    return pd.read_sql(sql, con=conn)
+    df = df_from_database(query, DB)
+    return df
 
 def get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, ids):
-    conn = psycopg2.connect(**DB)
     if len(ids) > 1:
-        df = pd.read_sql(f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id in {tuple(ids)};', con=conn)
+        query = f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id in {tuple(ids)};'
     else:
-        df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ids[0]}';", con=conn)
+        query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ids[0]}';"
+    df = df_from_database(query, DB)
     return df
 
 def get_metadata_for_id(DB, CRUISE_NUMBER, ID):
-    conn = psycopg2.connect(**DB)
     if ID in ['addNew', None]:
         ID = '6818a630-3e44-11ed-bc56-07202a870ce3'
-    df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';", con=conn)
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';"
+    df = df_from_database(query, DB)
     return df
 
 def get_sampleType(DB, CRUISE_NUMBER, ID):
-    conn = psycopg2.connect(**DB)
-    sampleType = pd.read_sql(f"SELECT sampletype FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';", con=conn)['sampletype'].item()
+    query = f"SELECT sampletype FROM metadata_catalogue_{CRUISE_NUMBER} where id = '{ID}';"
+    df = df_from_database(query, DB)
+    sampleType = df['sampletype'].item()
     return sampleType
 
 def get_metadata_for_record_and_ancestors(db, cruise_number, id):
@@ -101,19 +117,16 @@ def get_metadata_for_record_and_ancestors(db, cruise_number, id):
     return df
 
 def get_children(DB, CRUISE_NUMBER, ids):
-    conn = psycopg2.connect(**DB)
     if len(ids) == 1:
         id = ids[0]
-        df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{id}';", con=conn)
+        query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{id}';"
     else:
-        df = pd.read_sql(f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(ids)};', con=conn)
+        query = f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(ids)};'
+    df = df_from_database(query, DB)
     return df
 
-def get_personnel_df(DB=None, CRUISE_NUMBER=None, table='personnel'):
-    if DB == None:
-        df_personnel = pd.read_csv(f'website/templategenerator/website/config/{table}.csv')
-    else:
-        df_personnel = get_data(DB, f'{table}_{CRUISE_NUMBER}')
+def get_personnel_df(DB, CRUISE_NUMBER, table='personnel'):
+    df_personnel = get_data(DB, f'{table}_{CRUISE_NUMBER}')
     df_personnel.sort_values(by='last_name', inplace=True)
     df_personnel['personnel'] = df_personnel['first_name'] + ' ' + df_personnel['last_name'] + ' (' + df_personnel['email'] + ')'
     return df_personnel
@@ -136,28 +149,28 @@ def get_gears_list(DB=None, table='geartype'):
     return gears
 
 def get_user_setup(DB, CRUISE_NUMBER, setupName):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT setup from user_field_setups_{CRUISE_NUMBER} where setupName = '{setupName}'", con=conn)
+    query = f"SELECT setup from user_field_setups_{CRUISE_NUMBER} where setupName = '{setupName}'"
+    df = df_from_database(query, DB)
     return df['setup'][0]
 
 def get_samples_for_pi(DB, CRUISE_NUMBER, pi_email):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{pi_email}' IN pi_email) <> 0;", con=conn)
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{pi_email}' IN pi_email) <> 0;"
+    df = df_from_database(query, DB)
     return df
 
 def get_samples_for_recordedby(DB, CRUISE_NUMBER, recordedby_email):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{recordedby_email}' IN recordedby_email) <> 0;", con=conn)
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{recordedby_email}' IN recordedby_email) <> 0;"
+    df = df_from_database(query, DB)
     return df
 
 def get_samples_for_personnel(DB, CRUISE_NUMBER, personnel_email):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{personnel_email}' IN recordedby_email) <> 0 or position ('{personnel_email}' IN pi_email) <> 0;", con=conn)
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where position ('{personnel_email}' IN recordedby_email) <> 0 or position ('{personnel_email}' IN pi_email) <> 0;"
+    df = df_from_database(query, DB)
     return df
 
 def get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where sampletype = '{sampletype}'", con=conn)
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where sampletype = '{sampletype}'"
+    df = df_from_database(query, DB)
     return df
 
 def get_subconfig_for_sampletype(sampleType, DB):

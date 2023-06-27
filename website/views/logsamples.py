@@ -417,9 +417,9 @@ def edit_activity_form(ID):
                     ii = 0
                     while len(children_IDs) > 0:
                         df_children = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, children_IDs)
-                        print(df_children[['id','bottlenumber','minimumdepthinmeters']])
+                        print(df_children[['id','bottlenumber','eventdate']])
                         df_children = propegate_parents_to_children(df_children,DB, CRUISE_NUMBER)
-                        print(df_children[['id','bottlenumber','minimumdepthinmeters']])
+                        print(df_children[['id','bottlenumber','eventdate']])
                         df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
                         metadata_df = False
 
@@ -439,7 +439,7 @@ def edit_activity_form(ID):
                                 else:
                                     children_fields_to_submit['hstore'][field] = vals
 
-                        #update_record_metadata_catalogue(children_fields_to_submit, DB, CRUISE_NUMBER, children_IDs)
+                        update_record_metadata_catalogue(children_fields_to_submit, DB, CRUISE_NUMBER, children_IDs)
                         ii = ii + 1
                         children_IDs = find_direct_children(children_IDs, DB, CRUISE_NUMBER)
 

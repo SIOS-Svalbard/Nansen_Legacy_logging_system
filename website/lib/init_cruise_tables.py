@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 import pandas as pd
+from website.lib.get_data import df_from_database
 
 def init_metadata_catalogue(DB, CRUISE_NUMBER, cur, metadata_columns_dict):
     '''
@@ -83,8 +84,8 @@ def init_user_field_setups(DB, CRUISE_NUMBER, cur):
     cur.execute(exe_str)
 
 def check_if_cruise_exists(DB, CRUISE_NUMBER):
-    conn = psycopg2.connect(**DB)
-    df = pd.read_sql(f"SELECT cruise_number FROM cruises WHERE cruise_number = '{CRUISE_NUMBER}'", con=conn)
+    query = f"SELECT cruise_number FROM cruises WHERE cruise_number = '{CRUISE_NUMBER}'"
+    df = df_from_database(query, DB)
     if len(df) == 1:
         return True
     elif len(df) == 0:
