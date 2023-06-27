@@ -148,9 +148,13 @@ def format_form_value(field, value, format):
             return ''
     else:
         if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
-            if format in ['double precision', 'int', 'uuid'] and value == ['']:
+            if value == ['NULL']:
                 return 'NULL'
-            if format == 'double precision':
+            elif value == 'NULL':
+                return 'NULL'
+            elif format in ['double precision', 'int', 'uuid'] and value == ['']:
+                return 'NULL'
+            elif format == 'double precision':
                 if value[0] or value[0] == 0:
                     return float(value[0])
                 else:

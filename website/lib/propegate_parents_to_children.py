@@ -31,13 +31,14 @@ def check_whether_to_inherit(parentID, col, df_parents, child_value=None, weak=T
 
 def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
 
+    if 'parentid' in df_children.columns and 'parentID' not in df_children.columns:
+        df_children = df_children.rename(columns={'parentid': 'parentID'})
+
     try:
         parentIDs = list(df_children['parentID'])
     except:
-        try:
-            parentIDs = list(df_children['parentid'])
-        except:
-            return df_children
+        return df_children
+
     df_parents = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, parentIDs)
 
     # Check if every row in each column contains None
@@ -65,11 +66,12 @@ def propegate_parents_to_children(df_children,DB, CRUISE_NUMBER):
     for col in df_parents.columns:
         if col in inheritable + weak + inheritable_lower + weak_lower:
             df_children['inherit'] = True
-            if col in weak or col in weak_lower and col in df_children_columns or col in df_children_columns_lower:
-                df_children['inherit'] = df_children.apply(lambda row : check_whether_to_inherit(row['parentID'], col, df_parents, child_value = row[col], weak=True), axis=1)
-                df_children[col] = df_children.apply(lambda row : copy_from_parent(row['parentID'], col, df_parents, child_value = row[col], inherit = row['inherit']), axis=1)
+            if col in weak or col in weak_lower:
+                if col in df_children_columns or col in df_children_columns_lower:
+                    df_children['inherit'] = df_children.apply(lambda row : check_whether_to_inherit(row['parentID'], col, df_parents, child_value = row[col], weak=True), axis=1)
+                    df_children[col] = df_children.apply(lambda row : copy_from_parent(row['parentID'], col, df_parents, child_value = row[col], inherit = row['inherit']), axis=1)
             else:
-                if col in df_children.columns:
+                if col in df_children_columns or col in df_children_columns_lower:
                     df_children['inherit'] = df_children.apply(lambda row : check_whether_to_inherit(row['parentID'], col, df_parents, child_value = row[col], weak=False), axis=1)
                     df_children[col] = df_children.apply(lambda row : copy_from_parent(row['parentID'], col, df_parents, child_value = row[col], inherit = row['inherit']), axis=1)
                 else:

@@ -1,0 +1,16 @@
+{% if parent_details %}
+<div class="col-4 border border-secondary">
+  <div class="container">
+    <br>
+    <h3>Parent</h3>
+    {% for parent_field, val in parent_details.items() %}
+      {{val['disp_name']}}:
+      <span class="text-primary">
+        {% if val['value'] or val['value'] == 0 %}
+          {{val['value']}}
+        {% endif %}
+      </span><br>
+    {% endfor %}<br>
+  </div>
+</div>
+{% endif %}
