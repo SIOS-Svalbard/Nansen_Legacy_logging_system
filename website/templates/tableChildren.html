@@ -21,7 +21,6 @@
       <tr>
         {% for field, value in table.items() %}
           <td>
-
           {% if field == 'id' %}
             <a
               class="btn btn-primary"
@@ -36,8 +35,10 @@
               href="/logSamples/parentid={{value['values'][row_num]}}"
               role="button">
               Log samples
+              {% if value["number_of_children"][row_num] > 0 %}
+                ({{ value["number_of_children"][row_num] }})
+              {% endif %}
             </a>
-
           {% else %}
             {% if value['values'][row_num] %}
               {% if value['values'][row_num] != [None] %}

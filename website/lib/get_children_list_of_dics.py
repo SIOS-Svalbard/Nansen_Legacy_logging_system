@@ -96,6 +96,8 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
             except:
                 val['values'] = sampleType_df[key].values.tolist()
 
+        output_config_dict['Data']['Required']['id']['number_of_children'] = sampleType_df['number_of_children'].values.tolist()
+
         children_samples_list_of_dics.append(output_config_dict['Data']['Required'])
 
     return children_samples_list_of_dics

@@ -119,9 +119,27 @@ def get_metadata_for_record_and_ancestors(db, cruise_number, id):
 def get_children(DB, CRUISE_NUMBER, ids):
     if len(ids) == 1:
         id = ids[0]
-        query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid = '{id}';"
+        query = f'''
+        SELECT
+        *,
+        (
+            SELECT COUNT(*)
+            FROM metadata_catalogue_{CRUISE_NUMBER} ch
+            WHERE p.id=ch.parentid
+        ) AS number_of_children
+        FROM metadata_catalogue_{CRUISE_NUMBER} p
+        where parentid = '{id}';'''
     else:
-        query = f'SELECT * FROM metadata_catalogue_{CRUISE_NUMBER} where parentid in {tuple(ids)};'
+        query = f'''
+        SELECT
+        *,
+        (
+            SELECT COUNT(*)
+            FROM metadata_catalogue_{CRUISE_NUMBER} ch
+            WHERE p.id=ch.parentid
+        ) AS number_of_children
+        FROM metadata_catalogue_{CRUISE_NUMBER} p
+        where parentid in {tuple(ids)};'''
     df = df_from_database(query, DB)
     return df
 
