@@ -166,7 +166,7 @@ def sampleTypes():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO sampletype (id, sampleType, subconfig, comment, created) VALUES ('{uuid.uuid4()}', '{subconfig}', '{sample_type}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO sampletype (id, sampleType, subconfig, comment, created) VALUES ('{uuid.uuid4()}', '{sample_type}', '{subconfig}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()

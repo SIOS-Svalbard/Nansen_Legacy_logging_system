@@ -28,7 +28,7 @@
 
   <form method="POST">
     <div class="form-group">
-      <label for="sample_type">Sample types</label>
+      <label for="sample_type">Sample type</label>
       <input
         type="text"
         class="form-control"
@@ -38,6 +38,7 @@
         <small class="form-text text-muted" id="sample_type_help">If there is no physical sample, use 'Data: no physical sample'</small>
     </div>
     <div class="form-group">
+      <label for="subconfig">Sub-configuration</label>
       <select class="custom-select" id="subconfig" name="subconfig" aria-label="Default select example">
         <label for="subconfig">Sub-configuration</label>
         {% for subconfig in subconfigs %}
