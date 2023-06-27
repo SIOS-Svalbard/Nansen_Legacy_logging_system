@@ -1,6 +1,6 @@
 from website.lib.get_data import get_children, get_subconfig_for_sampletype
 from website.lib.expand_hstore import expand_hstore
-from website.lib.other_functions import combine_personnel_details
+from website.lib.other_functions import combine_personnel_details, sort_dataframe
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
 
 def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
@@ -86,6 +86,8 @@ def get_children_list_of_dics(DB, CRUISE_NUMBER, FIELDS_FILEPATH, ids):
         sampleType_df['recordedby'] = sampleType_df.apply(lambda row : combine_personnel_details(row['recordedby_name'], row['recordedby_email']), axis=1)
 
         sampleType_df = expand_hstore(sampleType_df)
+
+        sampleType_df = sort_dataframe(sampleType_df)
 
         # Writing values to dictionary
         for key, val in output_config_dict['Data']['Required'].items():

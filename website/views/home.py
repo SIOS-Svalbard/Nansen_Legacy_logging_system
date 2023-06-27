@@ -11,6 +11,7 @@ from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 import requests
 import pandas as pd
 from website.lib.get_missing import get_missing_activities, get_missing_niskins
+from website.lib.other_functions import sort_dataframe
 
 home = Blueprint('home', __name__)
 
@@ -48,8 +49,8 @@ def homepage():
 
         activities_df.loc[activities_df['id'].isin(missing_activities_df['id']), 'message'] = 'Missing metadata'
 
+        activities_df = sort_dataframe(activities_df)
         activities_df_home = activities_df[['stationname','eventdate', 'eventtime','decimallatitude','decimallongitude','geartype','pi_name','message','id', 'number_of_children']]
-        activities_df_home.sort_values(by=['eventdate', 'eventtime'], ascending=False, inplace=True)
 
         num_activities = len(activities_df_home)
 

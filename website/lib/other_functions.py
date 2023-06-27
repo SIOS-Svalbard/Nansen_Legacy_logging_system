@@ -255,3 +255,25 @@ def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_n
                     if field.lower() == col.lower():
                         template_fields_dict[sheet][field]['data'] = list(data_df[col])
     return template_fields_dict
+
+def sort_dataframe(df):
+
+    df.sort_values(by=[
+        'eventdate',
+        'eventtime',
+        'catalognumber',
+        'bottlenumber',
+        'minimumdepthinmeters',
+        'minimumelevationinmeters'
+        ],
+        ascending=[
+        False,
+        False,
+        True,
+        True,
+        False,
+        False
+        ],
+        inplace=True)
+
+    return df
