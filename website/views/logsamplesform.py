@@ -367,22 +367,26 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                 if 'pi_details' in fields_to_submit_list:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                    fields_to_submit_list.remove('pi_details')
+                    while 'pi_details' in fields_to_submit_list:
+                        fields_to_submit_list.remove('pi_details')
                     fields_to_submit_list = fields_to_submit_list + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
                 if 'recordedBy' in fields_to_submit_list:
                     df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-                    fields_to_submit_list.remove('recordedBy')
+                    while 'recordedBy' in fields_to_submit_list:
+                        fields_to_submit_list.remove('recordedBy')
                     fields_to_submit_list = fields_to_submit_list + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 fields_to_submit_list = fields_to_submit_list + ['parentID']
 
                 if 'pi_details' in required:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-                    required.remove('pi_details')
+                    while 'pi_details' in required:
+                        required.remove('pi_details')
                     required = required + ['pi_name', 'pi_email', 'pi_orcid', 'pi_institution']
                 if 'recordedBy' in required:
                     df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
-                    required.remove('recordedBy')
+                    while 'recordedBy' in required:
+                        required.remove('recordedBy')
                     required = required + ['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution']
 
                 required = required + ['parentID']
