@@ -33,13 +33,21 @@
 
   <br>
 
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data" >
 
   <h3>Register many people using an Excel template...</h3>
 
   <br>
-  <button type="submit" class="btn btn-secondary" name="submit" value="generateForm">Generate template</button>
-  <button type="submit" class="btn btn-info" name="submit" value="submitTemplate">Upload personnel from template</button>
+  <div class="container">
+    <div class="row">
+      <div class="col-3">
+        <button type="submit" class="btn btn-secondary btn-lg btn-block" name="submit" value="generateExcel">Generate Excel file</button>
+      </div>
+      <div class="col-3">
+        {% include 'submitSpreadsheetModal.html' %}
+      </div>
+    </div>
+  </div>
   <br><br>
 
   <h3>...or register details one-by-one here</h3>

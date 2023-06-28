@@ -6,6 +6,7 @@ from website.lib.get_data import get_data, get_cruise
 from website import DB
 from website.lib.other_functions import combine_personnel_details
 from website.lib.create_template_for_registering_personnel import create_personnel_template
+from website.lib.register_personnel_from_file import register_personnel_from_file
 
 registrations = Blueprint('registrations', __name__)
 
@@ -316,12 +317,25 @@ def personnel():
     if request.method == 'POST':
         form_input = request.form.to_dict(flat=False)
 
-        if form_input['submit'] == ['generateForm']:
+        if 'submit' in form_input.keys() and form_input['submit'] == ['generateExcel']:
             filepath = f'/tmp/template_for_registering_personnel.xlsx'
 
             create_personnel_template(filepath)
 
             return send_file(filepath, as_attachment=True)
+
+        elif 'submit' in form_input.keys() and form_input['submit'] == ['submitExcel']:
+
+            f = request.files['file']
+
+            good, errors = register_personnel_from_file(f)
+
+            if good == False:
+                for error in errors:
+                    flash(error, category='error')
+            else:
+                flash('Personnel uploaded successfully')
+
         else:
             first_name = request.form.get('first_name').capitalize()
             last_name = request.form.get('last_name').capitalize()
