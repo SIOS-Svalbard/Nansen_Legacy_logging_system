@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file
 import psycopg2
 import psycopg2.extras
 import uuid
 from website.lib.get_data import get_data, get_cruise
 from website import DB
 from website.lib.other_functions import combine_personnel_details
+from website.lib.create_template_for_registering_personnel import create_personnel_template
 
 registrations = Blueprint('registrations', __name__)
 
@@ -313,52 +314,60 @@ def personnel():
     registered_institutions = list(df['full_name'])
 
     if request.method == 'POST':
-        first_name = request.form.get('first_name').capitalize()
-        last_name = request.form.get('last_name').capitalize()
-        email = request.form.get('email')
-        orcid = request.form.get('orcid')
-        print(orcid, type(orcid), len(orcid))
-        institution = request.form.get('institution')
-        comment = request.form.get('comment')
+        form_input = request.form.to_dict(flat=False)
 
-        if len(orcid) == 0:
-            check_orcid = True
+        if form_input['submit'] == ['generateForm']:
+            filepath = f'/tmp/template_for_registering_personnel.xlsx'
+
+            create_personnel_template(filepath)
+
+            return send_file(filepath, as_attachment=True)
         else:
-            if len(orcid) != 37:
-                check_orcid = False
-            elif orcid.startswith('https://orcid.org'):
+            first_name = request.form.get('first_name').capitalize()
+            last_name = request.form.get('last_name').capitalize()
+            email = request.form.get('email')
+            orcid = request.form.get('orcid')
+            institution = request.form.get('institution')
+            comment = request.form.get('comment')
+
+            if len(orcid) == 0:
                 check_orcid = True
             else:
-                check_orcid = False
+                if len(orcid) != 37:
+                    check_orcid = False
+                elif orcid.startswith('https://orcid.org'):
+                    check_orcid = True
+                else:
+                    check_orcid = False
 
-        if len(first_name) < 2:
-            flash('First name must be at least 2 characters long', category='error')
-        elif len(last_name) < 2:
-            flash('Last name must be at least 2 characters long', category='error')
-        elif len(first_name) > 30:
-            flash('First name cannot be longer than 30 characters long', category='error')
-        elif len(last_name) > 30:
-            flash('Last name cannot be longer than 30 characters long', category='error')
-        elif '@' not in email:
-            flash('Email must include an @ symbol', category='error')
-        elif len(email) < 6:
-            flash('Email must be at least 6 characters long', category='error')
-        elif institution not in registered_institutions:
-            flash('Must select an institution from the list', category='error')
-        elif not check_orcid:
-            flash('Invalid ordid', category='error')
-        else:
-            conn = psycopg2.connect(**DB)
-            cur = conn.cursor()
-            cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
+            if len(first_name) < 2:
+                flash('First name must be at least 2 characters long', category='error')
+            elif len(last_name) < 2:
+                flash('Last name must be at least 2 characters long', category='error')
+            elif len(first_name) > 30:
+                flash('First name cannot be longer than 30 characters long', category='error')
+            elif len(last_name) > 30:
+                flash('Last name cannot be longer than 30 characters long', category='error')
+            elif '@' not in email:
+                flash('Email must include an @ symbol', category='error')
+            elif len(email) < 6:
+                flash('Email must be at least 6 characters long', category='error')
+            elif institution not in registered_institutions:
+                flash('Must select an institution from the list', category='error')
+            elif not check_orcid:
+                flash('Invalid ordid', category='error')
+            else:
+                conn = psycopg2.connect(**DB)
+                cur = conn.cursor()
+                cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
-            conn.commit()
-            cur.close()
-            conn.close()
+                conn.commit()
+                cur.close()
+                conn.close()
 
-            flash('Person registered!', category='success')
+                flash('Person registered!', category='success')
 
-            return redirect(url_for('registrations.personnel'))
+                return redirect(url_for('registrations.personnel'))
 
     return render_template("register/personnel.html", registered_institutions=registered_institutions, first_names=first_names, last_names = last_names, emails = emails, institutions = institutions, orcids=orcids, comments=comments, len=len(first_names))
 

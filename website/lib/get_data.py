@@ -44,6 +44,11 @@ def get_data(DB, table):
         df.loc[df["comment"] == "nan", "comment"] = ""
     return df
 
+def get_institutions_list(DB):
+    query = f'SELECT full_name FROM institutions'
+    df = df_from_database(query, DB)
+    return df['full_name'].tolist()
+
 def get_all_ids(DB, CRUISE_NUMBER):
     query = f'SELECT id FROM metadata_catalogue_{CRUISE_NUMBER};'
     df = df_from_database(query, DB)
