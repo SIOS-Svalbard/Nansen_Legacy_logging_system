@@ -401,9 +401,9 @@ class Checker(Field):
                 return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("float(x) " + self.validation['criteria'] + "float(self.validation['value'])"))
         elif validate == 'integer':
             if criteria == 'between':
-                return Evaluator(validation, func=lambda self, x: isinstance(x, int) and self.validation['minimum'] <= int(x) <= self.validation['maximum'])
+                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and self.validation['minimum'] <= int(x) <= self.validation['maximum'])
             else:
-                return Evaluator(validation, func=lambda self, x: isinstance(x, int) and eval("int(x) " + self.validation['criteria'] + "int(self.validation['value'])"))
+                return Evaluator(validation, func=lambda self, x: (isinstance(x, int) or isinstance(x, float)) and eval("int(x) " + self.validation['criteria'] + "int(self.validation['value'])"))
         elif validate == 'time':
             if criteria == 'between':
                 if isinstance(validation['minimum'], float) or isinstance(validation['minimum'], int):
@@ -738,7 +738,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
             if is_valid_uuid(row['parentID']) == False:
                 invalid_parents.append(rownum)
         elif 'parentID' in data.columns:
-            if row['parentID'] != '' and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values and row['parentID'] != 'NULL':
+            if row['parentID'] not in ['', 'NULL', np.nan] and row['parentID'] not in registered_ids and row['parentID'] not in data['id'].values:
                 missing_parents.append(rownum)
 
     # Find rows with duplicate 'id' values

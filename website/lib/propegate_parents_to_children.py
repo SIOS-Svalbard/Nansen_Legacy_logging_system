@@ -1,7 +1,10 @@
 from website.lib.get_data import get_metadata_for_list_of_ids
 import pandas as pd
-from website import CONFIG
+from website import CONFIG, FIELDS_FILEPATH
 from website.lib.get_data import df_from_database
+from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
+from website.lib.other_functions import format_form_value
+from website.lib.input_update_records import update_record_metadata_catalogue
 
 def copy_from_parent(parentID, col, df_parents, child_value=None, inherit=False):
     if inherit == True:
@@ -157,3 +160,40 @@ def find_direct_children(IDs,DB, CRUISE_NUMBER):
     df = df_from_database(query, DB)
 
     return df['id'].to_list()
+
+def propegate_update_to_children(IDs, DB, CRUISE_NUMBER):
+    '''
+    Provide IDs of records that have just been updated
+    Relevant metadata will be propegated to the children, grandchildren etc.
+    '''
+    children_IDs = find_direct_children(IDs, DB, CRUISE_NUMBER)
+    ii = 0
+    while len(children_IDs) > 0:
+        # First children, then grandchildren etc
+        df_children = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, children_IDs)
+        df_children = propegate_parents_to_children(df_children,DB, CRUISE_NUMBER)
+        df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
+        metadata_df = False
+
+        # Populate dictionaries from df for fields whose values vary for each row
+        children_fields_to_submit = {}
+        children_fields_to_submit['columns'] = {}
+        children_fields_to_submit['hstore'] = {}
+
+        inherited_fields = CONFIG["metadata_catalogue"]["fields_to_inherit"] + CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
+        inherited_fields_dict = get_dict_for_list_of_fields(inherited_fields,FIELDS_FILEPATH)
+
+        for field, vals in inherited_fields_dict.items():
+            if field.lower() in df_children.columns:
+                vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_children[field.lower()])]
+                metadata_columns_list = CONFIG["metadata_catalogue"]["fields_to_use_as_columns"]
+                if field in metadata_columns_list:
+                    children_fields_to_submit['columns'][field] = vals
+                else:
+                    children_fields_to_submit['hstore'][field] = vals
+
+        update_record_metadata_catalogue(children_fields_to_submit, DB, CRUISE_NUMBER, children_IDs)
+        ii = ii + 1
+        children_IDs = find_direct_children(children_IDs, DB, CRUISE_NUMBER)
+
+    return ii

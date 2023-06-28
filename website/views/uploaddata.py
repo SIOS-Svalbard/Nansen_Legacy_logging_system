@@ -9,8 +9,9 @@ from datetime import datetime as dt
 import pandas as pd
 import numpy as np
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
-from website.lib.propegate_parents_to_children import propegate_parents_to_children
+from website.lib.propegate_parents_to_children import propegate_parents_to_children, propegate_update_to_children
 from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
+from website.lib.get_data import get_metadata_for_list_of_ids
 
 def reassign_personnel_based_on_email(data_df, df_personnel):
     '''
@@ -169,7 +170,8 @@ def prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row, new, go
 
 def df_to_dict_to_submit(df_to_submit, output_config_dict, extra_fields_dict, cf_standard_names, dwc_terms, CRUISE_NUMBER, filename):
 
-    df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
+    if 'parentid' in df_to_submit:
+        df_to_submit = propegate_parents_to_children(df_to_submit,DB, CRUISE_NUMBER)
     df_to_submit.columns = df_to_submit.columns.str.lower()
 
     fields_to_submit_dict = {} # dictionary to populate with with fields, values and formatting requirements to submit to metadata catalogue table in database
@@ -367,6 +369,7 @@ def upload_data():
                     subconfigs_included = list(set(data_df['subconfig']))
                     output_config_dicts = {}
                     extra_fields_dicts = {}
+                    df_subconfigs_dict = {}
                     goods = []
 
                     for subconfig in subconfigs_included:
@@ -398,28 +401,40 @@ def upload_data():
 
                         output_config_dicts[subconfig] = output_config_dict
                         extra_fields_dicts[subconfig] = extra_fields_dicts
+                        df_subconfigs_dict[subconfig] = df_subconfig
 
                     if False in goods:
                         if new == False:
-                            flash('No records were uploaded', category='error')
-                        else:
                             flash('No records were updated', category='error')
+                        else:
+                            flash('No records were uploaded', category='error')
                     else:
 
                         for subconfig in subconfigs_included:
                             if subconfig == 'Niskin bottles':
-                                df_subconfig['eventID'] = df_subconfig['id']
+                                df_subconfigs_dict[subconfig]['eventID'] = df_subconfigs_dict[subconfig]['id']
 
                             # 4. Only upload records once checker passed for all dfs (the whole sheet)
-                            fields_to_submit_dict = df_to_dict_to_submit(df_subconfig, output_config_dicts[subconfig], extra_fields_dicts[subconfig], cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
+                            fields_to_submit_dict = df_to_dict_to_submit(df_subconfigs_dict[subconfig], output_config_dicts[subconfig], extra_fields_dicts[subconfig], cf_standard_names, dwc_terms, CRUISE_NUMBER, f.filename)
 
                             if new == True:
-                                insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfig), DB, CRUISE_NUMBER)
+                                insert_into_metadata_catalogue(fields_to_submit_dict, len(df_subconfigs_dict[subconfig]), DB, CRUISE_NUMBER)
                             elif new == False:
-                                IDs = df_subconfig['id'].values.tolist()
+                                IDs = df_subconfigs_dict[subconfig]['id'].values.tolist()
                                 update_record_metadata_catalogue(fields_to_submit_dict, DB, CRUISE_NUMBER, IDs)
 
                         flash('Data from file uploaded successfully!', category='success')
+
+                        # Isolate IDs for only highest level (parents) in sheet
+                        IDs = list(data_df['id'])
+                        df = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, IDs)
+                        filtered_df = df[~df['parentid'].isin(df['id'])]
+                        IDs = filtered_df['id'].tolist()
+                        ii = propegate_update_to_children(IDs, DB, CRUISE_NUMBER)
+
+                        if ii > 0:
+                            flash('Relevant metadata copied to children', category='success')
+
                         return redirect('/')
 
                 else:
@@ -469,6 +484,11 @@ def upload_data():
                                 IDs = df_subconfig['id'].values.tolist()
                                 update_record_metadata_catalogue(fields_to_submit_dict, DB, CRUISE_NUMBER, IDs)
                                 flash('Records successfully updated using data from file!', category='success')
+
+                                ii = propegate_update_to_children(IDs, DB, CRUISE_NUMBER)
+                                if ii > 0:
+                                    flash('Relevant metadata copied to children', category='success')
+
                             return redirect('/')
                         except:
                             flash('Unexpected fail upon upload. Please check your file and try again, or contact someone for help', category='error')

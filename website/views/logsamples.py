@@ -4,7 +4,7 @@ from website.lib.get_children_list_of_dics import get_children_list_of_dics
 from website.lib.get_data import get_data, get_cruise, get_personnel_df, get_metadata_for_record_and_ancestors, get_metadata_for_id, get_metadata_for_list_of_ids, get_sampleType, get_subconfig_for_sampletype
 from website.lib.input_update_records import insert_into_metadata_catalogue, update_record_metadata_catalogue
 from website.lib.checker import run as checker
-from website.lib.propegate_parents_to_children import find_direct_children, propegate_parents_to_children
+from website.lib.propegate_parents_to_children import find_direct_children, propegate_parents_to_children, propegate_update_to_children
 from website.lib.other_functions import split_personnel_list, combine_personnel_details, get_title, format_form_value
 from website import DB, FIELDS_FILEPATH, CONFIG
 import numpy as np
@@ -412,36 +412,7 @@ def edit_activity_form(ID):
 
                     flash('Activity edited!', category='success')
 
-                    # Need to do grandchildren etc too
-                    children_IDs = find_direct_children(IDs, DB, CRUISE_NUMBER)
-                    ii = 0
-                    while len(children_IDs) > 0:
-                        df_children = get_metadata_for_list_of_ids(DB, CRUISE_NUMBER, children_IDs)
-                        print(df_children[['id','bottlenumber','eventdate']])
-                        df_children = propegate_parents_to_children(df_children,DB, CRUISE_NUMBER)
-                        print(df_children[['id','bottlenumber','eventdate']])
-                        df_children = df_children.replace(to_replace=['None', None, 'nan'],value='NULL')
-                        metadata_df = False
-
-                        # Populate dictionaries from df for fields whose values vary for each row
-                        children_fields_to_submit = {}
-                        children_fields_to_submit['columns'] = {}
-                        children_fields_to_submit['hstore'] = {}
-
-                        inherited_fields = CONFIG["metadata_catalogue"]["fields_to_inherit"] + CONFIG["metadata_catalogue"]["fields_to_inherit_if_not_logged_for_children"]
-                        inherited_fields_dict = get_dict_for_list_of_fields(inherited_fields,FIELDS_FILEPATH)
-
-                        for field, vals in inherited_fields_dict.items():
-                            if field.lower() in df_children.columns:
-                                vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_children[field.lower()])]
-                                if field in metadata_columns_list:
-                                    children_fields_to_submit['columns'][field] = vals
-                                else:
-                                    children_fields_to_submit['hstore'][field] = vals
-
-                        update_record_metadata_catalogue(children_fields_to_submit, DB, CRUISE_NUMBER, children_IDs)
-                        ii = ii + 1
-                        children_IDs = find_direct_children(children_IDs, DB, CRUISE_NUMBER)
+                    ii = propegate_update_to_children(IDs, DB, CRUISE_NUMBER)
 
                     if ii > 0:
                         flash('Relevant metadata copied to children', category='success')

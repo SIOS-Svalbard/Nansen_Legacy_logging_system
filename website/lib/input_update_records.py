@@ -24,6 +24,8 @@ def insert_into_metadata_catalogue(fields_to_submit, num_records, DB, CRUISE_NUM
                     v = 'NULL'
             else:
                 v = criteria['value']
+            if criteria['format'] == 'date' and type(v) == pd._libs.tslibs.nattype.NaTType:
+                v = 'NULL'
             if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and v != 'NULL':
                 string_4 = f"{string_4}'{v}', "
             else:
@@ -79,11 +81,10 @@ def update_record_metadata_catalogue(fields_to_submit, DB, CRUISE_NUMBER, IDs):
                         v = 'NULL'
                 else:
                     v = criteria['value']
-                if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and criteria['value'] != 'NULL':
+                if criteria['format'] in ['text', 'uuid', 'date', 'time', 'timestamp with time zone'] and v != 'NULL':
                     string_2 = f"{string_2} {field} = '{v}', "
                 else:
                     string_2 = f"{string_2} {field} = {v}, "
-
         string_2 = string_2[:-2]
 
         # HSTORE FIELDS
