@@ -115,16 +115,16 @@ class Personnel_sheet(object):
         self.sheet.write(header_row, 1, 'Last name', self.header_format)
         self.sheet.write(header_row, 2, 'Email address', self.header_format)
         self.sheet.write(header_row, 3, 'OrcID', self.header_format)
-        self.sheet.write(header_row, 4, 'Instituion', self.header_format)
-        self.sheet.write(header_row, 5, 'Instituion if not in drop-down list (column E)', self.header_format)
+        self.sheet.write(header_row, 4, 'Institution', self.header_format)
+        self.sheet.write(header_row, 5, 'Institution if not in drop-down list (column E)', self.header_format)
 
         # Write row below with parameter name
         self.sheet.write(parameter_row, 0, 'firstName', self.header_format)
         self.sheet.write(parameter_row, 1, 'lastName', self.header_format)
         self.sheet.write(parameter_row, 2, 'email', self.header_format)
         self.sheet.write(parameter_row, 3, 'orcID', self.header_format)
-        self.sheet.write(parameter_row, 4, 'instituion', self.header_format)
-        self.sheet.write(parameter_row, 5, 'instituionToRegister', self.header_format)
+        self.sheet.write(parameter_row, 4, 'institution', self.header_format)
+        self.sheet.write(parameter_row, 5, 'institutionToRegister', self.header_format)
 
         institutions_list = sorted(get_institutions_list(DB)) + ['Other']
 

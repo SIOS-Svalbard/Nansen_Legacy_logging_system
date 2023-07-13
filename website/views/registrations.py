@@ -335,6 +335,7 @@ def personnel():
                     flash(error, category='error')
             else:
                 flash('Personnel uploaded successfully')
+                return redirect(url_for('registrations.personnel'))
 
         else:
             first_name = request.form.get('first_name').capitalize()
@@ -349,7 +350,7 @@ def personnel():
             else:
                 if len(orcid) != 37:
                     check_orcid = False
-                elif orcid.startswith('https://orcid.org'):
+                elif orcid.startswith('https://orcid.org/'):
                     check_orcid = True
                 else:
                     check_orcid = False
@@ -364,6 +365,8 @@ def personnel():
                 flash('Last name cannot be longer than 30 characters long', category='error')
             elif '@' not in email:
                 flash('Email must include an @ symbol', category='error')
+            elif email in emails:
+                flash(f'Person with email {email} already registered', category='error')
             elif len(email) < 6:
                 flash('Email must be at least 6 characters long', category='error')
             elif institution not in registered_institutions:
