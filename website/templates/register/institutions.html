@@ -15,8 +15,16 @@
       {% for i in range(0, len) %}
       <tr>
         <td>{{full_names[i]}}</td>
-        <td>{{short_names[i]}}</td>
-        <td>{{comments[i]}}</td>
+        <td>
+          {% if short_names[i] %}
+          {{short_names[i]}}
+          {% endif %}
+        </td>
+        <td>
+          {% if comments[i] %}
+          {{comments[i]}}
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
