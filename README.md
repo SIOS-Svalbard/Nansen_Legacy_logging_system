@@ -16,3 +16,5 @@ git clone <repo-url>
 pip install -r requirements.txt
 ```
 The application can be run using WSGI (flaskapp.wsgi) and has been developed using apache2.
+
+Please add the IP addresses of your printer in the config.json file.
