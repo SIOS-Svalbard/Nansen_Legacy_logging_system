@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, flash, request
 from website import CONFIG
+from website.lib.create_labels import create_medium, create_large
+from website.lib.interact_with_printer import try_to_connect_to_printer, cancel_print, send_label_to_printer
+import re
+import uuid
 
 print_labels = Blueprint('print_labels', __name__)
 
@@ -36,14 +40,24 @@ def print_medium_labels():
 
     if request.method == "POST":
 
+        form_input = request.form.to_dict(flat=False)
+
         (
             number_labels,
             ip,
             text,
             increment3,
-            increment4,
-        ) = get_values_from_form(text)
+            increment4
+        ) = get_values_from_form(text, form_input)
 
+        text = increment_and_print_all(
+            number_labels,
+            ip,
+            text,
+            increment3,
+            increment4,
+            size
+        )
 
     return render_template(
     "/print_labels.html",
@@ -92,34 +106,71 @@ def print_large_labels():
         }
     }
 
-    if request.method == "POST":
+    if request.method == "GET":
+
+        return render_template(
+        "/print_labels.html",
+        size=size,
+        ribbon=ribbon,
+        labels=labels,
+        ip=ip,
+        text=text,
+        increment3=increment3,
+        increment4=increment4,
+        number_labels=number_labels
+        )
+
+    elif request.method == "POST":
+
+        form_input = request.form.to_dict(flat=False)
 
         (
             number_labels,
             ip,
             text,
             increment3,
-            increment4,
-        ) = get_values_from_form(text)
+            increment4
+        ) = get_values_from_form(text, form_input)
 
-    return render_template(
-    "/print_labels.html",
-    size=size,
-    ribbon=ribbon,
-    labels=labels,
-    ip=ip,
-    text=text,
-    increment3=increment3,
-    increment4=increment4,
-    number_labels=number_labels
-    )
+        good, errors = try_to_connect_to_printer(ip)
 
-def get_values_from_form(text):
+        if good == False:
+
+            for error in errors:
+                flash(error, category='error')
+
+            return render_template(
+            "/print_labels.html",
+            size=size,
+            ribbon=ribbon,
+            labels=labels,
+            ip=ip,
+            text=text,
+            increment3=increment3,
+            increment4=increment4,
+            number_labels=number_labels
+            )
+
+        else:
+
+            if "cancel" in form_input:
+                cancel_print()
+                flash('All jobs on printer cancelled', category='success')
+
+            text = increment_and_print_all(
+                number_labels,
+                ip,
+                text,
+                increment3,
+                increment4,
+                size
+            )
+
+def get_values_from_form(text, form_input):
     '''
     Retrieve values from form.
     These values are preserved after the user hits print.
     '''
-    form_input = request.form.to_dict(flat=False)
     number_labels = form_input['number_labels'][0]
     ip = form_input['ip'][0]
     for line, criteria in text.items():
@@ -133,3 +184,51 @@ def get_values_from_form(text):
     else:
         increment4 = False
     return number_labels, ip, text, increment3, increment4
+
+def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
+    number_labels = int(number_labels)
+    for n in range(number_labels):
+
+        if 'size' == 'large':
+            zpl = create_large(
+                str(uuid.uuid4()),
+                text[1]['content'],
+                text[2]['content'],
+                text[3]['content'],
+                text[4]['content'],
+                text[5]['content']
+                )
+        elif 'size' == 'medium':
+            zpl = create_medium(
+                str(uuid.uuid4()),
+                text[1]['content'],
+                text[2]['content'],
+                text[3]['content'],
+                text[4]['content'],
+                text[5]['content']
+                )
+
+        send_label_to_printer(zpl)
+
+        if increment3 == True:
+            text[3]['content'] = add_one_to_numbers_in_string(text[3]['content'])
+        if increment4 == True:
+            text[4]['content'] = add_one_to_numbers_in_string(text[4]['content'])
+
+    return text
+
+def add_one_to_numbers_in_string(string):
+    # Regular expression pattern to match numbers in the string (including decimals)
+    pattern = r'\b\d+(\.\d+)?\b'
+
+    def increment_number(match):
+        number = match.group()
+        if '.' in number:
+            return str(float(number) + 1)
+        else:
+            return str(int(number) + 1)
+
+    # Use re.sub() with the replacement function to increment the numbers
+    result = re.sub(pattern, increment_number, string)
+
+    return result
