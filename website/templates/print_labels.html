@@ -53,6 +53,9 @@
           class="form-check-input"
           name="increment{{ line }}"
           id="increment{{ line }}"
+          {% if line == 3 and increment3 == True or line == 4 and increment4 == True %}
+          checked
+          {% endif %}
           >
       {% endif %}
     </div>
@@ -72,7 +75,7 @@
         class="form-control"
         name="number_labels"
         id="number_labels"
-        value="1">
+        value={{number_labels}}>
     </div>
   </div><br>
   <div class="form-row">
