@@ -38,7 +38,21 @@ def print_medium_labels():
         }
     }
 
-    if request.method == "POST":
+    if request.method == "GET":
+
+        return render_template(
+        "/print_labels.html",
+        size=size,
+        ribbon=ribbon,
+        labels=labels,
+        ip=ip,
+        text=text,
+        increment3=increment3,
+        increment4=increment4,
+        number_labels=number_labels
+        )
+
+    elif request.method == "POST":
 
         form_input = request.form.to_dict(flat=False)
 
@@ -50,26 +64,64 @@ def print_medium_labels():
             increment4
         ) = get_values_from_form(text, form_input)
 
-        text = increment_and_print_all(
-            number_labels,
-            ip,
-            text,
-            increment3,
-            increment4,
-            size
-        )
+        good, errors = try_to_connect_to_printer(ip)
 
-    return render_template(
-    "/print_labels.html",
-    size=size,
-    ribbon=ribbon,
-    labels=labels,
-    ip=ip,
-    text=text,
-    increment3=increment3,
-    increment4=increment4,
-    number_labels=number_labels
-    )
+        if good == False:
+
+            for error in errors:
+                flash(error, category='error')
+
+            return render_template(
+            "/print_labels.html",
+            size=size,
+            ribbon=ribbon,
+            labels=labels,
+            ip=ip,
+            text=text,
+            increment3=increment3,
+            increment4=increment4,
+            number_labels=number_labels
+            )
+
+        else:
+
+            if "cancel" in form_input:
+                cancel_print()
+                flash('All jobs on printer cancelled', category='success')
+
+                return render_template(
+                "/print_labels.html",
+                size=size,
+                ribbon=ribbon,
+                labels=labels,
+                ip=ip,
+                text=text,
+                increment3=increment3,
+                increment4=increment4,
+                number_labels=number_labels
+                )
+            else:
+
+                text = increment_and_print_all(
+                    number_labels,
+                    ip,
+                    text,
+                    increment3,
+                    increment4,
+                    size
+                )
+
+                return render_template(
+                "/print_labels.html",
+                size=size,
+                ribbon=ribbon,
+                labels=labels,
+                ip=ip,
+                text=text,
+                increment3=increment3,
+                increment4=increment4,
+                number_labels=number_labels
+                )
 
 @print_labels.route('/print_large_labels', methods=['GET', 'POST'])
 def print_large_labels():
@@ -157,14 +209,39 @@ def print_large_labels():
                 cancel_print()
                 flash('All jobs on printer cancelled', category='success')
 
-            text = increment_and_print_all(
-                number_labels,
-                ip,
-                text,
-                increment3,
-                increment4,
-                size
-            )
+                return render_template(
+                "/print_labels.html",
+                size=size,
+                ribbon=ribbon,
+                labels=labels,
+                ip=ip,
+                text=text,
+                increment3=increment3,
+                increment4=increment4,
+                number_labels=number_labels
+                )
+            else:
+
+                text = increment_and_print_all(
+                    number_labels,
+                    ip,
+                    text,
+                    increment3,
+                    increment4,
+                    size
+                )
+
+                return render_template(
+                "/print_labels.html",
+                size=size,
+                ribbon=ribbon,
+                labels=labels,
+                ip=ip,
+                text=text,
+                increment3=increment3,
+                increment4=increment4,
+                number_labels=number_labels
+                )
 
 def get_values_from_form(text, form_input):
     '''
