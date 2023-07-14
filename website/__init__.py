@@ -14,9 +14,11 @@ def create_app():
     from .views.home import home
     from .views.print_labels import print_labels
     from .views.uuid_generator import uuid_generator
+    from .views.data_matrices_pdf import data_matrices_pdf
 
     app.register_blueprint(home, url_prefix='/')
     app.register_blueprint(print_labels, url_prefix='/')
     app.register_blueprint(uuid_generator, url_prefix='/')
+    app.register_blueprint(data_matrices_pdf, url_prefix='/')
 
     return app
