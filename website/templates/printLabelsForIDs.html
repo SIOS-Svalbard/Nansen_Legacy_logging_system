@@ -2,13 +2,117 @@
 %}
 
 <div class="container">
-  <h2>Print labels for registered sample(s)</h2>
+  <h1>Print labels for registered sample(s)</h1>
   <br>
   <p>Print labels for samples already registered in the system.</p>
   <br>
-  {% for id in ids %}
-  {{ id }} <br>
-  {% endfor %}
+  <form method="POST">
+      <h3>ID(s)</h3><br>
+      <textarea rows="3" class="form-control" name="ids" id="ids">{% for id in ids %}{{ id }}{% if not loop.last %}&#10;{% endif %}{% endfor %}</textarea>
+      <br><br>
+
+      <h3>Label type</h3><br>
+      <div class="row">
+        <div class="form-check form-check col-3">
+          <input class="form-check-input" type="radio" name="labelType" id="labelType1" value="large" checked>
+          <label class="form-check-label" for="labelType1">
+            Large labels
+          </label><br>
+          <small>5 fields or free-text lines</small>
+        </div>
+        <div class="form-check form-check col-3">
+          <input class="form-check-input" type="radio" name="labelType" id="labelType2" value="medium" checked>
+          <label class="form-check-label" for="labelType2">
+            Medium labels
+          </label><br>
+          <small>4 fields or free-text lines</small>
+        </div>
+      </div>
+      <br><br><br>
+
+      <h3>What do you want to include on the label?</h3><br>
+      <p>Please note that some text might be clipped if too long to fit on the label.</p><br>
+      <div class="row">
+
+        <div class="col-6">
+          <h5>Fields</h5>
+          {% for field, vals in possible_fields_dict.items() %}
+          <div class="form-check">
+            <label title='{{ vals["description"] }}' class="form-check-label">
+              <input
+                class="form-check-input form-control-lg"
+                type="checkbox"
+                id="{{ field }}"
+                name="{{ field }}"
+                >
+              {{ vals['disp_name'] }}
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="col-6">
+          <h5>Free text</h5>
+          <div class="row">
+            <div class="col-6">
+              <input
+                type="text"
+                class="form-control"
+                name="line1"
+                id="line1"
+                maxlength="26"
+              >
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col-6">
+              <input
+                type="text"
+                class="form-control"
+                name="line2"
+                id="line2"
+                maxlength="26"
+              >
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col-6">
+              <input
+                type="text"
+                class="form-control"
+                name="line3"
+                id="line3"
+                maxlength="26"
+              >
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col-6">
+              <input
+                type="text"
+                class="form-control"
+                name="line4"
+                id="line4"
+                maxlength="26"
+              >
+            </div>
+          </div><br>
+          <div class="row">
+            <div class="col-6">
+              <input
+                type="text"
+                class="form-control"
+                name="line5"
+                id="line5"
+                maxlength="26"
+              >
+            </div>
+          </div>
+        </div>
+
+      </div><br><br>
+      <button type="submit" class="btn btn-primary" name="submit" value="preview">Preview</button>
+
+  </form>
 
 </div>
 
