@@ -156,17 +156,14 @@
 
     <div class="container">
       <div class="row">
-        <div class="col-3">
-          {% include 'printLabelsModal.html' %}
-        </div>
-        <div class="col-3">
+        <div class="col-4">
           <button type="submit" class="btn btn-secondary btn-lg btn-block" name="submit" value="generateExcel">Generate Excel file</button>
         </div>
-        <div class="col-3">
+        <div class="col-4">
           {% include 'submitSpreadsheetModal.html' %}
         </div>
-        <div class="col-3">
-          <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit" value="submitForm">Submit form</button>
+        <div class="col-4">
+          {% include 'promptPrintLabelsModal.html' %}
         </div>
       </div>
     </div>

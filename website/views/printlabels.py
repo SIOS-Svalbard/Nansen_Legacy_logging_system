@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, render_template
 from website import CONFIG
 
 printlabels = Blueprint('printlabels', __name__)
@@ -7,8 +7,18 @@ printlabels = Blueprint('printlabels', __name__)
 def print_labels():
     '''
     Generate template html page code
-    Should redirect to the page for the template generator (sub-tree) with LFNL config.
-    The redirect below doesn't work but serves as a reminder for later.
+    Should redirect to the page for the label printing repo (sub-tree).
     '''
 
     return redirect(CONFIG['label_printing']['url'])
+
+@printlabels.route('/printLabelsForIDs', methods=['GET', 'POST'])
+def print_labels_for_ids():
+    '''
+    Generate template html page code
+    Print labels for samples already registered based on ID and fields
+    '''
+
+    return render_template(
+    "printLabelsForIDs.html"
+    )
