@@ -77,5 +77,14 @@
   },
   "template_generator": {
     "url": "http://127.0.0.1:5000/config=Learnings%20from%20Nansen%20Legacy%20logging%20system"
+  },
+  "label_printing": {
+    "url": "http://127.0.0.1:5002",
+    "large_label_printer": {
+      "ip": "<IP address of the printer>"
+    },
+    "medium_label_printer": {
+      "ip": "<IP address of the printer>"
+    }
   }
 }

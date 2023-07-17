@@ -48,6 +48,7 @@ def create_app():
     from .views.registrations import registrations
     from .views.logsamples import logsamples
     from .views.generatetemplates import generatetemplates
+    from .views.printlabels import printlabels
     from .views.uploaddata import uploaddata
     from .views.missingmetadata import missingmetadata
     from .views.choosesamplefields import choosesamplefields
@@ -58,6 +59,7 @@ def create_app():
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
     app.register_blueprint(generatetemplates, url_prefix='/')
+    app.register_blueprint(printlabels, url_prefix='/')
     app.register_blueprint(uploaddata, url_prefix='/')
     app.register_blueprint(missingmetadata, url_prefix='/')
     app.register_blueprint(choosesamplefields, url_prefix='/')
