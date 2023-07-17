@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Print {{size}} labels{% endblock %}
+
+{% block content %}
+
+<h2>Print {{size}} labels</h2><br>
+
+<form method="POST">
+  <div class="form-row">
+    <div class="col-sm-1">
+      Line #
+    </div>
+    <div class="col-sm-3">
+      Content
+    </div>
+    <div class="col-sm-1">
+      Max. characters
+    </div>
+    <div class="col-sm-1">
+    </div>
+    <div class="col-sm-2">
+      Increment all numbers in the text by one?
+    </div>
+  </div><br>
+  {% for line, criteria in text.items() %}
+  <div class="form-row">
+    <label class="col-sm-1 col-form-label">
+      {{ line }}
+    </label>
+
+    <div class="col-sm-3">
+      <input
+        type="text"
+        class="form-control"
+        name="line{{ line }}"
+        id="line{{ line }}"
+        maxlength="{{criteria['max_number_of_characters']}}"
+        value="{{ criteria['content'] }}">
+    </div>
+
+    <div class="col-sm-1">
+      {{criteria['max_number_of_characters']}}
+    </div>
+
+    <div class="col-sm-1">
+    </div>
+
+    <div class="col-sm-2 d-flex align-items-center justify-content-center">
+      {% if line in [3, 4] %}
+        <input
+          type="checkbox"
+          class="form-check-input"
+          name="increment{{ line }}"
+          id="increment{{ line }}"
+          {% if line == 3 and increment3 == True or line == 4 and increment4 == True %}
+          checked
+          {% endif %}
+          >
+      {% endif %}
+    </div>
+
+  </div><br>
+  {% endfor %}
+  <br>
+  <div class="form-row">
+    <label class="col-sm-3 col-form-label">
+      Number of labels to print
+    </label>
+    <div class="col-sm-1">
+      <input
+        type="number"
+        step=1
+        min=1
+        class="form-control"
+        name="number_labels"
+        id="number_labels"
+        value={{number_labels}}>
+    </div>
+  </div><br>
+  <div class="form-row">
+    <label class="col-sm-2 col-form-label">
+      Printer IP address
+    </label>
+
+    <div class="col-sm-2">
+      <input
+        type="text"
+        class="form-control"
+        name="ip"
+        id="ip"
+        value="{{ ip }}">
+    </div>
+  </div><br>
+
+
+  <button type="submit" class="btn btn-primary btn-lg" name="submitbutton" value="print">Print</button>
+  <button type="submit" class="btn btn-danger btn-lg" name="cancel" value="cancel">Cancel</button>
+
+</form>
+<br><br>
+<div class="row">
+  <div class="col-6">
+    <div class="container">
+      <br>
+      <h4>Printing specifications</h4>
+
+      Printer model:
+      <span class="text-primary">
+        Zebra GX430t (GX43-102420-000)
+      </span><br>
+
+      Labels:
+      <span class="text-primary">
+        {{labels}}
+      </span><br>
+
+      Printer ribbon:
+      <span class="text-primary">
+        {{ribbon}}
+      </span><br>
+      <br>
+    </div>
+  </div>
+  <div class="col-6">
+    <img
+      src="{{ url_for('static', filename='label_scanning.png')}}"
+      alt="scanning labels to read UUID from data matrix"
+      style="max-width: 100%; height: auto;"
+    >
+  </div>
+</div>
+
+{% endblock %}

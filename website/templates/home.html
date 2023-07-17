@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+
+<h1>Learnings from Nansen Legacy label printing</h1>
+<br>
+<div class="row">
+  <div class="col-lg-4 col-md-4 col-xs-12">
+    <p>
+      Flask application for priting labels that include a data matrix.
+    </p>
+    <p>
+      We use a data matrix to encode a universally unique identifier (UUID)
+      for your sample.
+    </p>
+    <p>
+      UUIDs are valuable for providing unique identifiers for samples because they
+      ensure each sample has a globally unique identification regardless of the
+      system or location.
+    </p>
+    <p>
+      Even if a billion UUIDs were generated every second for the next 100 years,
+      the probability of a single collision occurring would be less than one in a
+      quintillion (10^18)!
+    </p><br>
+    <a class="btn btn-primary btn-lg" role="button" href="/print_large_labels">
+      Print large labels
+    </a><br><br>
+    <a class="btn btn-success btn-lg" role="button" href="/print_medium_labels">
+      Print medium labels
+    </a><br><br>
+    <a class="btn btn-secondary btn-lg" role="button" href="/uuid_generator">
+      UUID generator (no labels)
+    </a><br><br>
+    <a class="btn btn-warning btn-lg" role="button" href="/data_matrices_pdf">
+      Print data matrices to PDF
+    </a>
+  </div>
+
+  <div class="col-lg-8 col-md-8 col-xs-12">
+    <img
+      src="{{ url_for('static', filename='label_scanning.png')}}"
+      alt="scanning labels to read UUID from data matrix"
+      style="max-width: 100%; height: auto;"
+    >
+  </div>
+</div>
+
+{% endblock %}

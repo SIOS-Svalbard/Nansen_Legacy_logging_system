@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Print data matrices to PDF{% endblock %}
+
+{% block content %}
+
+<h2>Print data matrices to PDF</h2><br>
+
+<p>Print multiple data matrices to an A4 pdf file.</p>
+<p>
+  This could be useful where multiple people need to scan the same data matrices. <br>
+  E.g. the CTD (parent) - Niskin bottle (child) system.<br>
+  In this case, multiple people might take water samples from the Niskin bottles. <br>
+  The id of the Niskin bottle will be the parentID of the water sample(s). <br>
+  The generated pdf can be printed on any A4 printer, clearly marked and used in these cases.
+</p><br><br>
+
+<form method="POST">
+
+  <div class="row">
+    <div class="col-6">
+      <div class="form-row">
+        <label class="col-sm-4 col-form-label">
+          Parent name:
+        </label>
+        <div class="col-sm-8">
+          <input
+            type="text"
+            class="form-control"
+            name="parentName"
+            id="parentName"
+            value="{{ parentName }}"
+          >
+        </div>
+      </div><br>
+
+      <div class="form-row">
+        <label class="col-sm-4 col-form-label">
+          Child name:
+        </label>
+        <div class="col-sm-8">
+          <input
+            type="text"
+            class="form-control"
+            name="childName"
+            id="childName"
+            value="{{ childName }}"
+          >
+        </div>
+      </div><br>
+
+      <div class="form-row">
+        <label class="col-sm-4 col-form-label">
+          Number of children:
+        </label>
+        <div class="col-sm-8">
+          <input
+            type="number"
+            step=1
+            min=1
+            class="form-control"
+            name="numberChildren"
+            id="numberChildren"
+            value={{numberChildren}}
+          >
+        </div>
+      </div><br>
+
+      <div class="form-row">
+        <label class="col-sm-4 col-form-label">
+          Number of pages:
+        </label>
+        <div class="col-sm-8">
+          <input
+            type="number"
+            step=1
+            min=1
+            class="form-control"
+            name="numberPages"
+            id="numberPages"
+            value={{numberPages}}
+          >
+          <small id="help" class="form-text text-muted">
+            All pages will have different UUIDs and data matrices
+          </small>
+        </div>
+      </div><br>
+
+      <button type="submit" class="btn btn-primary btn-lg" name="generateFile" value="generateFile">Generate file</button>
+
+    </div>
+    <div class="col-6">
+
+    </div>
+  </div>
+
+</form>
+<br><br>
+
+{% endblock %}
