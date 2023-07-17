@@ -1,0 +1,8 @@
+{
+  "large_label_printer": {
+    "ip": "<IP address of the printer>"
+  },
+  "medium_label_printer": {
+    "ip": "<IP address of the printer>"
+  }
+}

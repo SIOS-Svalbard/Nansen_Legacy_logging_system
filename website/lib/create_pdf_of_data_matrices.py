@@ -3,16 +3,8 @@
 '''
  -- Creates pdf files for generating uuid labels
 
-
-
 It defines classes_and_methods
 
-@author:     Pål Ellingsen
-
-
-
-@contact:    pale@unis.no
-@deffield    updated: Updated
 '''
 
 import sys
