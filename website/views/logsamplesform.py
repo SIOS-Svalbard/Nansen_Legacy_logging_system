@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, send_file
+from flask import Blueprint, render_template, request, flash, redirect, send_file, session
 import psycopg2
 import psycopg2.extras
 import uuid
@@ -505,6 +505,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         return redirect(f'/logSamples/parentid={parentID}')
 
                     elif form_input['submit'] == ['printLabels']:
+
+                        session['ids_to_print'] = fields_to_submit_dict['columns']['id']['value']
                         return redirect(f'/printLabelsForIDs')
 
             elif form_input['submit'] == ['generateExcel']:

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 import uuid
 from website.lib.init_db import run as init_db
 from website.lib.init_cruise_tables import run as init_cruise_tables
@@ -65,5 +65,12 @@ def create_app():
     app.register_blueprint(choosesamplefields, url_prefix='/')
     app.register_blueprint(logsamplesform, url_prefix='/')
     app.register_blueprint(exportdata, url_prefix='/')
+
+    @app.context_processor
+    def inject_ids_to_print():
+        # Retrieve the list of IDs from the session
+        ids_to_print = session.get('ids_to_print')
+
+        return dict(ids_to_print=ids_to_print)
 
     return app
