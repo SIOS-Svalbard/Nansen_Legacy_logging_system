@@ -30,6 +30,9 @@ def print_labels_for_ids():
     # Clear the session variable to avoid data persisting across requests
     session.pop('ids', None)
 
+    if not ids:
+        ids = ['']
+
     possible_fields_to_print = [
         "catalogNumber",
         "bottleNumber",
@@ -82,6 +85,7 @@ def print_labels_for_ids():
 
         ids = request.form.get('ids')  # Retrieve the IDs from the form
         ids_list = ids.split('\r\n')  # Split the IDs into a list using newline character
+
         labelType = request.form.get('labelType')
 
         form_input = request.form.to_dict(flat=False)
@@ -96,7 +100,7 @@ def print_labels_for_ids():
         good, errors = try_to_connect_to_printer(ip)
         #good = True
         #errors = []
-        
+
         fields_to_include = []
         for field, vals in possible_fields_dict.items():
             if field in form_input and form_input[field] == ['y']:
@@ -134,12 +138,16 @@ def print_labels_for_ids():
         all_ids = get_all_ids(DB, CRUISE_NUMBER)
         ids_not_recognised = []
         for id in ids_list:
-            if id not in all_ids:
+            if id not in all_ids and id != '':
                 ids_not_recognised.append(id)
 
         if len(ids_not_recognised) > 0:
             errors.append(f'ID(s) not registered in the system. Check for typos or unwanted whitespace. IDs: {ids_not_recognised}')
             good=False
+
+        if len(ids_list) == 1 and ids_list[0] == '':
+            good = False
+            errors.append('Please enter at least 1 ID into the box')
 
         if good == False:
             for error in errors:
