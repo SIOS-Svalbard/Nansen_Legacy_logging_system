@@ -7,34 +7,66 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css')}}">
     <title>Learnings from Nansen Legacy logging system</title>
+    <style>
+    .navbar-nav .nav-link:hover {
+      color: #fff !important;
+    }
+
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+    </style>
   </head>
   <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-
-      <a class="navbar-brand" style="padding-left:15px" href="/"><img src="{{ url_for('static', filename='cropped-Logo-Nansen-Legacy_favicon.webp')}}" alt="..." height="72"> Learnings from Nansen Legacy logging system</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <a class="navbar-brand" style="padding-left: 15px" href="/">
+        <img src="{{ url_for('static', filename='cropped-Logo-Nansen-Legacy_favicon.webp')}}" alt="Logo" height="72">
+        Learnings from Nansen Legacy logging system
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
+        <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
             <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item active">
-            <a class="nav-link" href="/register">Register Details</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="/register" id="registerDropdown" role="button"
+              aria-haspopup="true" aria-expanded="false">Register Details</a>
+            <div class="dropdown-menu" aria-labelledby="registerDropdown">
+              <a class="dropdown-item" href="/register/sampleType">Sample types</a>
+              <a class="dropdown-item" href="/register/gearType">Gear types</a>
+              <a class="dropdown-item" href="/register/intendedMethod">Intended methods</a>
+              <a class="dropdown-item" href="/register/institution">Institutions</a>
+              <a class="dropdown-item" href="/register/stationName">Stations</a>
+              <a class="dropdown-item" href="/register/personnel">Personnel</a>
+              <a class="dropdown-item" href="/register/project">Projects</a>
+              <a class="dropdown-item" href="/register/storageTemp">Storage temperatures</a>
+              <a class="dropdown-item" href="/register/filter">Filters</a>
+              <a class="dropdown-item" href="/register/sex">Sex</a>
+              <a class="dropdown-item" href="/register/kingdom">Kingdoms</a>
+            </div>
           </li>
-          <li class="nav-item active">
-            <a class="nav-link" href="/generateTemplate">Generate Template</a>
-          </li>
-          <li class="nav-item active">
-            <a class="nav-link" href="/uploadData">Upload data from template</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="excelTemplatesDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">Excel Templates</a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="excelTemplatesDropdown">
+              <a class="dropdown-item" href="/generateTemplate">Generate Template</a>
+              <a class="dropdown-item" href="/uploadData">Upload data from template</a>
+            </div>
           </li>
           <li class="nav-item active">
             <a class="nav-link" href="/exportData">Export Data</a>
           </li>
-          <li class="nav-item active">
-            <a class="nav-link" href="/printLabels">Print labels</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="printLabelsDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">Print labels</a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="printLabelsDropdown">
+              <a class="dropdown-item" href="/printLabels">Samples not registered yet</a>
+              <a class="dropdown-item" href="/printLabelsForIDs">Samples already registered</a>
+            </div>
           </li>
         </ul>
       </div>
@@ -66,7 +98,6 @@
     {% endif %} {% endfor %} {% endif %} {% endwith %}
     <br>
     <div class="container-fluid"><br><br>{% block content %} {% endblock %}<br><br></div>
-
 
     <!-- Footer -->
     <footer class="mt-auto text-center text-lg-start bg-dark text-muted">
@@ -106,10 +137,6 @@
     </footer>
     <!-- Footer -->
 
-    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-
-    </script>-->
-
     <script
       type="text/javascript"
       src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js')}}"
@@ -133,6 +160,29 @@
         minuteIncrement: 5
       }
       flatpickr("input[type=time]", config);
+    </script>
+
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='jquery-3.6.0.min.js')}}"
+    ></script>
+
+    <!--Hover for dropdown menu on navbar-->
+    <script>
+    $(document).ready(function() {
+      $('.dropdown').hover(
+        function() {
+          if ($(window).width() > 991) {
+            $(this).find('.dropdown-toggle').dropdown('toggle');
+          }
+        },
+        function() {
+          if ($(window).width() > 991) {
+            $(this).find('.dropdown-toggle').dropdown('toggle');
+          }
+        }
+      );
+    });
     </script>
   </body>
 </html>

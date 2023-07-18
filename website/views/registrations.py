@@ -424,7 +424,7 @@ def sex():
 @registrations.route('/register/kingdom', methods=['GET', 'POST'])
 def kingdoms():
 
-    df = get_data(DB, 'kingdoms')
+    df = get_data(DB, 'kingdom')
     df.sort_values(by='kingdom', inplace=True)
     kingdoms = list(df['kingdom'])
     comments = list(df['comment'])
@@ -442,7 +442,7 @@ def kingdoms():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO kingdoms (id, kingdom, comment, created) VALUES ('{uuid.uuid4()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO kingdom (id, kingdom, comment, created) VALUES ('{uuid.uuid4()}', '{kingdom}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
@@ -457,7 +457,7 @@ def kingdoms():
 @registrations.route('/register/filter', methods=['GET', 'POST'])
 def filters():
 
-    df = get_data(DB, 'filters')
+    df = get_data(DB, 'filter')
     df.sort_values(by='filter', inplace=True)
     filters = list(df['filter'])
     comments = list(df['comment'])
@@ -475,7 +475,7 @@ def filters():
             conn = psycopg2.connect(**DB)
             cur = conn.cursor()
 
-            cur.execute(f"INSERT INTO filters (id, filter, comment, created) VALUES ('{uuid.uuid4()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
+            cur.execute(f"INSERT INTO filter (id, filter, comment, created) VALUES ('{uuid.uuid4()}', '{filter}', '{comment}', CURRENT_TIMESTAMP);")
 
             conn.commit()
             cur.close()
