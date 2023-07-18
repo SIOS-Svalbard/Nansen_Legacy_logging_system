@@ -5,6 +5,7 @@ from website.lib.get_data import get_metadata_for_list_of_ids, get_cruise, get_a
 import copy
 from website.Learnings_from_AeN_label_printing.website.lib.create_labels import create_medium, create_large
 from website.Learnings_from_AeN_label_printing.website.lib.interact_with_printer import try_to_connect_to_printer, cancel_print, send_label_to_printer
+from website.Learnings_from_AeN_label_printing.website.lib.add_one_to_numbers_in_string import add_one_to_numbers_in_string
 
 printlabels = Blueprint('printlabels', __name__)
 
@@ -92,9 +93,10 @@ def print_labels_for_ids():
             max_num_lines = 5
             ip = CONFIG['label_printing']['medium_label_printer']['ip']
 
-        #good, errors = try_to_connect_to_printer(ip)
-        good = True
-        errors = []
+        good, errors = try_to_connect_to_printer(ip)
+        #good = True
+        #errors = []
+        
         fields_to_include = []
         for field, vals in possible_fields_dict.items():
             if field in form_input and form_input[field] == ['y']:
@@ -115,6 +117,8 @@ def print_labels_for_ids():
                 max_length = 18
                 if len(lines[num]['value']) > max_length:
                     long_lines.append(num+1)
+            if f'increment{num}' in form_input and form_input[f'increment{num}'] == ['y']:
+                criteria['increment'] = 'y'
 
         if len(long_lines) > 0:
             good = False
@@ -206,6 +210,11 @@ def print_labels_for_ids():
                         send_label_to_printer(zpl)
                     except:
                         flash(f'Printing failed for ID {id}', category='error')
+
+                    for num, criteria in lines.items():
+                        if f'increment{num}' in form_input and form_input[f'increment{num}'] == ['y']:
+                            criteria['value'] = add_one_to_numbers_in_string(criteria['value'])
+
                 flash('Printing complete', category='success')
 
         return render_template(

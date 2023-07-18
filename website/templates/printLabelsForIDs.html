@@ -91,7 +91,7 @@
                 name="line{{ num }}"
                 id="line{{ num }}"
                 maxlength={{ criteria['character_limit'] }}
-                value={{ criteria['value'] }}
+                value="{{ criteria['value'] }}"
               >
             </div>
             <div class="col-6 d-flex align-items-center justify-content-center">
@@ -100,6 +100,10 @@
                 class="form-check-input"
                 name="increment{{ num }}"
                 id="increment{{ num }}"
+                value="y"
+                {% if 'increment' in criteria %}
+                checked
+                {% endif %}
                 >
             </div>
           </div><br>

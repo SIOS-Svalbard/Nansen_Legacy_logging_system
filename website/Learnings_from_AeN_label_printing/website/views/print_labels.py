@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, flash, request
 from website import CONFIG
+from website.lib.add_one_to_numbers_in_string import add_one_to_numbers_in_string
 from website.lib.create_labels import create_medium, create_large
 from website.lib.interact_with_printer import try_to_connect_to_printer, cancel_print, send_label_to_printer
-import re
 import uuid
 
 print_labels = Blueprint('print_labels', __name__)
@@ -292,19 +292,3 @@ def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
             text[4]['content'] = add_one_to_numbers_in_string(text[4]['content'])
 
     return text
-
-def add_one_to_numbers_in_string(string):
-    # Regular expression pattern to match numbers in the string (including decimals)
-    pattern = r'\b\d+(\.\d+)?\b'
-
-    def increment_number(match):
-        number = match.group()
-        if '.' in number:
-            return str(float(number) + 1)
-        else:
-            return str(int(number) + 1)
-
-    # Use re.sub() with the replacement function to increment the numbers
-    result = re.sub(pattern, increment_number, string)
-
-    return result
