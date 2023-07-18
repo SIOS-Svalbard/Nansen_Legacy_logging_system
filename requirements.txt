@@ -1,4 +1,5 @@
 flask
+Flask-Session
 uuid
 psycopg2
 pandas

@@ -281,8 +281,7 @@ def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
                 text[1]['content'],
                 text[2]['content'],
                 text[3]['content'],
-                text[4]['content'],
-                text[5]['content']
+                text[4]['content']
                 )
 
         send_label_to_printer(zpl)

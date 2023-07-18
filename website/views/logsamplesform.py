@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, send_file
+from flask import Blueprint, render_template, request, flash, redirect, send_file, session
 import psycopg2
 import psycopg2.extras
 import uuid
@@ -360,10 +360,7 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
         elif 'submit' in form_input.keys():
 
-            if form_input['submit'] != ['printLabels']:
-                form_input.pop('labelType')
-
-            if form_input['submit'] == ['submitForm']:
+            if form_input['submit'] in [['submitForm'],['printLabels']]:
 
                 if 'pi_details' in fields_to_submit_list:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
@@ -504,7 +501,13 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
                     flash('Samples logged successfully!', category='success')
 
-                    return redirect(f'/logSamples/parentid={parentID}')
+                    if form_input['submit'] == ['submitForm']:
+                        return redirect(f'/logSamples/parentid={parentID}')
+
+                    elif form_input['submit'] == ['printLabels']:
+
+                        session['ids_to_print'] = fields_to_submit_dict['columns']['id']['value']
+                        return redirect(f'/printLabelsForIDs')
 
             elif form_input['submit'] == ['generateExcel']:
 
