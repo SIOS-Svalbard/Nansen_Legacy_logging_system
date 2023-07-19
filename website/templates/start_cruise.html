@@ -20,7 +20,10 @@
             {% endif %}
             <label for="cruiseName">Cruise number</label>
             <input
-              type="text"
+              type="number"
+              step=1
+              min=2000000
+              max=2100000              
               class="form-control"
               id="cruiseNumber"
               name="cruiseNumber"
