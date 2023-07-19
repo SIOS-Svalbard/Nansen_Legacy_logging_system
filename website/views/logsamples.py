@@ -345,7 +345,7 @@ def edit_activity_form(ID):
                         if requirement not in ['Required CSV', 'Source']:
                             for field, vals in output_config_dict[sheet][requirement].items():
                                 if field in form_input:
-                                    if form_input[field] == '':
+                                    if form_input[field] in ['','NULL']:
                                         if output_config_dict[sheet][requirement][field]['format'] in ['int', 'double precision', 'time', 'date']:
                                             output_config_dict[sheet][requirement][field]['value'] = 'NULL'
                                         elif field == 'id':

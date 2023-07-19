@@ -798,10 +798,20 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
         for idx, row in data.iterrows():
             rownum = idx + firstrow
             if col == 'pi_email':
-                if row[col] not in registered_emails:
+                emails = row[col].split(' | ')
+                n = 0
+                for email in emails:
+                    if email not in registered_emails:
+                        n = n + 1
+                if n > 1:
                     unregistered_pi_emails.append(rownum)
             if col == 'recordedBy_email':
-                if row[col] not in registered_emails:
+                emails = row[col].split(' | ')
+                n = 0
+                for email in emails:
+                    if email not in registered_emails:
+                        n = n + 1
+                if n > 1:
                     unregistered_recordedBy_emails.append(rownum)
         if unregistered_pi_emails != []:
             good = False

@@ -123,7 +123,7 @@ def harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER):
     df_cruise = pd.DataFrame(columns=columns)
     df_activities = get_registered_activities(DB, CRUISE_NUMBER)
     registered_statids = list(set(df_activities['statid']))
-    registered_statids = [int(statid) for statid in registered_statids if math.isnan(statid) == False ]
+    registered_statids = [int(statid) for statid in registered_statids if statid is not None and not math.isnan(statid)]
     registered_statids = [str(r).zfill(4) for r in registered_statids]
     registered_ids = get_all_ids(DB, CRUISE_NUMBER)
 
