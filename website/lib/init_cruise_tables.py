@@ -44,7 +44,7 @@ def init_stations(DB, CRUISE_NUMBER, cur):
         cur.execute(f"INSERT INTO stations_{CRUISE_NUMBER} (id, stationName, decimalLongitude, decimalLatitude, comment, created) SELECT '{id}', '{stationName}', {decimalLongitude}, {decimalLatitude}, '{comment}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT stationName FROM stations_{CRUISE_NUMBER} WHERE stationName = '{stationName}');")
 
 def init_personnel(DB, CRUISE_NUMBER, cur):
-    cur.execute(f"CREATE TABLE IF NOT EXISTS personnel_{CRUISE_NUMBER} (id uuid PRIMARY KEY, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS personnel_{CRUISE_NUMBER} (id uuid PRIMARY KEY, personnel text, first_name text, last_name text, institution text, email text, orcid text, comment text, created timestamp with time zone)")
 
     df = pd.read_csv('website/config/dropdown_initial_values/personnel.csv')
 
@@ -52,11 +52,12 @@ def init_personnel(DB, CRUISE_NUMBER, cur):
         id = row['id']
         first_name = row['first_name']
         last_name = row['last_name']
-        institution = row['institution']
         email = row['email']
+        personnel = f"{first_name} {last_name} ({email})"
+        institution = row['institution']
         orcid = row['orcid']
         comment = row['comment']
-        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) SELECT '{id}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT email FROM personnel_{CRUISE_NUMBER} WHERE email = '{email}');")
+        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, personnel, first_name, last_name, institution, email, orcid, comment, created) SELECT '{id}', '{personnel}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT email FROM personnel_{CRUISE_NUMBER} WHERE email = '{email}');")
 
 def init_user_field_setups(DB, CRUISE_NUMBER, cur):
     '''

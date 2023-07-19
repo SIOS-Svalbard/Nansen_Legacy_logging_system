@@ -2,11 +2,11 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 import psycopg2
 import psycopg2.extras
 import uuid
-from website.lib.get_data import get_data, get_cruise
+from website.lib.get_data import get_data, get_cruise, get_cruise_details, get_personnel_list, get_projects_list
 from website import DB
-from website.lib.other_functions import combine_personnel_details
 from website.lib.create_template_for_registering_personnel import create_personnel_template
 from website.lib.register_personnel_from_file import register_personnel_from_file
+from website.lib.other_functions import split_personnel_list
 
 registrations = Blueprint('registrations', __name__)
 
@@ -18,92 +18,119 @@ def register():
 @registrations.route('/register/cruiseDetails', methods=['GET', 'POST'])
 def cruiseDetails():
 
-    cruise_details_df = get_cruise(DB)
-    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+    (
+    CRUISE_NUMBER,
+    cruise_name,
+    project,
+    cruise_leader,
+    cocruise_leader,
+    comment,
+    ) = get_cruise_details(DB)
 
-    df = get_data(DB, 'personnel_'+CRUISE_NUMBER)
-    df.sort_values(by='last_name', inplace=True)
-    df['personnel'] = df['first_name'] + ' ' + df['last_name'] + ' (' + df['email'] + ')'
-    personnel = list(df['personnel'])
-
-    proj_df = get_data(DB, 'projects')
-    proj_df.sort_values(by='project', inplace=True)
-    projects = list(proj_df['project'])
-
-    if len(cruise_details_df) > 0:
-        current_cruise_name = cruise_details_df['cruise_name'].item()
-        current_cruise_project = cruise_details_df['project'].item()
-        current_cruise_leader =  combine_personnel_details(cruise_details_df['cruise_leader_name'].item(),cruise_details_df['cruise_leader_email'].item())[0]
-        current_cocruise_leader = combine_personnel_details(cruise_details_df['co_cruise_leader_name'].item(),cruise_details_df['co_cruise_leader_email'].item())[0]
-        current_cruise_comment = cruise_details_df['comment'].item()
-    else:
-        current_cruise_name = ''
-        current_cruise_project = ''
-        current_cruise_leader = ''
-        current_cocruise_leader = ''
-        current_cruise_comment = ''
+    personnel = get_personnel_list(DB, CRUISE_NUMBER, 'personnel_'+CRUISE_NUMBER)
+    projects = get_projects_list(DB)
+    newProject = ''
 
     if request.method == 'POST':
 
-        cruise_leader = request.form.get('cruiseLeader')
-        cruise_leader_name = cruise_leader.split(' (')[0]
-        cruise_leader_orcid = df.loc[df['personnel'] == cruise_leader, 'orcid'].iloc[0]
-        cruise_leader_email = df.loc[df['personnel'] == cruise_leader, 'email'].iloc[0]
-        cruise_leader_institution = df.loc[df['personnel'] == cruise_leader, 'institution'].iloc[0]
-
-        try:
-            co_cruise_leader = request.form.get('coCruiseLeader')
-            co_cruise_leader_name = co_cruise_leader.split(' (')[0]
-            co_cruise_leader_orcid = df.loc[df['personnel'] == co_cruise_leader, 'orcid'].iloc[0]
-            co_cruise_leader_email = df.loc[df['personnel'] == co_cruise_leader, 'email'].iloc[0]
-            co_cruise_leader_institution = df.loc[df['personnel'] == co_cruise_leader, 'institution'].iloc[0]
-        except:
-            co_cruise_leader = ''
-            co_cruise_leader_name = ''
-            co_cruise_leader_orcid = ''
-            co_cruise_leader_email = ''
-            co_cruise_leader_institution = ''
-
+        # Getting data from form
+        newProject = request.form.get('newProject').capitalize()
         project = request.form.get('project').capitalize()
         cruise_name = request.form.get('cruiseName').capitalize()
         comment = request.form.get('comment')
+        cruise_leader = request.form.get('cruiseLeader')
+        cocruise_leader = request.form.get('coCruiseLeader')
 
-        conn = psycopg2.connect(**DB)
-        cur = conn.cursor()
+        df_personnel = get_data(DB, 'personnel_'+CRUISE_NUMBER)
+        (
+        cruise_leader_name,
+        cruise_leader_email,
+        cruise_leader_orcid,
+        cruise_leader_institution
+        ) = split_personnel_list(cruise_leader, df_personnel)
+        (
+        cocruise_leader_name,
+        cocruise_leader_email,
+        cocruise_leader_orcid,
+        cocruise_leader_institution
+        ) = split_personnel_list(cocruise_leader, df_personnel)
 
-        cur.execute(f'''UPDATE cruises SET
-        cruise_name = '{cruise_name}',
-        project = '{project}',
-        cruise_leader_orcid = '{cruise_leader_orcid}',
-        cruise_leader_name = '{cruise_leader_name}',
-        cruise_leader_institution = '{cruise_leader_institution}',
-        cruise_leader_email = '{cruise_leader_email}',
-        co_cruise_leader_orcid = '{co_cruise_leader_orcid}',
-        co_cruise_leader_name = '{co_cruise_leader_name}',
-        co_cruise_leader_institution = '{co_cruise_leader_institution}',
-        co_cruise_leader_email = '{co_cruise_leader_email}',
-        comment = '{comment}'
-        WHERE cruise_number = '{CRUISE_NUMBER}';
-        ''')
+        # Validations
+        good = True
+        errors = []
 
-        conn.commit()
-        cur.close()
-        conn.close()
+        if project == '' and newProject == '':
+            good = False
+            errors.append('Please select a project or register a new one')
+        elif project == '' and newProject != '':
+            project_to_register = newProject
+        elif project != '' and newProject != '':
+            good = False
+            errors.append('Either select a project or register a new one, not both.')
+        else:
+            project_to_register = project
 
-        flash('Cruise details edited!', category='success')
+        if newProject in projects:
+            good = False
+            errors.append('Project with same full name already registered. Select it from the drop-down list')
+        elif len(newProject) < 7 and project == '':
+            good = False
+            errors.append('Project name must be at least 7 characters long')
 
-        return redirect('/')
+        if good == False:
+            for error in errors:
+                flash(error, category='error')
+
+        else:
+            if newProject != '':
+                conn = psycopg2.connect(**DB)
+                cur = conn.cursor()
+
+                cur.execute(f"INSERT INTO projects (id, project, created) VALUES ('{uuid.uuid4()}', '{project_to_register}', CURRENT_TIMESTAMP);")
+
+                conn.commit()
+                cur.close()
+                conn.close()
+
+                flash('Project registered!', category='success')
+
+            conn = psycopg2.connect(**DB)
+            cur = conn.cursor()
+
+            cur.execute(f'''UPDATE cruises SET
+            cruise_name = '{cruise_name}',
+            project = '{project_to_register}',
+            cruise_leader_orcid = '{cruise_leader_orcid}',
+            cruise_leader_name = '{cruise_leader_name}',
+            cruise_leader_institution = '{cruise_leader_institution}',
+            cruise_leader_email = '{cruise_leader_email}',
+            co_cruise_leader_orcid = '{cocruise_leader_orcid}',
+            co_cruise_leader_name = '{cocruise_leader_name}',
+            co_cruise_leader_institution = '{cocruise_leader_institution}',
+            co_cruise_leader_email = '{cocruise_leader_email}',
+            comment = '{comment}'
+            WHERE cruise_number = '{CRUISE_NUMBER}';
+            ''')
+
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            flash('Cruise details registered!', category='success')
+
+            return redirect('/')
 
     return render_template(
     "register/cruiseDetails.html",
     personnel=personnel,
     projects=projects,
     CRUISE_NUMBER=CRUISE_NUMBER,
-    current_cruise_name=current_cruise_name,
-    current_cruise_leader=current_cruise_leader,
-    current_cocruise_leader=current_cocruise_leader,
-    current_cruise_project=current_cruise_project,
-    current_cruise_comment=current_cruise_comment,
+    cruise_name=cruise_name,
+    cruise_leader=cruise_leader,
+    cocruise_leader=cocruise_leader,
+    project=project,
+    newProject=newProject,
+    comment=comment,
     )
 
 @registrations.route('/register/institution', methods=['GET', 'POST'])
@@ -374,9 +401,10 @@ def personnel():
             elif not check_orcid:
                 flash('Invalid ordid', category='error')
             else:
+                personnel = f"{first_name} {last_name} ({email})"
                 conn = psycopg2.connect(**DB)
                 cur = conn.cursor()
-                cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
+                cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, personnel, first_name, last_name, institution, email, orcid, comment, created) VALUES ('{uuid.uuid4()}', '{personnel}', '{first_name}','{last_name}','{institution}','{email}','{orcid}','{comment}', CURRENT_TIMESTAMP);")
 
                 conn.commit()
                 cur.close()

@@ -1,0 +1,35 @@
+<h4>Registered personnel:</h4>
+<br>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">First name</th>
+      <th scope="col">Last name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Institution</th>
+      <th scope="col">OrcID</th>
+      <th scope="col">Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in range(0, len) %}
+    <tr>
+      <td>{{first_names[i]}}</td>
+      <td>{{last_names[i]}}</td>
+      <td>{{emails[i]}}</td>
+      <td>{{institutions[i]}}</td>
+      <td>
+        {% if orcids[i] %}
+        <a href="{{orcids[i]}}">{{orcids[i]}}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% if comments[i] %}
+        {{comments[i]}}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

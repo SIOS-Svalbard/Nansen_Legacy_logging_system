@@ -45,6 +45,7 @@ def create_app():
     app.config['SECRET_KEY'] = str(uuid.uuid4())
 
     from .views.home import home
+    from .views.setupcruise import setupcruise
     from .views.registrations import registrations
     from .views.logsamples import logsamples
     from .views.generatetemplates import generatetemplates
@@ -56,6 +57,7 @@ def create_app():
     from .views.exportdata import exportdata
 
     app.register_blueprint(home, url_prefix='/')
+    app.register_blueprint(setupcruise, url_prefix='/')
     app.register_blueprint(registrations, url_prefix='/')
     app.register_blueprint(logsamples, url_prefix='/')
     app.register_blueprint(generatetemplates, url_prefix='/')

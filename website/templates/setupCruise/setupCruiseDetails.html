@@ -1,0 +1,29 @@
+{% extends "base.html" %} {% block title %}Personnel{% endblock %} {% block content
+%}
+<div class="container">
+
+  <h1>Setup Cruise</h1><br>
+  <p>Page 2 of 2 of setup</p><br>
+
+  <h4>Cruise details</h4><br>
+
+  <form method="POST" enctype="multipart/form-data" >
+
+    {% include 'register/cruiseDetailsFormGroups.html' %}
+
+    <br>
+    <div class="container">
+      <div class="row">
+        <div class="col-3">
+          <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit" value="completeSetup">Complete setup</button>
+        </div>
+        <div class="col-3">
+          <a class="btn btn-warning btn-lg btn-block" role="button" href="/">Skip for now</a>
+        </div>
+      </div>
+    </div>
+    <br><br>
+
+  </form>
+</div>
+{% endblock %}
