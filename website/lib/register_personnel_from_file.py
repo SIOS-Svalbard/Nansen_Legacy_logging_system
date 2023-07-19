@@ -1,8 +1,11 @@
 import pandas as pd
-from website import DB, CRUISE_NUMBER
-from website.lib.get_data import get_data
+from website import DB
+from website.lib.get_data import get_data, get_cruise
 import psycopg2
 import uuid
+
+cruise_details_df = get_cruise(DB)
+CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
 def check_content(df, header_row):
 
@@ -173,12 +176,13 @@ def register_personnel_from_file(f):
                     first_name = row['firstName']
                     last_name = row['lastName']
                     email = row['email']
+                    personnel = f"{first_name} {last_name} ({email})"
                     orcid = row['orcID']
                     institution = row['institution']
                     if type(orcid) == str and orcid != 'NULL':
-                        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, orcid, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}','{orcid}', CURRENT_TIMESTAMP);")
+                        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, personnel, first_name, last_name, institution, email, orcid, created) VALUES ('{uuid.uuid4()}', '{personnel}', '{first_name}','{last_name}','{institution}','{email}','{orcid}', CURRENT_TIMESTAMP);")
                     else:
-                        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, first_name, last_name, institution, email, created) VALUES ('{uuid.uuid4()}', '{first_name}','{last_name}','{institution}','{email}', CURRENT_TIMESTAMP);")
+                        cur.execute(f"INSERT INTO personnel_{CRUISE_NUMBER} (id, personnel, first_name, last_name, institution, email, created) VALUES ('{uuid.uuid4()}', '{personnel}', '{first_name}','{last_name}','{institution}','{email}', CURRENT_TIMESTAMP);")
                 conn.commit()
                 cur.close()
                 conn.close()

@@ -135,7 +135,7 @@ def homepage():
                     init_cruise_tables(DB, CRUISE_NUMBER, metadata_columns_dict)
 
                     # redirect to home, run the script again now that new cruise is logged with current = true
-                    return redirect('/')
+                    return redirect('/setupCruise/uploadPersonnel')
 
 
                 # If successful, return home_during_cruise

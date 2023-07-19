@@ -1,0 +1,77 @@
+<div class="form-group">
+  <label for="cruiseName">Cruise full name</label>
+  <input
+    type="text"
+    class="form-control"
+    id="cruiseName"
+    name="cruiseName"
+    value="{{ cruise_name }}"
+    required
+  />
+</div>
+<div class="row">
+  <div class="col">
+    <label for="cruise_project">Select project</label><br>
+    <select class="custom-select" id="project" name="project" aria-label="Default select example">
+      <option></option>
+      {% for p in projects %}
+        {% if p == project %}
+        <option selected>{{ project }}</option>
+        {% else %}
+        <option>{{ p }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col">
+    <label for="newProject">Or register a new project (full name)</label>
+    <input
+      type="text"
+      class="form-control"
+      id="newProject"
+      name="newProject"
+      value="{{ newProject }}"
+    />
+  </div>
+</div>
+<div class="row">
+  <div class="col">
+    <label for="cruise_leader">Select cruise leader</label><br>
+    <select class="custom-select" id="cruiseLeader" name="cruiseLeader" aria-label="Default select example" required>
+      <option></option>
+      {% for person in personnel %}
+        {% if person == cruise_leader %}
+        <option selected>{{ person }}</option>
+        {% else %}
+        <option>{{ person }}</option>
+        {% endif %}
+      {% endfor %}
+    </select><br>
+    <label for="cocruise_leader">Select co-cruise leader</label><br>
+    <select class="custom-select" id="coCruiseLeader" name="coCruiseLeader" aria-label="Default select example">
+      <option></option>
+      {% for person in personnel %}
+        {% if person == cocruise_leader %}
+        <option selected>{{ person }}</option>
+        {% else %}
+        <option>{{ person }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col">
+    <br><br>
+    <span class="align-middle">To register a person, click &nbsp; </span><a class="btn btn-success" href="/register/personnel" role="button">here</a>
+  </div>
+</div>
+<div class="form-group">
+  <label for="comment">Comments</label>
+  <input
+    type="text"
+    class="form-control"
+    id="comment"
+    name="comment"
+    value="{{ comment }}"
+  />
+</div>
+<p>Cruise number: <span class="text-primary">{{CRUISE_NUMBER}}</span></p>

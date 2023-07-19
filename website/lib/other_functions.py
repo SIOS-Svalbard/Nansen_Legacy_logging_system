@@ -98,6 +98,7 @@ def split_personnel_list(personnel, df_personnel):
     else:
         personnel_names = " | ".join(personnel_names_list)
         personnel_emails = " | ".join(personnel_emails_list)
+        personnel_orcids_list = [o if o is not None else 'NULL' for o in personnel_orcids_list]
         personnel_orcids = " | ".join(personnel_orcids_list)
         personnel_institutions = " | ".join(personnel_institutions_list)
 

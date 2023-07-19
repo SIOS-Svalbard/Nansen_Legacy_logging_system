@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 import pandas as pd
+from website.lib.other_functions import combine_personnel_details
 
 def df_from_database(query, DB):
     conn = psycopg2.connect(**DB)
@@ -18,6 +19,33 @@ def df_from_database(query, DB):
     cursor.close()
     conn.close()
     return df
+
+def get_cruise_details(DB):
+    cruise_details_df = get_cruise(DB)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
+    if len(cruise_details_df) > 0:
+        current_cruise_name = cruise_details_df['cruise_name'].item()
+        current_cruise_project = cruise_details_df['project'].item()
+        current_cruise_leader = combine_personnel_details(cruise_details_df['cruise_leader_name'].item(),cruise_details_df['cruise_leader_email'].item())[0]
+        current_cocruise_leader = combine_personnel_details(cruise_details_df['co_cruise_leader_name'].item(),cruise_details_df['co_cruise_leader_email'].item())[0]
+        current_cruise_comment = cruise_details_df['comment'].item()
+    else:
+        current_cruise_name = ''
+        current_cruise_project = ''
+        current_cruise_leader = ''
+        current_cocruise_leader = ''
+        current_cruise_comment = ''
+    if current_cruise_name == None:
+        current_cruise_name = ''
+    if current_cruise_project == None:
+        current_cruise_project = ''
+    if current_cruise_leader == None:
+        current_cruise_leader = ''
+    if current_cocruise_leader == None:
+        current_cocruise_leader = ''
+    if current_cruise_comment == None:
+        current_cruise_comment = ''
+    return CRUISE_NUMBER, current_cruise_name, current_cruise_project, current_cruise_leader, current_cocruise_leader, current_cruise_comment
 
 def get_cruise(DB):
     query = f'SELECT * FROM cruises WHERE current = true'
@@ -158,6 +186,12 @@ def get_personnel_list(DB=None, CRUISE_NUMBER=None, table='personnel'):
     df_personnel = get_personnel_df(DB=DB, CRUISE_NUMBER=CRUISE_NUMBER, table='personnel')
     personnel = list(df_personnel['personnel'])
     return personnel
+
+def get_projects_list(DB=None):
+    proj_df = get_data(DB, 'projects')
+    proj_df.sort_values(by='project', inplace=True)
+    projects = list(proj_df['project'])
+    return projects
 
 def get_stations_list(DB=None, CRUISE_NUMBER=None, table='stations'):
     df_stations = get_data(DB, f'{table}_{CRUISE_NUMBER}')
