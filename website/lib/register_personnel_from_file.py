@@ -4,10 +4,10 @@ from website.lib.get_data import get_data, get_cruise
 import psycopg2
 import uuid
 
-cruise_details_df = get_cruise(DB)
-CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
-
 def check_content(df, header_row):
+
+    cruise_details_df = get_cruise(DB)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     missing_first_names = []
     missing_last_names = []
@@ -135,6 +135,9 @@ def check_content(df, header_row):
     return content_errors, institutionsToRegister, df
 
 def register_personnel_from_file(f):
+
+    cruise_details_df = get_cruise(DB)
+    CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
     good = True
     errors = []
