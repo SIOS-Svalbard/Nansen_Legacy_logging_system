@@ -86,7 +86,7 @@ def print_medium_labels():
         else:
 
             if "cancel" in form_input:
-                cancel_print()
+                cancel_print(ip)
                 flash('All jobs on printer cancelled', category='success')
 
                 return render_template(
@@ -285,7 +285,7 @@ def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
                 text[4]['content']
                 )
 
-        send_label_to_printer(zpl)
+        send_label_to_printer(zpl, ip)
 
         if increment3 == True:
             text[3]['content'] = add_one_to_numbers_in_string(text[3]['content'])
