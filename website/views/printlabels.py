@@ -95,7 +95,7 @@ def print_labels_for_ids():
             ip = CONFIG['label_printing']['medium_label_printer']['ip']
         elif labelType == 'large':
             max_num_lines = 5
-            ip = CONFIG['label_printing']['medium_label_printer']['ip']
+            ip = CONFIG['label_printing']['large_label_printer']['ip']
 
         good, errors = try_to_connect_to_printer(ip)
         #good = True
@@ -156,7 +156,7 @@ def print_labels_for_ids():
         else:
 
             if "cancel" in form_input:
-                cancel_print()
+                cancel_print(ip)
                 flash('All jobs on printer cancelled', category='success')
 
                 return render_template(
@@ -215,7 +215,7 @@ def print_labels_for_ids():
                             )
 
                     try:
-                        send_label_to_printer(zpl)
+                        send_label_to_printer(zpl, ip)
                     except:
                         flash(f'Printing failed for ID {id}', category='error')
 
