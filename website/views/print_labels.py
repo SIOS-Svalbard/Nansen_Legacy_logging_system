@@ -264,9 +264,10 @@ def get_values_from_form(text, form_input):
 
 def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
     number_labels = int(number_labels)
+
     for n in range(number_labels):
 
-        if 'size' == 'large':
+        if size == 'large':
             zpl = create_large(
                 str(uuid.uuid4()),
                 text[1]['content'],
@@ -275,7 +276,7 @@ def increment_and_print_all(number_labels,ip,text,increment3,increment4,size):
                 text[4]['content'],
                 text[5]['content']
                 )
-        elif 'size' == 'medium':
+        elif size == 'medium':
             zpl = create_medium(
                 str(uuid.uuid4()),
                 text[1]['content'],
