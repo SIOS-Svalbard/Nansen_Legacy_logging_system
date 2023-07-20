@@ -7,8 +7,41 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css')}}">
     <title>Learnings from Nansen Legacy logging system</title>
+    <style>
+      /* Apply styles to the html and body elements to cover the whole screen */
+      body, html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Apply styles to the .bg element */
+      body {
+        background-image: url({{ url_for('static', filename='homepage_image.png')}});
+        /* Full width and height */
+        height: 100%;
+        width: 100%;
+        /* Center the image horizontally and align to the top */
+        background-position: center 150px;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      .btn-xl {
+        padding: 10px 20px;
+        font-size: 40px;
+        border-radius: 10px;
+        width:100%;    //Specify your width here
+        height: 50px;
+      }
+
+      /* Apply min-height to the empty paragraph */
+      p.empty-paragraph {
+        min-height: 1200px; /* Set the desired minimum height */
+      }
+    </style>
   </head>
-  <body class="d-flex flex-column min-vh-100">
+  <body class="d-flex flex-column min-vh-1000">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
       <a class="navbar-brand" style="padding-left:15px" href="/"><img src="{{ url_for('static', filename='cropped-Logo-Nansen-Legacy_favicon.webp')}}" alt="..." height="72"> Learnings from Nansen Legacy logging system</a>
@@ -44,26 +77,55 @@
     {% endif %} {% endfor %} {% endif %} {% endwith %}
     <br>
     <div class="container-fluid">
-      <br><br>
+      <br><br><br><br>
+      <div class="row">
+        <div class="col-1"></div>
+        <div class="col-3">
+          {% include 'start_cruise.html' %}<br><br><br>
+          {% include 'resume_cruise.html' %}
+        </div>
+      </div>
+
+    </div>
+    <p class="empty-paragraph"></p>
+
+    <!-- Footer -->
+    <footer class="mt-auto text-center text-lg-start bg-dark text-muted">
+      <div class="mt-5 pt-5 pb-5 footer">
       <div class="container">
-        <br><br><br><br><br><br><br><br>
-        <p>Make an entrance page, something that looks nicer</p>
         <div class="row">
-          <div class="col-6">
-            {% include 'start_cruise.html' %}
+          <div class="col-lg-5 col-xs-12 about-company">
+            <h2>About</h2>
+            <p class="pr-5 text-white-50">Software developed to log data and metadata in a hierarchical, standardised way.</p>
+            <p class="pr-5 text-white-50">Developed based on learnings from the Nansen Legacy project as a version 2 of the logging system.</p>
           </div>
-          <div class="col-6">
-            {% include 'resume_cruise.html' %}
+          <div class="col-lg-3 col-xs-12 links">
+            <h4 class="mt-lg-0 mt-sm-3">Links</h4>
+              <ul class="m-0 p-0">
+                <li> <a href="https://septentrio.uit.no/index.php/nansenlegacy/section/view/protocols">Nansen Legacy sampling protocols</a></li>
+                <!--<li> <a href="#">User manual (no link currently)</a></li>-->
+                <li> <a href="http://cfconventions.org/">CF conventions</a></li>
+                <li> <a href="http://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF standard name table</a></li>
+                <li> <a href="https://wiki.esipfed.org/Attribute_Convention_for_Data_Discovery_1-3">ACDD conventions</a></li>
+                <li> <a href="https://dwc.tdwg.org/terms/">Darwin Core terms</a></li>
+              </ul>
+          </div>
+          <div class="col-lg-4 col-xs-12 location">
+            <h4 class="mt-lg-0 mt-sm-4">Contact</h4>
+            <p>Luke Marsden: Data Manager</p>
+            <p>The University Centre in Svalbard (UNIS)</p>
+            <p><a href="mailto: data.nleg@unis.no">data.nleg@unis.no</a></p>
           </div>
         </div>
-        <br><br><br><br><br><br><br><br>
+        <div class="row mt-5">
+          <div class="text-center col copyright">
+            <p class=""><small class="text-white-50">© 2023. All Rights Reserved.</small></p>
+          </div>
+        </div>
       </div>
-      <br><br>
-    </div>
-
-    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-
-    </script>-->
+      </div>
+    </footer>
+    <!-- Footer -->
 
     <script
       type="text/javascript"
