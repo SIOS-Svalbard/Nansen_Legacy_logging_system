@@ -6,7 +6,7 @@
   <br>
   <p>Print labels for samples already registered in the system.</p>
   <br>
-  <form method="POST">
+  <form method="POST" id="myForm">
       <h3>ID(s)</h3><br>
       <textarea rows="3" class="form-control" name="ids" id="ids">{% for id in ids %}{{ id }}{% if not loop.last %}&#10;{% endif %}{% endfor %}</textarea>
       <br><br>
@@ -113,7 +113,7 @@
       </div><br><br>
       <button type="submit" class="btn btn-primary" name="submit" value="print">Print labels for all IDs</button>
       <button type="submit" class="btn btn-danger" name="cancel" value="cancel">Cancel</button>
-
+      <a class="btn btn-secondary" role="button" href="/">Skip for now</a>
   </form>
 
 </div>

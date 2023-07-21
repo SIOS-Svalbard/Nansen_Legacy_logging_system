@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, send_file
 import psycopg2
 import psycopg2.extras
-from website.lib.get_data import get_cruise, get_user_setup, get_gears_list, get_subconfig_for_sampletype, df_from_database
+from website.lib.get_data import get_cruise, get_user_setup, get_gears_list, get_subconfig_for_sampletype, df_from_database, get_metadata_for_record_and_ancestors
 from website import DB, METADATA_CATALOGUE, FIELDS_FILEPATH, CRUISE_NUMBER
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ import os
 import yaml
 from website.Learnings_from_AeN_template_generator.website.lib.create_template import create_template
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
-from website.lib.other_functions import combine_fields_dictionaries
+from website.lib.other_functions import combine_fields_dictionaries, get_title
 
 choosesamplefields = Blueprint('choosesamplefields', __name__)
 
@@ -322,5 +322,7 @@ def choose_sample_fields(parentID,sampleType):
     dwc_terms_not_in_config=dwc_terms_not_in_config,
     added_fields_dic=added_fields_dic,
     added_cf_names_dic=added_cf_names_dic,
-    added_dwc_terms_dic=added_dwc_terms_dic
+    added_dwc_terms_dic=added_dwc_terms_dic,
+    trace=get_metadata_for_record_and_ancestors(DB, CRUISE_NUMBER, parentID),
+    get_title=get_title,
     )

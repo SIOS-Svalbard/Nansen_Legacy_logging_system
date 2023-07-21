@@ -47,6 +47,12 @@ def make_valid_dict(DB, CRUISE_NUMBER, all_fields):
     # First we go through the fields.py
     field_dict = {}
     for field in all_fields:
+        # Station name is not from list in template generator, only in logging system
+        if field['id'] in ['stationName']:
+            field['valid'] = {
+                "validate": "list",
+                "source": "stations"
+            }
         if field['id'] not in ['recordedBy', 'pi_details']:
             new = Checker(DB, name=field['id'], disp_name=field['disp_name'])
             if 'valid' in field:
@@ -701,7 +707,6 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
             else:
                 errors.append(f'Required field "{req}" is missing')
 
-    # INHERIT BEFORE CHECKER SO COLUMNS MUST BE THERE REGARDLESS OF WHETHER THERE IS A PARENTID
     unknown_columns = []
     for col in data.columns:
         if col not in checker_list.keys():
@@ -845,7 +850,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
 
             if col in required:
 
-                if val in ['', None] and col not in ['pi_orcid', 'recordedBy_orcid']:
+                if val in ['', None, 'NULL'] and col not in ['pi_orcid', 'recordedBy_orcid']:
                     blanks.append(rownum)
 
         if content_errors != []:
@@ -902,11 +907,11 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
         rownum = idx + firstrow
         n = 0
         for col in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
-            if col in data.columns:
-                if row[col] == '' or not is_number(row[col]):
+            if col in data.columns: # If column present
+                if row[col] == '' or not is_number(row[col]): # If no value
                     n = n + 1
-            else:
-                if col in required:
+            else: # If column not present
+                if col in required: # If column required
                     n = n + 1
         if n > 2:
             missingdepths.append(rownum)

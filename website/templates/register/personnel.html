@@ -6,25 +6,11 @@
 
   <br>
 
-  <form method="POST" enctype="multipart/form-data" >
+  <form method="POST" enctype="multipart/form-data" id="myForm">
 
-  <h3>Register many people using an Excel template...</h3>
+    <h3>Register people one-by-one here...</h3>
 
-  <br>
-  <div class="container">
-    <div class="row">
-      <div class="col-3">
-        <button type="submit" class="btn btn-secondary btn-lg btn-block" name="submit" value="generateExcel">Generate Excel file</button>
-      </div>
-      <div class="col-3">
-        {% include 'submitSpreadsheetModal.html' %}
-      </div>
-    </div>
-  </div>
-  <br><br>
-
-  <h3>...or register details one-by-one here</h3>
-
+    <br>
     <div class="row">
       <div class="col">
         <label for="first_name">First Name</label>
@@ -74,7 +60,7 @@
     <div class="row">
       <div class="col">
         <label for="institution">Institution</label><br>
-        <select class="form-select" id="institution" name="institution" aria-label="Default select example">
+        <select class="custom-select" id="institution" name="institution" aria-label="Default select example">
           <option selected>Choose...</option>
           {% for institution in registered_institutions %}
             <option>{{institution}}</option>
@@ -83,7 +69,7 @@
       </div>
       <div class="col">
         <br>
-        <span>Can't see your institution? Register it &nbsp; </span><a class="btn btn-success" href="/register/institutions" role="button">here</a>
+        <span>Can't see your institution? Register it &nbsp; </span><a class="btn btn-success" href="/register/institution" role="button">here</a>
       </div>
     </div>
     <div class="form-group">
@@ -96,7 +82,24 @@
         placeholder="Optional comments that might aid the user">
     </div>
     <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <div class="col-3">
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="defaultButton">Submit</button>
+    </div>
+    <br><br>
+
+    <h3>...or register many using this Excel template</h3><br>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-3">
+          <button type="submit" class="btn btn-secondary btn-lg btn-block" name="submit" value="generateExcel">Generate Excel file</button>
+        </div>
+        <div class="col-3">
+          {% include 'submitSpreadsheetModal.html' %}
+        </div>
+      </div>
+    </div>
+
   </form>
 </div>
 {% endblock %}

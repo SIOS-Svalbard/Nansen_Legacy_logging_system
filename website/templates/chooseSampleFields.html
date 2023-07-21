@@ -1,9 +1,14 @@
+{% from "macros.html" import breadcrumb with context %}
+
 {% extends "base.html" %} {% block title %}Choose fields{% endblock %} {% block content
 %}
 
 <div class="container">
+  {% if not trace.empty: %}
+    {{ breadcrumb(trace) }}
+  {% endif %}
   <h1>{{ sampleType }}</h1><br>
-  <form method="POST">
+  <form method="POST" id="myForm">
     <div class="form-row">
       <label class="col-sm-3 col-form-label">Number of samples you want to log</label>
       <div class="col-sm-9">
@@ -11,21 +16,6 @@
       </div>
     </div><br><br>
 
-    <h3>Predefined setups</h3>
-    <div class="row">
-      <div class="col-3">
-        <select class="custom-select" id="userSetup" name="userSetup" aria-label="Default select example">
-          <option selected="selected">{{ current_setup }}</option>
-          {% for setup in existing_user_setups %}
-            <option>{{setup}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-7">
-        <button class="btn btn-info" type="submit" name="submitbutton" value="loadSetup">Load setup</button>
-      </div>
-    </div>
-    <br>
     {% include 'fields_key.html' %}
 
     <br>
@@ -73,6 +63,24 @@
         {% endfor %}
       </tbody>
     </table>
+
+    <br>
+
+    <h3>Predefined setups</h3>
+    <div class="row">
+      <div class="col-3">
+        <select class="custom-select" id="userSetup" name="userSetup" aria-label="Default select example">
+          <option selected="selected">{{ current_setup }}</option>
+          {% for setup in existing_user_setups %}
+            <option>{{setup}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-7">
+        <button class="btn btn-warning btn-lg" type="submit" name="submitbutton" value="loadSetup">Load setup</button>
+      </div>
+    </div>
+    <br>
 
     <br>
 

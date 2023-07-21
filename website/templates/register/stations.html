@@ -28,7 +28,7 @@
 
   <h3>You can register a new station here so that you can use it later!</h3><br>
 
-  <form method="POST">
+  <form method="POST" id="myForm">
     <div class="form-group">
       <label for="stationName">Station Name</label>
       <input
@@ -77,7 +77,7 @@
         placeholder="Optional comments about the station">
     </div>
     <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary" id="defaultButton">Submit</button>
   </form>
 </div>
 {% endblock %}

@@ -167,22 +167,22 @@
       src="{{ url_for('static', filename='jquery-3.6.0.min.js')}}"
     ></script>
 
+    <!--The next two scripts are to search through cf standard names and darwin core terms-->
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='search_box_select.js')}}"
+    ></script>
+
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='search_words_in_text.js')}}"
+  	></script>
+
     <!--Hover for dropdown menu on navbar-->
-    <script>
-    $(document).ready(function() {
-      $('.dropdown').hover(
-        function() {
-          if ($(window).width() > 991) {
-            $(this).find('.dropdown-toggle').dropdown('toggle');
-          }
-        },
-        function() {
-          if ($(window).width() > 991) {
-            $(this).find('.dropdown-toggle').dropdown('toggle');
-          }
-        }
-      );
-    });
-    </script>
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', filename='dropdown_hover.js')}}"
+  	></script>
+
   </body>
 </html>

@@ -120,7 +120,11 @@ def missing_metadata_activities():
         #             fields_to_submit.append('pi_details')
         #
         # else:
-        df_to_submit['pi_details'] = df_to_submit['recordedBy'] = None
+
+        for field in ['pi_details', 'recordedBy']:
+            if field not in df_to_submit.columns:
+                df_to_submit[field] = None
+
         if form_input['submit'] == ['all']:
             rows = list(range(num_rows))
         else:
@@ -145,8 +149,11 @@ def missing_metadata_activities():
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
 
-        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        if 'pi_name' not in df_to_submit.columns or 'pi_email' not in df_to_submit.columns or 'pi_institution' not in df_to_submit.columns:
+            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+
+        if 'recordedBy_name' not in df_to_submit.columns or 'recordedBy_email' not in df_to_submit.columns or 'recordedBy_institution' not in df_to_submit.columns:
+            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
         for field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
@@ -188,8 +195,11 @@ def missing_metadata_activities():
 
             personnel_details_dict = get_dict_for_list_of_fields(['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution', 'pi_name', 'pi_email', 'pi_orcid', 'pi_institution'],FIELDS_FILEPATH)
             for field, vals in personnel_details_dict.items():
-                fields_to_submit_dict['columns'][field] = vals
-                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                if field in ['recordedBy_orcid', 'pi_orcid'] and field not in df_to_submit.columns:
+                    pass
+                else:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
 
             inherited_columns = df_to_submit.columns
 
@@ -308,7 +318,10 @@ def missing_metadata_niskins():
         #             fields_to_submit.append('pi_details')
         #
         # else:
-        df_to_submit['pi_details'] = df_to_submit['recordedBy'] = None
+        for field in ['pi_details', 'recordedBy']:
+            if field not in df_to_submit.columns:
+                df_to_submit[field] = None
+
         if form_input['submit'] == ['all']:
             rows = list(range(num_rows))
         else:
@@ -333,8 +346,11 @@ def missing_metadata_niskins():
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
 
-        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        if 'pi_name' not in df_to_submit.columns or 'pi_email' not in df_to_submit.columns or 'pi_institution' not in df_to_submit.columns:
+            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+
+        if 'recordedBy_name' not in df_to_submit.columns or 'recordedBy_email' not in df_to_submit.columns or 'recordedBy_institution' not in df_to_submit.columns:
+            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
@@ -374,8 +390,11 @@ def missing_metadata_niskins():
 
             personnel_details_dict = get_dict_for_list_of_fields(['recordedBy_name', 'recordedBy_email', 'recordedBy_orcid', 'recordedBy_institution', 'pi_name', 'pi_email', 'pi_orcid', 'pi_institution'],FIELDS_FILEPATH)
             for field, vals in personnel_details_dict.items():
-                fields_to_submit_dict['columns'][field] = vals
-                fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
+                if field in ['recordedBy_orcid', 'pi_orcid'] and field not in df_to_submit.columns:
+                    pass
+                else:
+                    fields_to_submit_dict['columns'][field] = vals
+                    fields_to_submit_dict['columns'][field]['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field.lower()])]
 
             inherited_columns = df_to_submit.columns
 

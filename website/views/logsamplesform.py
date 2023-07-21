@@ -264,13 +264,18 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
         # b: Second for values different for all samples
         fields_varied = []
-
+        num_cols_form_table = 0 # Number of columns in table
+        num_cells_empty_for_row = {}
         for key, value in form_input.items():
             if '|' in key:
                 field, row = key.split('|')
                 fields_varied.append(field)
                 fields_to_submit_list.append(field)
                 row = int(row)
+                if row == rows[0]:
+                    num_cols_form_table += 1
+                if row not in num_cells_empty_for_row.keys():
+                    num_cells_empty_for_row[row] = 0
 
                 if row in rows:
                     if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
@@ -281,7 +286,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                                     if term == field:
                                         formatted_value = format_form_value(field, value, vals['format'])
                                         df_to_submit.loc[row, field] = formatted_value
-
 
                         for term, vals in added_cf_names_dic['Data'].items():
                             if term == field:
@@ -301,15 +305,29 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     elif field in ['pi_details', 'recordedBy']:
                         df_to_submit.loc[row, field] = ' | '.join(format_form_value(field, value, 'text'))
 
+                    if formatted_value in ['', 'NULL', np.nan, None]:
+                        num_cells_empty_for_row[row] += 1
+
+        if num_cols_form_table > 0:
+            # Step 1: Create a list of indices that satisfy the condition
+            indices_to_remove = [idx for idx, row in df_to_submit.iterrows() if num_cells_empty_for_row[idx] == num_cols_form_table]
+            # Step 2: Drop the rows using the indices list
+            df_to_submit = df_to_submit.drop(indices_to_remove)
+            num_rows_to_submit = len(df_to_submit)
+        else:
+            num_rows_to_submit = num_samples
+
         # Populate dictionaries from df for fields whose values vary for each row
         fields_varied = list(set(fields_varied))
+
         for field in fields_varied:
             for requirement in output_config_dict['Data'].keys():
                 if requirement not in ['Required CSV', 'Source']:
                     for term, vals in output_config_dict['Data'][requirement].items():
                         if field == term:
                             vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
-
+                            if field == 'id':
+                                vals['value'] = ['' if id == 'NULL' else id for id in list(df_to_submit[field])]
             for term, vals in added_cf_names_dic['Data'].items():
                 if term == field:
                     vals['value'] = [format_form_value(field, [value], vals['format']) for value in list(df_to_submit[field])]
@@ -362,6 +380,10 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
 
             if form_input['submit'] in [['submitForm'],['printLabels']]:
 
+                if num_rows_to_submit == 0:
+                    flash('Please enter metadata for at least one sample', category='error')
+                    return redirect(f'/logSamples/parentid={parentID}/form/sampletype={sampleType}&num={num_samples}&setup=temporary')
+
                 if 'pi_details' in fields_to_submit_list:
                     df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
                     while 'pi_details' in fields_to_submit_list:
@@ -393,7 +415,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         df_to_submit.drop(col, axis=1, inplace=True)
 
                 metadata_df = False
-
                 if 'id' not in df_to_submit.columns:
                     df_to_submit['id'] = [str(uuid.uuid4()) for ii in range(len(df_to_submit))]
                 else:
@@ -404,7 +425,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     required=required,
                     DB=DB,
                     CRUISE_NUMBER=CRUISE_NUMBER,
-                    new=True
+                    new=True,
+                    firstrow=1
                     )
 
                 if good == False:
@@ -492,12 +514,12 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     fields_to_submit_dict['columns']['history'] = record_details['history']
                     fields_to_submit_dict['columns']['recordSource'] = record_details['recordSource']
 
-                    fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
-                    fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_samples))]
-                    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form for logging samples") for n in range(int(num_samples))]
-                    fields_to_submit_dict['columns']['recordSource']['value'] = ["Record uploaded from GUI form for logging samples" for n in range(int(num_samples))]
+                    fields_to_submit_dict['columns']['created']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_rows_to_submit))]
+                    fields_to_submit_dict['columns']['modified']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") for n in range(int(num_rows_to_submit))]
+                    fields_to_submit_dict['columns']['history']['value'] = [dt.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ Record uploaded from GUI form for logging samples") for n in range(int(num_rows_to_submit))]
+                    fields_to_submit_dict['columns']['recordSource']['value'] = ["Record uploaded from GUI form for logging samples" for n in range(int(num_rows_to_submit))]
 
-                    insert_into_metadata_catalogue(fields_to_submit_dict, int(num_samples), DB, CRUISE_NUMBER)
+                    insert_into_metadata_catalogue(fields_to_submit_dict, int(num_rows_to_submit), DB, CRUISE_NUMBER)
 
                     flash('Samples logged successfully!', category='success')
 

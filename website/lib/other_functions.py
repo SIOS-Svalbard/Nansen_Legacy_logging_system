@@ -191,14 +191,16 @@ def format_form_value(field, value, format):
 def assign_column_format(format):
     if format in ['uuid', 'text', 'date', 'time']:
         return 'object'
-    elif format == 'int':
-        return 'int'
-    elif format == 'double precision':
+    elif format in ['double precision', 'int']:
         return 'float'
     else:
         return 'object'
 
 def format_columns(df, output_config_dict, added_fields_dic, added_cf_names_dic, added_dwc_terms_dic):
+    '''
+    Define format for columns for an empty dataframe
+    Has not been tested on populated dataframes
+    '''
     for col in df.columns:
         for requirement in output_config_dict['Data'].keys():
             if requirement not in ['Required CSV', 'Source']:

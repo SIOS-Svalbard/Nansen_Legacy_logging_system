@@ -24,7 +24,7 @@
 
   <h3>Can't find an intended method that describes the analysis that will performed on your sample or event? Add one here!</h3>
 
-  <form method="POST">
+  <form method="POST" id="myForm">
     <div class="form-group">
       <label for="intended_method">Intended method</label>
       <input
@@ -45,7 +45,7 @@
         placeholder="Optional comments about the intended method to aid other users">
     </div>
     <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary" id="defaultButton">Submit</button>
   </form>
 </div>
 {% endblock %}

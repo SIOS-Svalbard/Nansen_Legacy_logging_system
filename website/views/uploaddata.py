@@ -463,6 +463,13 @@ def upload_data():
 
                     required = list(output_config_dict['Data']['Required'].keys())
                     goods = []
+
+                    # If column not present, adding it as blank.
+                    # Activities require 2 of the 4 fields to be included. Flagging error if not. Checker doesn't work without this addition
+                    for col in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
+                        if col not in df_subconfig.columns:
+                            df_subconfig[col] = np.nan
+
                     df_subconfig, goods = prepare_and_check(df_subconfig, required, CRUISE_NUMBER, header_row, new, goods)
 
                     if False in goods:
