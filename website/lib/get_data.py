@@ -230,6 +230,11 @@ def get_samples_for_sampletype(DB, CRUISE_NUMBER, sampletype):
     df = df_from_database(query, DB)
     return df
 
+def get_full_metadata_catalogue(DB, CRUISE_NUMBER):
+    query = f"SELECT * FROM metadata_catalogue_{CRUISE_NUMBER};"
+    df = df_from_database(query, DB)
+    return df
+
 def get_subconfig_for_sampletype(sampleType, DB):
     try:
         if type(sampleType) != str:

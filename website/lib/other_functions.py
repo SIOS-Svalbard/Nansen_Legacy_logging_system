@@ -259,6 +259,24 @@ def combine_fields_dictionaries(output_config_dict, added_fields_dic, added_cf_n
                         template_fields_dict[sheet][field]['data'] = list(data_df[col])
     return template_fields_dict
 
+def create_dictionary_for_exporting_data(all_fields_dict, data_df):
+    template_fields_dict = {}
+    template_fields_dict['Data'] = all_fields_dict
+
+    cols_lower = [col.lower() for col in data_df.columns]
+    keys_to_remove = []
+
+    for field, vals in template_fields_dict['Data'].items():
+        for col in data_df.columns:
+            if field.lower() == col.lower():
+                template_fields_dict['Data'][field]['data'] = list(data_df[col])
+        if field not in cols_lower and field not in data_df.columns:
+            keys_to_remove.append(field)
+
+    for key in keys_to_remove:
+        template_fields_dict['Data'].pop(key,None)
+    return template_fields_dict
+
 def sort_dataframe(df):
 
     df.sort_values(by=[
