@@ -802,7 +802,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
         checker = checker_list[col]
         for idx, row in data.iterrows():
             rownum = idx + firstrow
-            if col == 'pi_email':
+            if col == 'pi_email' and row[col] != None:
                 emails = row[col].split(' | ')
                 n = 0
                 for email in emails:
@@ -810,7 +810,7 @@ def check_array(data, checker_list, registered_ids, registered_emails, required,
                         n = n + 1
                 if n > 1:
                     unregistered_pi_emails.append(rownum)
-            if col == 'recordedBy_email':
+            if col == 'recordedBy_email' and row[col] != None:
                 emails = row[col].split(' | ')
                 n = 0
                 for email in emails:

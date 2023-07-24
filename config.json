@@ -81,10 +81,10 @@
   "label_printing": {
     "url": "http://127.0.0.1:5002",
     "large_label_printer": {
-      "ip": "<IP address of the printer>"
+      "ip": "192.168.10.11"
     },
     "medium_label_printer": {
-      "ip": "<IP address of the printer>"
+      "ip": "192.168.10.12"
     }
   }
 }

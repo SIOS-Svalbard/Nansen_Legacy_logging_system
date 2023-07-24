@@ -149,11 +149,8 @@ def missing_metadata_activities():
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
 
-        if 'pi_name' not in df_to_submit.columns or 'pi_email' not in df_to_submit.columns or 'pi_institution' not in df_to_submit.columns:
-            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-
-        if 'recordedBy_name' not in df_to_submit.columns or 'recordedBy_email' not in df_to_submit.columns or 'recordedBy_institution' not in df_to_submit.columns:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
         for field in ['minimumDepthInMeters', 'maximumDepthInMeters', 'minimumElevationInMeters', 'maximumElevationInMeters']:
@@ -161,7 +158,6 @@ def missing_metadata_activities():
 
         # Same check and submit steps regardless of which submit button pressed
         # after different preparations above
-
         good, errors = checker(
             data=df_to_submit,
             required=required,
@@ -283,7 +279,8 @@ def missing_metadata_niskins():
         required_fields_dic=required_fields_dic,
         num_rows = num_rows,
         geartypes = geartypes,
-        isnan=isnan
+        isnan=isnan,
+        setup='Niskin bottles',
         )
 
     elif request.method == 'POST':
@@ -302,55 +299,50 @@ def missing_metadata_niskins():
         df_to_submit = niskins_df[required]
         fields_to_submit = []
 
-        # if form_input['submit'] == ['bulk']:
-        #     # Isolating df to selected gear type
-        #     geartype = form_input['bulkgeartype']
-        #     df_to_submit = df_to_submit.loc[df_to_submit['gearType'] == geartype[0]]
-        #
-        #     fields_to_submit.append('gearType')
-        #
-        #     for key, val in form_input.items():
-        #         if key == 'bulkrecordedby':
-        #             df_to_submit['recordedBy'] = ' | '.join(val)
-        #             fields_to_submit.append('recordedBy')
-        #         elif key == 'bulkpidetails':
-        #             df_to_submit['pi_details'] = ' | '.join(val)
-        #             fields_to_submit.append('pi_details')
-        #
-        # else:
         for field in ['pi_details', 'recordedBy']:
             if field not in df_to_submit.columns:
                 df_to_submit[field] = None
 
-        if form_input['submit'] == ['all']:
+        if form_input['submit'] == ['bulk']:
+
             rows = list(range(num_rows))
+
+            for key, val in form_input.items():
+                if key == 'bulkrecordedby':
+                    print(val)
+                    df_to_submit['recordedBy'] = ' | '.join(format_form_value('recordedBy', val, 'text'))
+                    fields_to_submit.append('recordedBy')
+                elif key == 'bulkpidetails':
+                    df_to_submit['pi_details'] = ' | '.join(format_form_value('pi_details', val, 'text'))
+                    fields_to_submit.append('pi_details')
+
         else:
-            rows = [int(r) for r in form_input['submit']]
+            if form_input['submit'] == ['all']:
+                rows = list(range(num_rows))
+            else:
+                rows = [int(r) for r in form_input['submit']]
 
-        for key, value in form_input.items():
-            if '|' in key and value != ['None']:
-                field, row = key.split('|')
-                fields_to_submit.append(field)
-                row = int(row)
-                if row in rows:
-                    if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
-                        for term, vals in output_config_dict['Data']['Required'].items():
-                            if term == field:
-                                formatted_value = format_form_value(field, value, vals['format'])
-                                df_to_submit.loc[row, field] = formatted_value
-                    elif field in ['pi_details','recordedBy']:
-                        df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
+            for key, value in form_input.items():
+                if '|' in key and value != ['None']:
+                    field, row = key.split('|')
+                    fields_to_submit.append(field)
+                    row = int(row)
+                    if row in rows:
+                        if len(value) == 1 and field not in ['pi_details', 'recordedBy']:
+                            for term, vals in output_config_dict['Data']['Required'].items():
+                                if term == field:
+                                    formatted_value = format_form_value(field, value, vals['format'])
+                                    df_to_submit.loc[row, field] = formatted_value
+                        elif field in ['pi_details','recordedBy']:
+                            df_to_submit[field][row] = ' | '.join(format_form_value(field, value, 'text'))
 
-        df_to_submit = df_to_submit.iloc[rows]
+            df_to_submit = df_to_submit.iloc[rows]
 
         df_to_submit.replace('None',None, inplace=True)
         fields_to_submit = list(set(fields_to_submit))
 
-        if 'pi_name' not in df_to_submit.columns or 'pi_email' not in df_to_submit.columns or 'pi_institution' not in df_to_submit.columns:
-            df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
-
-        if 'recordedBy_name' not in df_to_submit.columns or 'recordedBy_email' not in df_to_submit.columns or 'recordedBy_institution' not in df_to_submit.columns:
-            df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['pi_name','pi_email','pi_orcid','pi_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['pi_details'], df_personnel), axis = 1, result_type = 'expand')
+        df_to_submit[['recordedBy_name','recordedBy_email','recordedBy_orcid','recordedBy_institution']] = df_to_submit.apply(lambda row : split_personnel_list(row['recordedBy'], df_personnel), axis = 1, result_type = 'expand')
 
         df_to_submit = df_to_submit.drop(columns=['pi_details','recordedBy'])
 
@@ -374,7 +366,8 @@ def missing_metadata_niskins():
             required_fields_dic=required_fields_dic,
             num_rows = num_rows,
             geartypes = geartypes,
-            isnan=isnan
+            isnan=isnan,
+            setup='Niskin bottles',
             )
 
         else:

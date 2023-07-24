@@ -46,14 +46,52 @@
 </form>
 -->
 
-<p>Register more options for drop-down lists <a class="btn btn-warning" href="/register" role="button">here</a></p>
+<h1>{{setup}}</h1><br>
 
-<br>
-<h4>Records with missing metadata</h4>
-{% if 'minimumDepthInMeters' in required_fields_dic and 'minimumElevationInMeters' in required_fields_dic.keys() %}
-<p>Please enter either a depth range or an elevation range. Minimum and maximum can be the same if neccessary.</p>
-{% endif %}
+<p>Register more options for drop-down lists <a class="btn btn-warning" href="/register" role="button">here</a></p>
+<br><br>
 <form method="POST">
+
+  {% if setup == 'Niskin bottles' %}
+  <h4>Assign same personnel for each Niskin bottle...</h4><br>
+  <div class="row">
+    <div class="col">
+      Recorded By =
+    </div>
+    <div class="col">
+      <select multiple class="custom-select" id="bulkrecordedby" name="bulkrecordedby" aria-label="Default select example">
+        {% for option in required_fields_dic['recordedBy']['valid']['source'] %}
+          option
+          <option>{{option}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      and PI Details =
+    </div>
+    <div class="col">
+      <select multiple class="custom-select" id="bulkpidetails" name="bulkpidetails" aria-label="Default select example">
+        {% for option in required_fields_dic['pi_details']['valid']['source'] %}
+          <option>{{option}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit" value="bulk">Submit</button>
+    </div>
+  </div>
+  <br><br><br>
+  <h4>...or one by one for each Niskin bottle</h4>
+
+  {% endif %}
+
+  <br>
+
+  <h5>Records with missing metadata</h5>
+  {% if 'minimumDepthInMeters' in required_fields_dic and 'minimumElevationInMeters' in required_fields_dic.keys() %}
+  <p>Please enter either a depth range or an elevation range. Minimum and maximum can be the same if neccessary.</p>
+  {% endif %}
+
   <table class="table">
     <thead class="thead-dark">
       <tr>
@@ -61,7 +99,15 @@
           {% if field == 'id' %}
             <th scope="col"></th>
           {% else %}
-            <th scope="col">{{ value['disp_name'] }}<img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ value['description'] }}"></th>
+            <th
+              scope="col"
+              {% if 'source' in required_fields_dic[field]['valid'].keys() %}
+              style="min-width: 250px;"
+              {% endif %}
+            >
+              {{ value['disp_name'] }}
+              <img src="{{ url_for('static', filename='info.png')}}" alt="..." height="20" title="{{ value['description'] }}">
+            </th>
           {% endif %}
         {% endfor %}
       </tr>
@@ -88,7 +134,7 @@
               {% if value['values'][row_num] in [None,''] %}
                 <div class="container bg-danger">
                   <select class="custom-select" id="{{ field }}|{{ row_num }}" name="{{ field }}|{{ row_num }}" aria-label="Default select example">
-                    <option selected="selected">None</option>
+                    <option selected="selected"></option>
                     {% for option in value['valid']['source'] %}
                       <option>{{option}}</option>
                     {% endfor %}
