@@ -23,6 +23,24 @@ pip install -r requirements.txt
 
 Edit the config.json file to suit your local configuration.
 
+You can visit this site to install PostgreSQL: https://www.postgresql.org/download/
+
+The software is configured to run using the *postgres* user. The password might be *postgres* by default. However, if you get an error like
+
+`FATAL:  password authentication failed for user "postgres"`
+
+then you need to change the password. For example, for Linux users:
+
+```
+sudo -u postgres -i                          # Log into postgres user
+psql                                         # Open PostgreSQL
+ALTER USER postgres PASSWORD 'new_password'
+\q                                           # exit psql
+exit                                         # exit PostgreSQL user's shell
+```
+
+Specify your configuration in the `config.json` file.
+
 ## Running the application
 
 The application can be run using WSGI (flaskapp.wsgi) and has been developed using apache2.
