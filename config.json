@@ -70,7 +70,7 @@
     ]
   },
   "toktlogger": {
-    "host": "172.16.1.142"
+    "host": ""
   },
   "niskinBottles": {
     "dir": "/home/lukem/Documents/Testing/btl_files/"
@@ -81,10 +81,10 @@
   "label_printing": {
     "url": "http://127.0.0.1:5002",
     "large_label_printer": {
-      "ip": "192.168.10.11"
+      "ip": ""
     },
     "medium_label_printer": {
-      "ip": "192.168.10.12"
+      "ip": ""
     }
   }
 }
