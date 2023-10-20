@@ -69,7 +69,7 @@ def check_content(df, header_row):
             if type(institutionToRegister) != str:
                 missing_institutions.append(row_num)
             elif institutionToRegister in registered_institutions:
-                new_institution_already_registered.append(row_num)
+                df['institution'][idx] = institutionToRegister
             elif len(institutionToRegister) < 7:
                 invalid_new_institutions.append(row_num)
             else:
@@ -116,10 +116,6 @@ def check_content(df, header_row):
     if len(invalid_institutions) > 0:
         content_errors.append(
             f'Institution not registered and should not be listed in institution column, row(s): {invalid_institutions}'
-        )
-    if len(new_institution_already_registered) > 0:
-        content_errors.append(
-            f'Institution already registered, please select it in the institution column, row(s): {new_institution_already_registered}'
         )
     if len(invalid_new_institutions) > 0:
         content_errors.append(
