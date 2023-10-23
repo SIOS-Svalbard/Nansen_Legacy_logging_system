@@ -1,6 +1,6 @@
-# Learnings from Nansen Legacy logging system
+# Nansen Legacy logging system
 
-Learnings from Nansen Legacy logging system, designed based on experiences gained during the Nansen Legacy project (Arven etter Nansen - AeN). Metadata logging system to be deployed on vessels, to log multidisciplinary marine data.
+The Nansen Legacy logging system, designed based on experiences gained during the Nansen Legacy project (Arven etter Nansen - AeN). Metadata logging system to be deployed on vessels, to log multidisciplinary marine data.
 
 The software is a locally-hosted Flask Python web server that should be deployed on a virtual machine. Users access a GUI via an IP address (or DNS?) when plugged into the network. Metadata related to onboard activities and samples are logged in a PostgreSQL database table.
 
@@ -9,7 +9,7 @@ Metadata are logged in a hierarchical way. Metadata related to activities sit at
 This work is a development of the Nansen Legacy labelling system, developed Pål Ellingsen and colleagues:
 https://github.com/SIOS-Svalbard/AeN_data
 https://github.com/SIOS-Svalbard/darwinsheet
-https://doi.org/10.5334/DSJ-2021-034
+Paper: https://doi.org/10.5334/DSJ-2021-034
 
 ## Setup and Installation
 
@@ -34,7 +34,7 @@ then you need to change the password. For example, for Linux users:
 ```
 sudo -u postgres -i                          # Log into postgres user
 psql                                         # Open PostgreSQL
-ALTER USER postgres PASSWORD 'new_password'
+ALTER USER postgres PASSWORD 'new_password';
 \q                                           # exit psql
 exit                                         # exit PostgreSQL user's shell
 ```
@@ -45,7 +45,7 @@ Specify your configuration in the `config.json` file.
 
 The application can be run using WSGI (flaskapp.wsgi) and has been developed using apache2.
 
-Alternatively, it can be launched by running
+Alternatively, it can be launched for testing and development purposes by running
 
 ```
 ./main.py
@@ -61,5 +61,5 @@ The logging system has two subtrees.
 
 * Learnings from Nansen Legacy label printing: For printing labels. Labels can be printed to include text taken from fields used in the logging system.
 	- https://github.com/SIOS-Svalbard/Learnings_from_AeN_label_printing
-* Learnings from Nansen Legacy template generator: For generating Excel templates. Spreadsheets can be configured based on the type of sample being logged in the logging system, and logged (meta)data can also be exported to a template.
-	- https://github.com/SIOS-Svalbard/Learnings_from_AeN_template_generator
+* Nansen Legacy template generator: For generating Excel templates. Spreadsheets can be configured based on the type of sample being logged in the logging system, and logged (meta)data can also be exported to a template.
+	- https://github.com/SIOS-Svalbard/Nansen_Legacy_template_generator
