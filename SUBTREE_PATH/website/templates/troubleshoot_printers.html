@@ -1,0 +1,55 @@
+<!-- Button trigger modal for adding more fields -->
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#troubleshootPrinters">
+  Problem with the printers?
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="troubleshootPrinters" tabindex="-1" role="dialog" aria-labelledby="troubleshootPrinters" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h2>Label printers troubleshooting</h2>
+
+        <p>Check through these things in order:</p><br>
+
+        <ol>
+          <li>
+            <strong>Are the rollers clean?</strong><br>
+            Check that the labels are passing through the printer smoothly.
+            Carefully cut away any blocked paper.
+          </li><br>
+          <li>
+            <strong>Are there any labels left?</strong><br>
+            Replace the labels, following the pictures inside the printer.
+            Press the 'feed' button (the only button on the top) after closing.
+            Make sure the light is green. If not, open and close again.
+          </li><br>
+          <li>
+            <strong>Is there any printer ribbon left?</strong><br>
+            Replace the printer ribbon following the pictures inside the back
+            of the printer. Make sure to use the correct printer ribbon!<br>
+            {{ribbon}} for {{size}} labels.<br>
+            Make sure the light is green. If not, open and close again.
+          </li><br>
+          <li>
+            <strong>Is the label printing correctly?</strong><br>
+            Factory reset the printer.
+            Hold the 'feed' button (the only button on the top) down.
+            The light will blink first once, then twice etc. Release after it blinks
+            4 times.
+          </li><br>
+          <li>
+            <strong>Turn it off and on again</strong><br>
+            Using the button at the back of the printer
+          </li>
+        </ol><br>
+        Still no luck? Ask the person responsible for the printers.
+      </div>
+    </div>
+  </div>
+</div>
