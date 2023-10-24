@@ -308,14 +308,18 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     if formatted_value in ['', 'NULL', np.nan, None]:
                         num_cells_empty_for_row[row] += 1
 
-        if num_cols_form_table > 0:
-            # Step 1: Create a list of indices that satisfy the condition
-            indices_to_remove = [idx for idx, row in df_to_submit.iterrows() if num_cells_empty_for_row[idx] == num_cols_form_table]
-            # Step 2: Drop the rows using the indices list
-            df_to_submit = df_to_submit.drop(indices_to_remove)
-            num_rows_to_submit = len(df_to_submit)
+        if 'submit' in form_input.keys():
+            if form_input['submit'] == ['generateExcel']:
+                num_rows_to_submit = num_samples
         else:
-            num_rows_to_submit = num_samples
+            if num_cols_form_table > 0:
+                # Step 1: Create a list of indices that satisfy the condition
+                indices_to_remove = [idx for idx, _ in df_to_submit.iterrows() if num_cells_empty_for_row[idx] == num_cols_form_table]
+                # Step 2: Drop the rows using the indices list
+                df_to_submit = df_to_submit.drop(indices_to_remove)
+                num_rows_to_submit = len(df_to_submit)
+            else:
+                num_rows_to_submit = num_samples
 
         # Populate dictionaries from df for fields whose values vary for each row
         fields_varied = list(set(fields_varied))
@@ -414,7 +418,6 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                     if col not in fields_to_submit_list and col != 'id':
                         df_to_submit.drop(col, axis=1, inplace=True)
 
-                metadata_df = False
                 if 'id' not in df_to_submit.columns:
                     df_to_submit['id'] = [str(uuid.uuid4()) for ii in range(len(df_to_submit))]
                 else:
@@ -532,6 +535,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
                         return redirect(f'/printLabelsForIDs')
 
             elif form_input['submit'] == ['generateExcel']:
+                
+                print(df_to_submit)
 
                 filepath = f'/tmp/{CRUISE_NUMBER}_{sampleType}_parent{parentID}.xlsx'
 
