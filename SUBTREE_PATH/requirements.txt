@@ -1,4 +1,0 @@
-fpdf
-flask
-uuid
-qrcode
