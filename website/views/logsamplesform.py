@@ -311,6 +311,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
         if 'submit' in form_input.keys():
             if form_input['submit'] == ['generateExcel']:
                 num_rows_to_submit = num_samples
+            else:
+                num_rows_to_submit = num_samples
         else:
             if num_cols_form_table > 0:
                 # Step 1: Create a list of indices that satisfy the condition
