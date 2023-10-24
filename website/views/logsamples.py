@@ -35,7 +35,7 @@ def edit_activity_form(ID):
         sampleType = get_sampleType(DB, CRUISE_NUMBER, ID)
         subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
-    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
+    list_of_subconfigs = get_list_of_subconfigs(config='Nansen Legacy logging system')
 
     (
         output_config_dict,

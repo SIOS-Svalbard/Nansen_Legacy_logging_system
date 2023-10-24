@@ -8,7 +8,7 @@ import datetime as dt
 
 def get_setup_for_configuration(fields_filepath,subconfig,CRUISE_NUMBER):
 
-    config = 'Learnings from Nansen Legacy logging system'
+    config = 'Nansen Legacy logging system'
     (
         output_config_dict,
         output_config_fields,

@@ -82,7 +82,7 @@ def export_data():
              .replace('', np.nan)
              )
 
-        config = 'Learnings from Nansen Legacy logging system'
+        config = 'Nansen Legacy logging system'
         subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
         (

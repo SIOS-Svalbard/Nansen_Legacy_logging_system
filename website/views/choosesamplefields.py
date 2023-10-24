@@ -21,7 +21,7 @@ def choose_sample_fields(parentID,sampleType):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    config = 'Learnings from Nansen Legacy logging system'
+    config = 'Nansen Legacy logging system'
     subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
     cruise_details_df = get_cruise(DB)

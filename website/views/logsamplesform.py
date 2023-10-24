@@ -30,8 +30,8 @@ def log_samples_form(parentID,sampleType,num_samples,current_setup):
     cruise_details_df = get_cruise(DB)
     CRUISE_NUMBER = str(cruise_details_df['cruise_number'].item())
 
-    config = 'Learnings from Nansen Legacy logging system'
-    list_of_subconfigs = get_list_of_subconfigs(config='Learnings from Nansen Legacy logging system')
+    config = 'Nansen Legacy logging system'
+    list_of_subconfigs = get_list_of_subconfigs(config='Nansen Legacy logging system')
     subconfig = get_subconfig_for_sampletype(sampleType, DB)
 
     gear_list = get_gears_list(DB)
