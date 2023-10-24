@@ -20,7 +20,9 @@ init_db(DB)
 DBNAME = DB["dbname"]
 
 TOKTLOGGER = CONFIG["toktlogger"]["host"]
-if TOKTLOGGER:
+if TOKTLOGGER == "":
+    url = None
+elif TOKTLOGGER:
     url = f"http://{TOKTLOGGER}/api/cruises/current?format=json"
 else:
     url = None

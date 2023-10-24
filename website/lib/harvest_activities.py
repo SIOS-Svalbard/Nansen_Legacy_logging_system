@@ -102,7 +102,7 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
 
     # Pull data from IMR API in json format. URL should match IMR API host.
 
-    if TOKTLOGGER != False:
+    if TOKTLOGGER not in [False, ""]:
         try:
             url = "http://"+TOKTLOGGER+"/api/activities/inCurrentCruise?format=json"
             response = requests.get(url)
@@ -111,7 +111,8 @@ def harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER):
             print("\nCould not connect to the Toktlogger\n")
             json_activities = []
     else:
-        json_activities = []
+        activities_df = get_registered_activities(DB, CRUISE_NUMBER)
+        return activities_df
 
     registered_activities = get_registered_activities(DB, CRUISE_NUMBER)['id'].values
 
