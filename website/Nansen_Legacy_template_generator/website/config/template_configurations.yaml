@@ -1,0 +1,102 @@
+---
+setups:
+  CF-NetCDF:
+    fields:
+    - Coordinate variables: [time, latitude, longitude, depth, altitude, air_pressure, sea_water_pressure]
+      Coordinate bounds: [time_bounds, latitude_bounds, longitude_bounds, depth_bounds, altitude_bounds, air_pressure_bounds, sea_water_pressure_bounds]
+  Learnings from Nansen Legacy logging system:
+    Activities:
+      fields:
+      - Required: [eventDate, eventTime, stationName, decimalLatitude, decimalLongitude, gearType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution]
+        Recommended: [id, statID, catalogNumber, pi_orcid,recordedBy_orcid, endDate, endTime, endDecimalLatitude, endDecimalLongitude, minimumDepthInMeters, maximumDepthInMeters, minimumElevationInMeters, maximumElevationInMeters,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,eventRemarks]
+    Ice cores:
+      fields:
+      - Required: [parentID, sampleType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution, seaIceCoreType]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,seaIceCoreLengthInCentimeters,sea_ice_thickness,sea_ice_freeboard,comments1]
+    Melt ponds:
+      fields:
+      - Required: [parentID, sampleType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,seaIceMeltpondTemperatureInCelsius,seaIceMeltpondSalinity,comments1]
+    Niskin bottles:
+      fields:
+      - Required: [parentID, gearType, sampleType, bottleNumber, minimumDepthInMeters, maximumDepthInMeters, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,dataFilename, comments1]
+    Other:
+      fields:
+      - Required: [parentID, sampleType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid, samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion, comments1]
+    Organisms:
+      fields:
+      - Required: [parentID, sampleType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,scientificName,comments1]
+    Water samples:
+      fields:
+      - Required: [parentID, sampleType, pi_name, pi_email, pi_institution, recordedBy_name, recordedBy_email, recordedBy_institution, sampleVolumeInMilliliters]
+        Recommended: [id, catalogNumber,pi_orcid,recordedBy_orcid,samplingProtocolDoc,samplingProtocolSection,samplingProtocolVersion,filteredVolumeInMilliliters,filter,comments1]
+  Darwin Core:
+    Sampling Event:
+      Event Core:
+        fields:
+        - Required: [eventID,eventDate,samplingProtocol]
+          Recommended: [sampleSizeValue, sampleSizeUnit, parentEventID, samplingEffort, locationID, decimalLatitude, decimalLongitude, geodeticDatum, footprintWKT, footprintSRS, countryCode]
+          Suggestions: 'from source'
+        Source: 'https://rs.gbif.org/core/dwc_event_2022-02-02.xml'
+        Required CSV: True
+      Occurrence Extension:
+        fields:
+        - Required: [occurrenceID,eventID,basisOfRecord,scientificName]
+          Recommended: [taxonRank,kingdom,individualCount,organismQuantity,organismQuantityType,occurrenceStatus]
+          Suggestions: 'from source'
+        Source: 'https://rs.gbif.org/core/dwc_occurrence_2022-02-02.xml'
+        Required CSV: True
+      Extended MoF Extension:
+        fields:
+        - Required: [measurementID,occurrenceID,eventID,measurementType,measurementValue,measurementUnit]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml'
+        Required CSV: False
+      Material Sample Extension:
+        fields:
+        - Required: [materialSampleID,eventID,materialSampleType]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/ggbn/materialsample.xml'
+        Required CSV: False
+      Resource Relationship Extension:
+        fields:
+        - Required: [resourceRelationshipID,resourceID,relatedResourceID, eventID]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/dwc/resource_relationship_2022-02-02.xml'
+        Required CSV: False
+      Simple Multimedia Extension:
+        fields:
+        - Required: [type,format,identifier,eventID,occurrenceID]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/gbif/1.0/multimedia.xml'
+        Required CSV: False
+    Occurrence Core:
+      Occurrence Core:
+        fields:
+        - Required: [occurrenceID,basisOfRecord,scientificName]
+          Recommended: [eventID,eventDate,decimalLatitude,decimalLongitude,taxonRank,kingdom,individualCount,organismQuantity,organismQuantityType,occurrenceStatus]
+          Suggestions: 'from source'
+        Source: 'https://rs.gbif.org/core/dwc_occurrence_2022-02-02.xml'
+        Required CSV: True
+      Extended MoF Extension:
+        fields:
+        - Required: [measurementID,occurrenceID,measurementType,measurementValue,measurementUnit]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml'
+        Required CSV: False
+      Material Sample Extension:
+        fields:
+        - Required: [materialSampleID,occurrenceID,materialSampleType]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/ggbn/materialsample.xml'
+        Required CSV: False
+      Simple Multimedia Extension:
+        fields:
+        - Required: [type,format,identifier,occurrenceID]
+          Recommended: 'from source'
+        Source: 'https://rs.gbif.org/extension/gbif/1.0/multimedia.xml'
+        Required CSV: False
+...
