@@ -1,8 +1,0 @@
-flask
-uuid
-pandas
-datetime
-numpy
-pyyaml
-XlsxWriter
-lxml
