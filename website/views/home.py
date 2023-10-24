@@ -34,21 +34,25 @@ def homepage():
         activities_df = harvest_activities(TOKTLOGGER, DB, CRUISE_NUMBER).reset_index()
         if BTL_FILES_FOLDER and BTL_FILES_FOLDER != '':
             harvest_niskins(DB, CRUISE_NUMBER, BTL_FILES_FOLDER)
+
         activities_df['message'] = 'Okay'
-
-        missing_activities_df, output_config_dict = get_missing_activities()
-
         missing = False
-        if len(missing_activities_df) > 0:
-            missing = True
+        if TOKTLOGGER not in [False, ""]:
+            # User should not be able to add activities without all required metadata, so only doing this if harvesting from Toktlogger
+            missing_activities_df, output_config_dict = get_missing_activities()
 
-        niskins_df, output_config_dict = get_missing_niskins()
+            if len(missing_activities_df) > 0:
+                missing = True
+            
+            activities_df.loc[activities_df['id'].isin(missing_activities_df['id']), 'message'] = 'Missing metadata'
+        
+        if BTL_FILES_FOLDER and BTL_FILES_FOLDER != '':
+            # User should not be able to add niskins without all required metadata, so only doing this if harvesting from btl files
+            niskins_df, output_config_dict = get_missing_niskins()
 
-        if len(niskins_df) > 0:
-            missing = True
-
-        activities_df.loc[activities_df['id'].isin(missing_activities_df['id']), 'message'] = 'Missing metadata'
-
+            if len(niskins_df) > 0:
+                missing = True
+        
         activities_df = sort_dataframe(activities_df)
         activities_df_home = activities_df[['stationname','eventdate', 'eventtime','decimallatitude','decimallongitude','geartype','pi_name','message','id', 'number_of_children']]
 
