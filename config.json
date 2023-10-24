@@ -73,7 +73,7 @@
     "host": ""
   },
   "niskinBottles": {
-    "dir": "/home/lukem/"
+    "dir": ""
   },
   "template_generator": {
     "url": "http://127.0.0.1:5000/config=Nansen%20Legacy%20logging%20system"
