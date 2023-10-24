@@ -6,9 +6,9 @@ Created on Thu Apr 10 08:46:31 2022
 @author: lukem
 
 Precursors:
-    Create PSQL database called 'lfnl_db'
+    Create PSQL database called 'nl_db'
     Assign users as well as default postgres will all privileges on the database:
-        GRANT ALL PRIVILIGES ON DATABASE lfnl_db TO username;
+        GRANT ALL PRIVILIGES ON DATABASE nl_db TO username;
 
 """
 
@@ -79,12 +79,12 @@ def init_institutions(cur):
 def init_sample_types(cur):
     cur.execute("CREATE TABLE sampletype (id uuid PRIMARY KEY, sampleType text, subconfig text, comment text, grouping text, vocabLabel text, vocabURI text, created timestamp with time zone)")
 
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sampleType.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/sampleType.csv')
 
     for idx, row in df.iterrows():
         ID = row['id']
         sampleType = row['sampleType']
-        subconfig = row['LFNL_subconfig']
+        subconfig = row['NL_subconfig']
         comment = row['comment']
         group = row['group']
         vocabLabel = row['vocabLabel']
@@ -94,7 +94,7 @@ def init_sample_types(cur):
 def init_gear_types(cur):
     cur.execute("CREATE TABLE geartype (id uuid PRIMARY KEY, gearType text, IMR_name text, comment text, grouping text, vocabLabel text, vocabURI text, recommendedSampleTypes text, recommendedChildSamples text, created timestamp with time zone)")
 
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/gearType.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/gearType.csv')
 
     for idx, row in df.iterrows():
         ID = row['id']
@@ -111,7 +111,7 @@ def init_gear_types(cur):
 
 def init_intended_methods(cur):
     cur.execute("CREATE TABLE intendedmethod (id uuid PRIMARY KEY, intendedMethod text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/intendedMethod.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/intendedMethod.csv')
     for idx, row in df.iterrows():
         id = row['id']
         intendedMethod = row['intendedMethod']
@@ -129,7 +129,7 @@ def init_projects(cur):
 
 def init_storage_temperatures(cur):
     cur.execute("CREATE TABLE storagetemperature (id uuid PRIMARY KEY, storageTemperature text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/storageTemperature.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/storageTemperature.csv')
     for idx, row in df.iterrows():
         id = row['id']
         storageTemp = row['storageTemperature']
@@ -138,7 +138,7 @@ def init_storage_temperatures(cur):
 
 def init_filters(cur):
     cur.execute("CREATE TABLE filter (id uuid PRIMARY KEY, filter text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/filter.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/filter.csv')
     for idx, row in df.iterrows():
         id = row['id']
         filter = row['filter']
@@ -147,7 +147,7 @@ def init_filters(cur):
 
 def init_sex(cur):
     cur.execute("CREATE TABLE sex (id uuid PRIMARY KEY, sex text, comment text, created timestamp with time zone)")
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/sex.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/sex.csv')
     for idx, row in df.iterrows():
         id = row['id']
         sex = row['sex']
@@ -156,7 +156,7 @@ def init_sex(cur):
 
 def init_kingdoms(cur):
     cur.execute("CREATE TABLE kingdom (id uuid PRIMARY KEY, kingdom text, comment text, created timestamp with time zone)") # WHAT ABOUT OTHER CLASSIFICATIONS IN SPECIES?
-    df = pd.read_csv('website/Learnings_from_AeN_template_generator/website/config/dropdown_lists/kingdom.csv')
+    df = pd.read_csv('website/Nansen_Legacy_template_generator/website/config/dropdown_lists/kingdom.csv')
     for idx, row in df.iterrows():
         id = row['id']
         kingdom = row['kingdom']

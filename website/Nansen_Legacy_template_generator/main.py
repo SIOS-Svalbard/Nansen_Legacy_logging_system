@@ -207,7 +207,7 @@ def home(config):
 
         if request.form["submitbutton"] == "generateTemplate":
 
-            filepath = "/tmp/LFNL_template.xlsx"
+            filepath = "/tmp/NL_template.xlsx"
 
             if config == 'Darwin Core':
                 metadata = False

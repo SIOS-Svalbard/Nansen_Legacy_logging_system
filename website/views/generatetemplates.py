@@ -7,7 +7,7 @@ generatetemplates = Blueprint('generatetemplates', __name__)
 def generate_template():
     '''
     Generate template html page code
-    Should redirect to the page for the template generator (sub-tree) with LFNL config.
+    Should redirect to the page for the template generator (sub-tree) with NL config.
     '''
 
     return redirect(CONFIG['template_generator']['url'])

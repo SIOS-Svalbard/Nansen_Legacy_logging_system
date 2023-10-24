@@ -60,6 +60,6 @@ Go to http://127.0.0.1:5001 in your web browser, or wherever you have set up the
 The logging system has two subtrees.
 
 * Learnings from Nansen Legacy label printing: For printing labels. Labels can be printed to include text taken from fields used in the logging system.
-	- https://github.com/SIOS-Svalbard/Learnings_from_AeN_label_printing
+	- https://github.com/SIOS-Svalbard/Nansen_Legacy_label_printing
 * Nansen Legacy template generator: For generating Excel templates. Spreadsheets can be configured based on the type of sample being logged in the logging system, and logged (meta)data can also be exported to a template.
 	- https://github.com/SIOS-Svalbard/Nansen_Legacy_template_generator

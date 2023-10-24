@@ -642,7 +642,7 @@ class Readme_Sheet(object):
         if template.config == 'CF-NetCDF':
             readme_file = readme_filepath + '/cfnetcdf_readme.txt'
         elif template.config == 'Learnings from Nansen Legacy logging system':
-            readme_file = readme_filepath + '/lfnl_readme.txt'
+            readme_file = readme_filepath + '/nl_readme.txt'
         elif template.config == 'Darwin Core':
             readme_file = readme_filepath + '/dwc_readme.txt'
 

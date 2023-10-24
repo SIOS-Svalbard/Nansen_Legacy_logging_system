@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from website import DB, FIELDS_FILEPATH
-from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_config_fields
+from website.Nansen_Legacy_template_generator.website.lib.get_configurations import get_config_fields
 from website.lib.dropdown_lists_from_db import populate_dropdown_lists
 import datetime as dt
 

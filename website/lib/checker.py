@@ -11,9 +11,9 @@ import datetime
 import numpy as np
 from website.lib.get_data import get_data, get_all_ids, get_personnel_df
 import uuid
-from website.Learnings_from_AeN_template_generator.website.lib.pull_cf_standard_names import cf_standard_names_to_dic
-from website.Learnings_from_AeN_template_generator.website.lib.pull_other_fields import other_fields_to_dic
-from website.Learnings_from_AeN_template_generator.website.lib.pull_darwin_core_terms import dwc_terms_to_dic, dwc_extension_to_dic
+from website.Nansen_Legacy_template_generator.website.lib.pull_cf_standard_names import cf_standard_names_to_dic
+from website.Nansen_Legacy_template_generator.website.lib.pull_other_fields import other_fields_to_dic
+from website.Nansen_Legacy_template_generator.website.lib.pull_darwin_core_terms import dwc_terms_to_dic, dwc_extension_to_dic
 from website import FIELDS_FILEPATH
 
 def is_number(s):

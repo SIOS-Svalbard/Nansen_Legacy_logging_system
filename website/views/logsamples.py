@@ -12,7 +12,7 @@ from datetime import datetime as dt
 import pandas as pd
 from math import isnan
 from website.lib.get_setup_for_configuration import get_setup_for_configuration
-from website.Learnings_from_AeN_template_generator.website.lib.get_configurations import get_list_of_subconfigs
+from website.Nansen_Legacy_template_generator.website.lib.get_configurations import get_list_of_subconfigs
 from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 
 logsamples = Blueprint('logsamples', __name__)

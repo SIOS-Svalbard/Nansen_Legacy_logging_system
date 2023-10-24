@@ -3,9 +3,9 @@ from website import DB, CONFIG, FIELDS_FILEPATH
 from website.lib.get_dict_for_list_of_fields import get_dict_for_list_of_fields
 from website.lib.get_data import get_metadata_for_list_of_ids, get_cruise, get_all_ids
 import copy
-from website.Learnings_from_AeN_label_printing.website.lib.create_labels import create_medium, create_large
-from website.Learnings_from_AeN_label_printing.website.lib.interact_with_printer import try_to_connect_to_printer, cancel_print, send_label_to_printer
-from website.Learnings_from_AeN_label_printing.website.lib.add_one_to_numbers_in_string import add_one_to_numbers_in_string
+from website.Nansen_Legacy_label_printing.website.lib.create_labels import create_medium, create_large
+from website.Nansen_Legacy_label_printing.website.lib.interact_with_printer import try_to_connect_to_printer, cancel_print, send_label_to_printer
+from website.Nansen_Legacy_label_printing.website.lib.add_one_to_numbers_in_string import add_one_to_numbers_in_string
 
 printlabels = Blueprint('printlabels', __name__)
 

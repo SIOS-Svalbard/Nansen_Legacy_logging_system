@@ -9,7 +9,7 @@ import json
 import os
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-CONFIG_PATH = os.path.join(BASE_PATH, 'website', 'Learnings_from_AeN_template_generator', 'website', 'config', 'template_configurations.yaml')
+CONFIG_PATH = os.path.join(BASE_PATH, 'website', 'Nansen_Legacy_template_generator', 'website', 'config', 'template_configurations.yaml')
 
 with open(os.path.join(BASE_PATH, "config.json"), "r") as fp:
     CONFIG = json.load(fp)
@@ -26,7 +26,7 @@ else:
     url = None
 
 BTL_FILES_FOLDER = CONFIG["niskinBottles"]["dir"]
-FIELDS_FILEPATH = os.path.join(BASE_PATH, 'website', 'Learnings_from_AeN_template_generator', 'website', 'config', 'fields')
+FIELDS_FILEPATH = os.path.join(BASE_PATH, 'website', 'Nansen_Legacy_template_generator', 'website', 'config', 'fields')
 
 # GET CRUISE DETAILS, RETURNS NONE IF NO CRUISE
 cruise_details_df = get_cruise(DB)

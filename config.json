@@ -3,7 +3,7 @@
     "host": "localhost",
     "user": "postgres",
     "password": "postgres",
-    "dbname": "lfnl_db"
+    "dbname": "nl_db"
   },
   "metadata_catalogue": {
     "fields_to_use_as_columns": [
@@ -73,10 +73,10 @@
     "host": ""
   },
   "niskinBottles": {
-    "dir": "/home/lukem/Documents/Testing/btl_files/"
+    "dir": "/home/lukem/"
   },
   "template_generator": {
-    "url": "http://127.0.0.1:5000/config=Learnings%20from%20Nansen%20Legacy%20logging%20system"
+    "url": "http://127.0.0.1:5000/config=Nansen%20Legacy%20logging%20system"
   },
   "label_printing": {
     "url": "http://127.0.0.1:5002",
