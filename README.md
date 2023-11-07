@@ -57,7 +57,7 @@ Go to http://127.0.0.1:5001 in your web browser, or wherever you have set up the
 
 ## Subtrees
 
-The logging system has two subtrees.
+The logging system has two subtrees:
 
 * Nansen Legacy label printing: For printing labels. Labels can be printed to include text taken from fields used in the logging system.
 	- https://github.com/SIOS-Svalbard/Nansen_Legacy_label_printing
