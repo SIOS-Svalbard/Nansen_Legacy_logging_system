@@ -1,0 +1,124 @@
+{% extends "base.html" %} {% block title %}Generate template for logging activities{% endblock %} {% block content
+%}
+
+<div class="container">
+    <h1>Generate template for logging activities</h1><br>
+    <form method="POST" id="myForm">
+
+        {% include 'fields_key.html' %}<br>
+
+        <div class="form-row">
+            <!--Configuration required/recommended fields-->
+            <div class="col-md-4">
+                <h3>Required</h3><br>
+                {% for key, field in output_config_dict['Data']['Required'].items() %}
+                {% set requirement = 'Required' %}
+                    <div class="form-check" {% include 'fields_colours.html' %}>
+                        <label title='{{field["description"]}}' class="form-check-label">
+                        <input
+                            class="form-check-input form-control-lg"
+                            type="checkbox"
+                            id="{{key}}"
+                            name="{{key}}"
+                            checked
+                            >
+                        {% include 'denote_required_fields.html' %}
+                        {{field['disp_name']}}
+                        </label>
+                    </div>
+                    <br>
+                
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4">
+                <h3>Recommended</h3><br>
+                {% for key, field in output_config_dict['Data']['Recommended'].items() %}
+                {% set requirement = 'Recommended' %}
+                    <div class="form-check" {% include 'fields_colours.html' %}>
+                        <label title='{{field["description"]}}' class="form-check-label">
+                        <input
+                            class="form-check-input form-control-lg"
+                            type="checkbox"
+                            id="{{key}}"
+                            name="{{key}}"
+                            {% if 'checked' in field.keys() and 'on' in field['checked'] %}
+                            checked
+                            {% endif %}
+                            >
+                        {{field['disp_name']}}
+                        </label>
+                    </div>
+                    <br>
+                
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4">
+                <h3>Extra fields</h3><br>
+                {% include 'add_fields_not_in_config.html' %}
+                <br>
+                {% for key, field in added_fields_dic['Data'].items() %}
+                    <div class="form-check" {% include 'fields_colours.html' %}>
+                        <label title='{{field["description"]}}' class="form-check-label">
+                        <input
+                            class="form-check-input form-control-lg"
+                            type="checkbox"
+                            id="{{key}}"
+                            name="{{key}}"
+                            {% if col == 'Required' or 'checked' in field.keys() %}
+                            checked
+                            {% endif %}
+                            >
+                        {{field['disp_name']}}
+                        </label>
+                    </div>
+                    <br>
+                {% endfor %}
+
+                {% for key, field in added_cf_names_dic['Data'].items() %}
+                    <div class="form-check" {% include 'fields_colours.html' %}>
+                        <label title='{{field["description"]}}' class="form-check-label">
+                        <input
+                            class="form-check-input form-control-lg"
+                            type="checkbox"
+                            id="{{key}}"
+                            name="{{key}}"
+                            {% if col == 'Required' or 'checked' in field.keys() %}
+                            checked
+                            {% endif %}
+                            >
+                        {{field['disp_name']}}
+                        </label>
+                    </div>
+                    <br>
+                {% endfor %}
+
+                {% for key, field in added_dwc_terms_dic['Data'].items() %}
+                    <div class="form-check" {% include 'fields_colours.html' %}>
+                        <label title='{{field["description"]}}' class="form-check-label">
+                        <input
+                            class="form-check-input form-control-lg"
+                            type="checkbox"
+                            id="{{key}}"
+                            name="{{key}}"
+                            {% if col == 'Required' or 'checked' in field.keys() %}
+                            checked
+                            {% endif %}
+                            >
+                        {{field['disp_name']}}
+                        </label>
+                    </div>
+                    <br>
+                {% endfor %}
+                <br>
+                <button type="submit" class="btn btn-primary btn-lg" name="submitbutton" value="generateTemplate">Generate spreadsheet template</button>
+            </div>
+
+        <!--Add more fields-->
+        
+        </div>
+    </form>
+</div>
+
+{% endblock %}

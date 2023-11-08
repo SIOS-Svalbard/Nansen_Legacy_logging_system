@@ -55,6 +55,7 @@ def create_app():
     from .views.uploaddata import uploaddata
     from .views.missingmetadata import missingmetadata
     from .views.choosesamplefields import choosesamplefields
+    from .views.chooseactivityfields import chooseactivityfields
     from .views.logsamplesform import logsamplesform
     from .views.exportdata import exportdata
 
@@ -67,6 +68,7 @@ def create_app():
     app.register_blueprint(uploaddata, url_prefix='/')
     app.register_blueprint(missingmetadata, url_prefix='/')
     app.register_blueprint(choosesamplefields, url_prefix='/')
+    app.register_blueprint(chooseactivityfields, url_prefix='/')
     app.register_blueprint(logsamplesform, url_prefix='/')
     app.register_blueprint(exportdata, url_prefix='/')
 
