@@ -21,7 +21,6 @@
                             id="{{key}}"
                             name="{{key}}"
                             checked
-                            disabled
                             >
                         {% include 'denote_required_fields.html' %}
                         {{field['disp_name']}}
@@ -43,7 +42,7 @@
                             type="checkbox"
                             id="{{key}}"
                             name="{{key}}"
-                            {% if col == 'Required' or 'checked' in field.keys() %}
+                            {% if 'checked' in field.keys() and 'on' in field['checked'] %}
                             checked
                             {% endif %}
                             >
@@ -113,7 +112,7 @@
                     <br>
                 {% endfor %}
                 <br>
-                <button type="submit" class="btn btn-primary btn-lg" name="submitbutton" value="generateExcel">Generate spreadsheet template</button>
+                <button type="submit" class="btn btn-primary btn-lg" name="submitbutton" value="generateTemplate">Generate spreadsheet template</button>
             </div>
 
         <!--Add more fields-->
