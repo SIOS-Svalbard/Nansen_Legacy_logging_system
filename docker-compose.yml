@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16.3-alpine
+    container_name: nl_logger_postgres
+    ports:
+      - 7654:5432
+    environment:
+      - PGUSER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./nl_logger_postgres_data:/var/lib/postgresql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  nl_logger:
+    # extra_hosts:
+      # - host.docker.internal:172.17.0.1
+    build: .
+    container_name: nl_logger
+    ports:
+      - "8080:5001"
+    # network_mode: "host"
+    # environment:
+      # - FLASK_APP=website
+      # - FLASK_RUN_HOST=host.docker.internal
+    volumes:
+      - ./config.json:/app/config.json
+    restart: always
+    command: ["python", "main.py"]
+    depends_on: 
+      postgres:
+        condition: service_healthy
+networks:
+  nansen_legacy_logging_system_default:
+    driver: bridge
+  
