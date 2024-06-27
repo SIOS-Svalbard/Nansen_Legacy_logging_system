@@ -1,6 +1,6 @@
 {
   "database": {
-    "host": "localhost",
+    "host": "postgres",
     "user": "postgres",
     "password": "postgres",
     "dbname": "nl_db"

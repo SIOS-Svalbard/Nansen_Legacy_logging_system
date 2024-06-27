@@ -84,7 +84,7 @@ def init_sample_types(cur):
     for idx, row in df.iterrows():
         ID = row['id']
         sampleType = row['sampleType']
-        subconfig = row['NL_subconfig']
+        subconfig = row['LFNL_subconfig']
         comment = row['comment']
         group = row['group']
         vocabLabel = row['vocabLabel']
