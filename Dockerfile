@@ -30,4 +30,3 @@ COPY --from=builder /folder_to_copy /
 # RUN pytest /app/tests/
 
 ENTRYPOINT [ "python", "/app/main.py" ]
-CMD [ "python", "/app/main.py" ]
