@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16.3-alpine
+    image: postgres:9.4.26-alpine
     container_name: nl_logger_postgres
     ports:
       - 7654:5432
@@ -21,14 +21,37 @@ services:
     build: .
     container_name: nl_logger
     ports:
-      - "8080:8000"
+      - "5001:5001"
     volumes:
       - ./config.json:/app/config.json
     restart: always
-    entrypoint: ["gunicorn", "-w" , "4", "-b", "0.0.0.0:8000", "website:create_app()"]
+    entrypoint: ["gunicorn", "-w" , "4", "-b", "0.0.0.0:5001", "main:app"]
     depends_on: 
       postgres:
         condition: service_healthy
+  nl_label_printing:
+    build:
+      context: website/Nansen_Legacy_label_printing
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - APP_ENV=production
+    entrypoint: ["gunicorn", "-w" , "4", "-b", "0.0.0.0:5002", "main:app"]
+    restart: always
+    depends_on: 
+      - nl_logger
+  nl_template_generator:
+    build:
+      context: website/Nansen_Legacy_template_generator
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    entrypoint: ["gunicorn", "-w" , "4", "-b", "0.0.0.0:5000", "main:app"]
+    restart: always
+    depends_on: 
+      - nl_logger
+
 networks:
   nansen_legacy_logging_system_default:
     driver: bridge

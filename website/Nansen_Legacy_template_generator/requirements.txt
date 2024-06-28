@@ -1,4 +1,4 @@
-flask
+Flask
 uuid
 pandas
 datetime
@@ -6,3 +6,5 @@ numpy
 pyyaml
 XlsxWriter
 lxml
+requests
+gunicorn

@@ -17,6 +17,7 @@ RUN mkdir -p /folder_to_copy/usr/local/lib/python3.8/site-packages \
     && rsync -a /usr/local/bin /folder_to_copy/usr/local \
     && rsync -a /usr/bin /folder_to_copy/usr \
     && rsync -a /usr/lib /folder_to_copy/usr
+RUN apt-get -y purge rsync
 
 ADD website /app/website
 
@@ -27,6 +28,5 @@ WORKDIR /app
 COPY --from=builder /app .
 COPY --from=builder /folder_to_copy /
 
-# RUN pytest /app/tests/
 
 ENTRYPOINT [ "python", "/app/main.py" ]
