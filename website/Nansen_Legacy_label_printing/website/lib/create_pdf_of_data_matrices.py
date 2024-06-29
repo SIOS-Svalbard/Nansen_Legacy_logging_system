@@ -164,8 +164,6 @@ def make_page(pdf, dpi, gearText, sampleText, M):
                 # print(uuid)
                 img = qr.qr_image(uuid)
                 img.save(path, format='PNG', resolution=dpi)
-                # img.save(path, resolution=dpi)
-                # img.save(path)
                 pdf.image(
                     path, x=int(side + xshift + len(text)*4 + pad), y=int(top + yshift + pad), w=img.size[0] / inch, h=img.size[1] / inch, type='PNG')
                 pdf.set_font('Courier', 'B', 16)
