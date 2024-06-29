@@ -51,6 +51,36 @@ Alternatively, it can be launched for testing and development purposes by runnin
 ./main.py
 ```
 
+## Run application using docker-compose
+
+[!CAUTION]
+In the provided configuration, the postgres database is also ran in a docker container.
+This is not recommended in a production environment due to the risk of data loss.
+
+A running Docker daemon is needed. Ensure Docker is installed and the Docker service is running on your machine.
+
+Docker Compose is required. Make sure Docker Compose is installed and available in your system's PATH.
+
+Create an empty folder named `nl_logger_postgres_data`, if you plan on running the database in a container.
+You will also need to adapt `database.host` field in the `config.json` file:
+```
+{
+  "database": {
+    "host": "postgres",
+    "user": "postgres",
+    "password": "postgres",
+    "dbname": "nl_db"
+  },
+  ...
+```
+
+You might want to modify the `docker-compose.yaml` file, especially the ports.
+
+Following command will download, build the necessary images and create and launch the containers.
+```
+docker compose up -d
+```
+
 ## Viewing the application
 
 Go to http://127.0.0.1:5001 in your web browser, or wherever you have set up the logging system to be hosted if running as a WSGI application.

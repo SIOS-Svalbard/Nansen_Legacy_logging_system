@@ -33,6 +33,7 @@ services:
     build:
       context: website/Nansen_Legacy_label_printing
       dockerfile: Dockerfile
+    container_name: nl_label_printing
     ports:
       - "5002:5002"
     environment:
@@ -45,6 +46,7 @@ services:
     build:
       context: website/Nansen_Legacy_template_generator
       dockerfile: Dockerfile
+    container_name: nl_template_generator
     ports:
       - "5000:5000"
     entrypoint: ["gunicorn", "-w" , "4", "-b", "0.0.0.0:5000", "main:app"]
