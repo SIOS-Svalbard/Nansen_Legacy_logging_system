@@ -53,15 +53,15 @@ Alternatively, it can be launched for testing and development purposes by runnin
 
 ## Run application using docker-compose
 
-[!CAUTION]
-In the provided configuration, the postgres database is also ran in a docker container.
-This is not recommended in a production environment due to the risk of data loss.
+> [!CAUTION]
+> In the provided configuration, the postgres database is also ran in a docker container.
+> This is not recommended in a production environment due to the risk of data loss.
 
 A running Docker daemon is needed. Ensure Docker is installed and the Docker service is running on your machine.
 
 Docker Compose is required. Make sure Docker Compose is installed and available in your system's PATH.
 
-Create an empty folder named `nl_logger_postgres_data`, if you plan on running the database in a container.
+Create an empty folder named `nl_logger_postgres_data/data`, if you plan on running the database in a container.
 You will also need to adapt `database.host` field in the `config.json` file:
 ```
 {
