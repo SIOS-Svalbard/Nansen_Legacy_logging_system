@@ -1,4 +1,4 @@
-flask
+Flask
 Flask-Session
 uuid
 psycopg2
@@ -8,3 +8,4 @@ numpy
 requests
 pyyaml
 XlsxWriter
+gunicorn
